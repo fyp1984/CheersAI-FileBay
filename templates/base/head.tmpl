@@ -16,8 +16,12 @@
 	<link rel="alternate" type="application/atom+xml" title="" href="{{.FeedURL}}.atom">
 	<link rel="alternate" type="application/rss+xml" title="" href="{{.FeedURL}}.rss">
 {{end}}
-	<link rel="icon" href="{{AssetUrlPrefix}}/img/favicon.png" type="image/png">
-	<link rel="alternate icon" href="{{AssetUrlPrefix}}/img/favicon.svg" type="image/svg+xml">
+	<link rel="icon" href="{{AssetUrlPrefix}}/img/favicon-16.png?v={{AssetVersion}}" type="image/png" sizes="16x16">
+	<link rel="icon" href="{{AssetUrlPrefix}}/img/favicon-32.png?v={{AssetVersion}}" type="image/png" sizes="32x32">
+	<link rel="icon" href="{{AssetUrlPrefix}}/img/favicon-48.png?v={{AssetVersion}}" type="image/png" sizes="48x48">
+	<link rel="icon" href="{{AssetUrlPrefix}}/img/favicon-64.png?v={{AssetVersion}}" type="image/png" sizes="64x64">
+	<link rel="shortcut icon" href="{{AssetUrlPrefix}}/img/favicon-32.png?v={{AssetVersion}}" type="image/png">
+	<link rel="apple-touch-icon" href="{{AssetUrlPrefix}}/img/apple-touch-icon.png?v={{AssetVersion}}" sizes="180x180">
 	{{template "base/head_opengraph" .}}
 	{{template "base/head_style" .}}
 	{{template "base/head_script" .}}

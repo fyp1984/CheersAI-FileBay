@@ -266,7 +266,11 @@ func Routes() *web.Router {
 	routes.Methods("GET, HEAD", "/repo-avatars/*", avatarStorageHandler(setting.RepoAvatar.Storage, "repo-avatars", storage.RepoAvatars))
 	routes.Methods("GET, HEAD", "/apple-touch-icon.png", misc.StaticRedirect("/assets/img/apple-touch-icon.png"))
 	routes.Methods("GET, HEAD", "/apple-touch-icon-precomposed.png", misc.StaticRedirect("/assets/img/apple-touch-icon.png"))
-	routes.Methods("GET, HEAD", "/favicon.ico", misc.StaticRedirect("/assets/img/favicon.png"))
+	routes.Methods("GET, HEAD", "/favicon.ico", misc.StaticRedirect("/assets/img/favicon-32.png"))
+	routes.Methods("GET, HEAD", "/favicon-16x16.png", misc.StaticRedirect("/assets/img/favicon-16.png"))
+	routes.Methods("GET, HEAD", "/favicon-32x32.png", misc.StaticRedirect("/assets/img/favicon-32.png"))
+	routes.Methods("GET, HEAD", "/favicon-48x48.png", misc.StaticRedirect("/assets/img/favicon-48.png"))
+	routes.Methods("GET, HEAD", "/favicon-64x64.png", misc.StaticRedirect("/assets/img/favicon-64.png"))
 
 	var mid []any
 
