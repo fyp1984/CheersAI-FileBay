@@ -1,0 +1,29 @@
+services:
+  cheersai-filebay:
+    build:
+      context: .
+      dockerfile: Dockerfile.rootless
+      args:
+        GOPROXY: "${GOPROXY:-https://goproxy.cn,direct}"
+        GOSUMDB: "${GOSUMDB:-sum.golang.google.cn}"
+    image: cheersai-filebay:local
+    container_name: cheersai-filebay
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FILEBAY_HTTP_PORT:-13000}:3000"
+      - "127.0.0.1:${FILEBAY_SSH_PORT:-12222}:2222"
+    environment:
+      APP_NAME: "CheersAI-FileBay"
+      SSH_DOMAIN: "localhost"
+      HTTP_PORT: "3000"
+      ROOT_URL: "http://localhost:${FILEBAY_HTTP_PORT:-13000}/"
+      SSH_PORT: "${FILEBAY_SSH_PORT:-12222}"
+      SSH_LISTEN_PORT: "2222"
+      DB_TYPE: "sqlite3"
+      DB_NAME: "filebay"
+      DISABLE_REGISTRATION: "false"
+      REQUIRE_SIGNIN_VIEW: "false"
+      INSTALL_LOCK: "false"
+    volumes:
+      - "./.docker/filebay:/var/lib/gitea"
+      - "./.docker/filebay-config:/etc/gitea"

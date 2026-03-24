@@ -1,0 +1,16 @@
+.docker/
+node_modules/
+.DS_Store
+public/assets/js/
+public/assets/css/
+public/assets/fonts/
+.air/
+.make_evidence/
+dist/
+gitea
+gitea.exe
+data/
+log/
+indexers/
+queues/
+*.test
