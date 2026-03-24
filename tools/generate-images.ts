@@ -4,6 +4,16 @@ import {optimize} from 'svgo';
 import {readFile, writeFile} from 'node:fs/promises';
 import {argv, exit} from 'node:process';
 
+function pngToSvg(pngBytes: Uint8Array) {
+  const pngBase64 = Buffer.from(pngBytes).toString('base64');
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">',
+    `<image href="data:image/png;base64,${pngBase64}" width="512" height="512"/>`,
+    '</svg>',
+  ].join('');
+}
+
 async function generate(svg: string, path: string, {size, bg}: {size: number, bg?: boolean}) {
   const outputFile = new URL(path, import.meta.url);
 
@@ -38,8 +48,10 @@ async function generate(svg: string, path: string, {size, bg}: {size: number, bg
 
 async function main() {
   const gitea = argv.slice(2).includes('gitea');
-  const logoSvg = await readFile(new URL('../assets/logo.svg', import.meta.url), 'utf8');
-  const faviconSvg = await readFile(new URL('../assets/favicon.svg', import.meta.url), 'utf8');
+  const logoPng = await readFile(new URL('../assets/logo.png', import.meta.url)).catch(() => null);
+  const faviconPng = await readFile(new URL('../assets/favicon.png', import.meta.url)).catch(() => null);
+  const logoSvg = logoPng ? pngToSvg(logoPng) : await readFile(new URL('../assets/logo.svg', import.meta.url), 'utf8');
+  const faviconSvg = faviconPng ? pngToSvg(faviconPng) : await readFile(new URL('../assets/favicon.svg', import.meta.url), 'utf8');
   await initWasm(await readFile(new URL(import.meta.resolve('@resvg/resvg-wasm/index_bg.wasm'))));
 
   await Promise.all([
@@ -47,8 +59,14 @@ async function main() {
     generate(logoSvg, '../public/assets/img/logo.png', {size: 512}),
     generate(faviconSvg, '../public/assets/img/favicon.svg', {size: 32}),
     generate(faviconSvg, '../public/assets/img/favicon.png', {size: 180}),
+    generate(faviconSvg, '../public/assets/img/favicon-16.png', {size: 16}),
+    generate(faviconSvg, '../public/assets/img/favicon-32.png', {size: 32}),
+    generate(faviconSvg, '../public/assets/img/favicon-48.png', {size: 48}),
+    generate(faviconSvg, '../public/assets/img/favicon-64.png', {size: 64}),
     generate(logoSvg, '../public/assets/img/avatar_default.png', {size: 200}),
     generate(logoSvg, '../public/assets/img/apple-touch-icon.png', {size: 180, bg: true}),
+    generate(logoSvg, '../public/assets/img/icon-192.png', {size: 192}),
+    generate(logoSvg, '../public/assets/img/icon-512.png', {size: 512}),
     gitea && generate(logoSvg, '../public/assets/img/gitea.svg', {size: 32}),
   ]);
 }
