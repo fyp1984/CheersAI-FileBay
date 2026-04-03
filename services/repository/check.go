@@ -95,7 +95,7 @@ func GitGcRepo(ctx context.Context, repo *repo_model.Repository, timeout time.Du
 		if err := system_model.CreateRepositoryNotice(desc); err != nil {
 			log.Error("CreateRepositoryNotice: %v", err)
 		}
-		return fmt.Errorf("Repository garbage collection failed in repo: %s: Error: %w", repo.RelativePath(), err)
+		return fmt.Errorf("repository garbage collection failed in repo %s: %w", repo.RelativePath(), err)
 	}
 
 	// Now update the size of the repository
@@ -105,7 +105,7 @@ func GitGcRepo(ctx context.Context, repo *repo_model.Repository, timeout time.Du
 		if err := system_model.CreateRepositoryNotice(desc); err != nil {
 			log.Error("CreateRepositoryNotice: %v", err)
 		}
-		return fmt.Errorf("Updating size as part of garbage collection failed in repo: %s: Error: %w", repo.RelativePath(), err)
+		return fmt.Errorf("updating size as part of garbage collection failed in repo %s: %w", repo.RelativePath(), err)
 	}
 
 	return nil
@@ -124,7 +124,7 @@ func gatherMissingRepoRecords(ctx context.Context) (repo_model.RepositoryList, e
 			}
 			exist, err := gitrepo.IsRepositoryExist(ctx, repo)
 			if err != nil {
-				return fmt.Errorf("Unable to check dir for %s. %w", repo.FullName(), err)
+				return fmt.Errorf("unable to check dir for %s: %w", repo.FullName(), err)
 			}
 			if !exist {
 				repos = append(repos, repo)

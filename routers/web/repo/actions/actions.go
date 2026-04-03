@@ -431,10 +431,8 @@ func workflowDispatchConfig(w *act_model.Workflow) *WorkflowDispatch {
 		}
 
 		i := 0
-		for {
-			if i+1 >= len(inputsNode.Content) {
-				break
-			}
+		for i+1 < len(inputsNode.Content) {
+
 			var input WorkflowDispatchInput
 			if decodeNode(*inputsNode.Content[i+1], &input) {
 				input.Name = inputsNode.Content[i].Value

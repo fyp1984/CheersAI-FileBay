@@ -391,9 +391,10 @@ func TestMatchIssuesEvent(t *testing.T) {
 			var expectedAction string
 			switch tc.payload.Action {
 			case api.HookIssueLabelUpdated:
-				if tc.eventType == "labeled" {
+				switch tc.eventType {
+				case "labeled":
 					expectedAction = "labeled"
-				} else if tc.eventType == "unlabeled" {
+				case "unlabeled":
 					expectedAction = "unlabeled"
 				}
 			case api.HookIssueLabelCleared:

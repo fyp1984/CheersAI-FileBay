@@ -53,7 +53,7 @@ var CmdKeys = &cli.Command{
 
 func runKeys(ctx context.Context, c *cli.Command) error {
 	if !c.IsSet("username") {
-		return errors.New("No username provided")
+		return errors.New("no username provided")
 	}
 	// Check username matches the expected username
 	if strings.TrimSpace(c.String("username")) != strings.TrimSpace(c.String("expected")) {
@@ -67,7 +67,7 @@ func runKeys(ctx context.Context, c *cli.Command) error {
 	}
 
 	if content == "" {
-		return errors.New("No key type and content provided")
+		return errors.New("no key type and content provided")
 	}
 
 	setup(ctx, c.Bool("debug"))

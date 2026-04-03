@@ -266,7 +266,7 @@ type RequestWrapper struct {
 }
 
 func (req *RequestWrapper) AddBasicAuth(username string, password ...string) *RequestWrapper {
-	req.Request.SetBasicAuth(username, util.OptionalArg(password, userPassword))
+	req.SetBasicAuth(username, util.OptionalArg(password, userPassword))
 	return req
 }
 
@@ -277,12 +277,12 @@ func (req *RequestWrapper) AddTokenAuth(token string) *RequestWrapper {
 	if !strings.HasPrefix(token, "Bearer ") {
 		token = "Bearer " + token
 	}
-	req.Request.Header.Set("Authorization", token)
+	req.Header.Set("Authorization", token)
 	return req
 }
 
 func (req *RequestWrapper) SetHeader(name, value string) *RequestWrapper {
-	req.Request.Header.Set(name, value)
+	req.Header.Set(name, value)
 	return req
 }
 

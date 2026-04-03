@@ -152,7 +152,7 @@ func checkBlockedByIssues(ctx *context.Context, blockers []*issues_model.Depende
 			}
 			repoPerms[blocker.RepoID] = perm
 		}
-		if perm.CanReadIssuesOrPulls(blocker.Issue.IsPull) {
+		if perm.CanReadIssuesOrPulls(blocker.IsPull) {
 			canRead = append(canRead, blocker)
 		} else {
 			notPermitted = append(notPermitted, blocker)

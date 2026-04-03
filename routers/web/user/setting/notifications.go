@@ -46,10 +46,10 @@ func NotificationsEmailPost(ctx *context.Context) {
 	}
 
 	preference := ctx.FormString("preference")
-	if !(preference == user_model.EmailNotificationsEnabled ||
-		preference == user_model.EmailNotificationsOnMention ||
-		preference == user_model.EmailNotificationsDisabled ||
-		preference == user_model.EmailNotificationsAndYourOwn) {
+	if preference != user_model.EmailNotificationsEnabled &&
+		preference != user_model.EmailNotificationsOnMention &&
+		preference != user_model.EmailNotificationsDisabled &&
+		preference != user_model.EmailNotificationsAndYourOwn {
 		ctx.Flash.Error(ctx.Tr("invalid_data", preference))
 		ctx.Redirect(setting.AppSubURL + "/user/settings/notifications")
 		return
@@ -73,9 +73,9 @@ func NotificationsActionsEmailPost(ctx *context.Context) {
 	}
 
 	preference := ctx.FormString("preference")
-	if !(preference == user_model.SettingEmailNotificationGiteaActionsAll ||
-		preference == user_model.SettingEmailNotificationGiteaActionsDisabled ||
-		preference == user_model.SettingEmailNotificationGiteaActionsFailureOnly) {
+	if preference != user_model.SettingEmailNotificationGiteaActionsAll &&
+		preference != user_model.SettingEmailNotificationGiteaActionsDisabled &&
+		preference != user_model.SettingEmailNotificationGiteaActionsFailureOnly {
 		ctx.Flash.Error(ctx.Tr("invalid_data", preference))
 		ctx.Redirect(setting.AppSubURL + "/user/settings/notifications")
 		return

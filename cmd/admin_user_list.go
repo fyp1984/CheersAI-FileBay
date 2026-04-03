@@ -39,20 +39,20 @@ func runListUsers(ctx context.Context, c *cli.Command) error {
 	w := tabwriter.NewWriter(os.Stdout, 5, 0, 1, ' ', 0)
 
 	if c.IsSet("admin") {
-		fmt.Fprintf(w, "ID\tUsername\tEmail\tIsActive\n")
+		_, _ = fmt.Fprintf(w, "ID\tUsername\tEmail\tIsActive\n")
 		for _, u := range users {
 			if u.IsAdmin {
-				fmt.Fprintf(w, "%d\t%s\t%s\t%t\n", u.ID, u.Name, u.Email, u.IsActive)
+				_, _ = fmt.Fprintf(w, "%d\t%s\t%s\t%t\n", u.ID, u.Name, u.Email, u.IsActive)
 			}
 		}
 	} else {
 		twofa := user_model.UserList(users).GetTwoFaStatus(ctx)
-		fmt.Fprintf(w, "ID\tUsername\tEmail\tIsActive\tIsAdmin\t2FA\n")
+		_, _ = fmt.Fprintf(w, "ID\tUsername\tEmail\tIsActive\tIsAdmin\t2FA\n")
 		for _, u := range users {
-			fmt.Fprintf(w, "%d\t%s\t%s\t%t\t%t\t%t\n", u.ID, u.Name, u.Email, u.IsActive, u.IsAdmin, twofa[u.ID])
+			_, _ = fmt.Fprintf(w, "%d\t%s\t%s\t%t\t%t\t%t\n", u.ID, u.Name, u.Email, u.IsActive, u.IsAdmin, twofa[u.ID])
 		}
 	}
 
-	w.Flush()
+	_ = w.Flush()
 	return nil
 }

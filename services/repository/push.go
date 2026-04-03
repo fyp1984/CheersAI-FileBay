@@ -66,7 +66,7 @@ func PushUpdates(opts []*repo_module.PushUpdateOptions) error {
 
 	for _, opt := range opts {
 		if opt.IsNewRef() && opt.IsDelRef() {
-			return errors.New("Old and new revisions are both NULL")
+			return errors.New("old and new revisions are both NULL")
 		}
 	}
 
@@ -84,17 +84,17 @@ func pushUpdates(optsList []*repo_module.PushUpdateOptions) error {
 
 	repo, err := repo_model.GetRepositoryByOwnerAndName(ctx, optsList[0].RepoUserName, optsList[0].RepoName)
 	if err != nil {
-		return fmt.Errorf("GetRepositoryByOwnerAndName failed: %w", err)
+		return fmt.Errorf("get repository by owner and name failed: %w", err)
 	}
 
 	gitRepo, err := gitrepo.OpenRepository(ctx, repo)
 	if err != nil {
-		return fmt.Errorf("OpenRepository[%s]: %w", repo.FullName(), err)
+		return fmt.Errorf("open repository[%s]: %w", repo.FullName(), err)
 	}
 	defer gitRepo.Close()
 
 	if err = repo_module.UpdateRepoSize(ctx, repo); err != nil {
-		return fmt.Errorf("Failed to update size for repository: %v", err)
+		return fmt.Errorf("failed to update size for repository: %v", err)
 	}
 
 	addTags := make([]string, 0, len(optsList))
@@ -233,13 +233,13 @@ func pushUpdates(optsList []*repo_module.PushUpdateOptions) error {
 
 	if len(addTags)+len(delTags) > 0 {
 		if err := PushUpdateAddDeleteTags(ctx, repo, gitRepo, pusher, addTags, delTags); err != nil {
-			return fmt.Errorf("PushUpdateAddDeleteTags: %w", err)
+			return fmt.Errorf("push update add delete tags: %w", err)
 		}
 	}
 
 	// Change repository last updated time.
 	if err := repo_model.UpdateRepositoryUpdatedTime(ctx, repo.ID, time.Now()); err != nil {
-		return fmt.Errorf("UpdateRepositoryUpdatedTime: %w", err)
+		return fmt.Errorf("update repository updated time: %w", err)
 	}
 
 	return nil
@@ -284,7 +284,7 @@ func pushNewBranch(ctx context.Context, repo *repo_model.Repository, pusher *use
 		}
 		// Update the is empty and default_branch columns
 		if err := repo_model.UpdateRepositoryColsWithAutoTime(ctx, repo, "default_branch", "is_empty"); err != nil {
-			return nil, fmt.Errorf("UpdateRepositoryCols: %w", err)
+			return nil, fmt.Errorf("update repository cols: %w", err)
 		}
 	}
 
@@ -381,11 +381,11 @@ func pushUpdateAddTags(ctx context.Context, repo *repo_model.Repository, gitRepo
 	for i, lowerTag := range lowerTags {
 		tag, err := gitRepo.GetTag(tags[i])
 		if err != nil {
-			return fmt.Errorf("GetTag: %w", err)
+			return fmt.Errorf("get tag: %w", err)
 		}
 		commit, err := gitRepo.GetTagCommit(tag.Name)
 		if err != nil {
-			return fmt.Errorf("Commit: %w", err)
+			return fmt.Errorf("commit: %w", err)
 		}
 
 		sig := tag.Tagger
@@ -432,14 +432,14 @@ func pushUpdateAddTags(ctx context.Context, repo *repo_model.Repository, gitRepo
 			}
 			rel.PublisherID = pusher.ID
 			if err = repo_model.UpdateRelease(ctx, rel); err != nil {
-				return fmt.Errorf("Update: %w", err)
+				return fmt.Errorf("update: %w", err)
 			}
 		}
 	}
 
 	if len(newReleases) > 0 {
 		if err = db.Insert(ctx, newReleases); err != nil {
-			return fmt.Errorf("Insert: %w", err)
+			return fmt.Errorf("insert: %w", err)
 		}
 	}
 

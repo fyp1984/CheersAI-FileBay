@@ -70,7 +70,7 @@ func CommitFromReader(gitRepo *Repository, objectID ObjectID, reader io.Reader) 
 		}
 
 		if inHeader {
-			inHeader = !(len(line) == 1 && line[0] == '\n') // still in header if line is not just a newline
+			inHeader = len(line) != 1 || line[0] != '\n' // still in header if line is not just a newline
 			k, v, _ := bytes.Cut(line, []byte{' '})
 			if len(k) != 0 || !inHeader {
 				if headerKey != "" {

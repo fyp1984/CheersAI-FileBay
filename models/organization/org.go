@@ -187,7 +187,7 @@ type FindOrgMembersOpts struct {
 }
 
 func (opts FindOrgMembersOpts) PublicOnly() bool {
-	return opts.Doer == nil || !(opts.IsDoerMember || opts.Doer.IsAdmin)
+	return opts.Doer == nil || (!opts.IsDoerMember && !opts.Doer.IsAdmin)
 }
 
 // applyTeamMatesOnlyFilter make sure restricted users only see public team members and there own team mates
@@ -462,7 +462,7 @@ func GetOrgUsersByOrgID(ctx context.Context, opts *FindOrgMembersOpts) ([]*OrgUs
 		opts.applyTeamMatesOnlyFilter(sess)
 	}
 
-	if opts.ListOptions.PageSize > 0 {
+	if opts.PageSize > 0 {
 		sess = db.SetSessionPagination(sess, opts)
 
 		ous := make([]*OrgUser, 0, opts.PageSize)

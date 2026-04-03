@@ -115,7 +115,7 @@ func getFileReader(ctx gocontext.Context, repoID int64, blob *git.Blob) (buf []b
 	}
 	buf = buf[:n]
 	fi.st = typesniffer.DetectContentType(buf)
-	fi.blobOrLfsSize = meta.Pointer.Size
+	fi.blobOrLfsSize = meta.Size
 	fi.lfsMeta = &meta.Pointer
 	return buf, dataRc, fi, nil
 }
@@ -212,7 +212,7 @@ func checkHomeCodeViewable(ctx *context.Context) {
 		}
 
 		var firstUnit *unit_model.Unit
-		for _, repoUnitType := range ctx.Repo.Permission.ReadableUnitTypes() {
+		for _, repoUnitType := range ctx.Repo.ReadableUnitTypes() {
 			if repoUnitType == unit_model.TypeCode {
 				// we are doing this check in "code" unit related pages, so if the code unit is readable, no need to do any further redirection
 				return

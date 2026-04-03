@@ -396,8 +396,9 @@ epiDVQ==
 
 func TestTryGetKeyIDFromSignature(t *testing.T) {
 	assert.Empty(t, TryGetKeyIDFromSignature(&packet.Signature{}))
+	issuerKeyID := uint64(0x38D1A3EADDBEA9C)
 	assert.Equal(t, "038D1A3EADDBEA9C", TryGetKeyIDFromSignature(&packet.Signature{
-		IssuerKeyId: new(uint64(0x38D1A3EADDBEA9C)),
+		IssuerKeyId: &issuerKeyID,
 	}))
 	assert.Equal(t, "038D1A3EADDBEA9C", TryGetKeyIDFromSignature(&packet.Signature{
 		IssuerFingerprint: []uint8{0xb, 0x23, 0x24, 0xc7, 0xe6, 0xfe, 0x4f, 0x3a, 0x6, 0x26, 0xc1, 0x21, 0x3, 0x8d, 0x1a, 0x3e, 0xad, 0xdb, 0xea, 0x9c},
@@ -417,8 +418,9 @@ func TestParseGPGKey(t *testing.T) {
 	assert.NotEmpty(t, k.Emails) // the key is valid, matches the email
 
 	// then revoke the key
+	revocationReason := packet.KeyCompromised
 	for _, id := range e.Identities {
-		id.Revocations = append(id.Revocations, &packet.Signature{RevocationReason: new(packet.KeyCompromised)})
+		id.Revocations = append(id.Revocations, &packet.Signature{RevocationReason: &revocationReason})
 	}
 	k, err = parseGPGKey(t.Context(), 1, e, true)
 	require.NoError(t, err)

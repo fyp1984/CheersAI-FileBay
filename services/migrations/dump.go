@@ -155,7 +155,7 @@ func (g *RepositoryDumper) CreateRepo(ctx context.Context, repo *base.Repository
 		SkipTLSVerify: setting.Migrations.SkipTLSVerify,
 	})
 	if err != nil {
-		return fmt.Errorf("Clone: %w", err)
+		return fmt.Errorf("clone: %w", err)
 	}
 	if err := git.WriteCommitGraph(ctx, repoPath); err != nil {
 		return err
@@ -166,7 +166,7 @@ func (g *RepositoryDumper) CreateRepo(ctx context.Context, repo *base.Repository
 		wikiRemotePath := repository.WikiRemoteURL(ctx, remoteAddr)
 		if len(wikiRemotePath) > 0 {
 			if err := os.MkdirAll(wikiPath, os.ModePerm); err != nil {
-				return fmt.Errorf("Failed to remove %s: %w", wikiPath, err)
+				return fmt.Errorf("failed to create %s: %w", wikiPath, err)
 			}
 
 			if err := git.Clone(ctx, wikiRemotePath, wikiPath, git.CloneRepoOptions{
@@ -178,7 +178,7 @@ func (g *RepositoryDumper) CreateRepo(ctx context.Context, repo *base.Repository
 			}); err != nil {
 				log.Warn("Clone wiki: %v", err)
 				if err := os.RemoveAll(wikiPath); err != nil {
-					return fmt.Errorf("Failed to remove %s: %w", wikiPath, err)
+					return fmt.Errorf("failed to remove %s: %w", wikiPath, err)
 				}
 			} else if err := git.WriteCommitGraph(ctx, wikiPath); err != nil {
 				return err

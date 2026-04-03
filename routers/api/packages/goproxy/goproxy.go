@@ -44,7 +44,7 @@ func EnumeratePackageVersions(ctx *context.Context) {
 	ctx.Resp.Header().Set("Content-Type", "text/plain;charset=utf-8")
 
 	for _, pv := range pvs {
-		fmt.Fprintln(ctx.Resp, pv.Version)
+		_, _ = fmt.Fprintln(ctx.Resp, pv.Version)
 	}
 }
 

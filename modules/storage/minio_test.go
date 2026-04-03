@@ -13,6 +13,7 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 
 	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -110,7 +111,7 @@ func TestMinioCredentials(t *testing.T) {
 			IamEndpoint:     FakeEndpoint,
 		}
 		creds := buildMinioCredentials(cfg)
-		v, err := creds.Get()
+		v, err := creds.GetWithContext(&credentials.CredContext{})
 
 		assert.NoError(t, err)
 		assert.Equal(t, ExpectedAccessKey, v.AccessKeyID)
@@ -127,7 +128,7 @@ func TestMinioCredentials(t *testing.T) {
 			t.Setenv("MINIO_SECRET_KEY", ExpectedSecretAccessKey+"Minio")
 
 			creds := buildMinioCredentials(cfg)
-			v, err := creds.Get()
+			v, err := creds.GetWithContext(&credentials.CredContext{})
 
 			assert.NoError(t, err)
 			assert.Equal(t, ExpectedAccessKey+"Minio", v.AccessKeyID)
@@ -139,7 +140,7 @@ func TestMinioCredentials(t *testing.T) {
 			t.Setenv("AWS_SECRET_KEY", ExpectedSecretAccessKey+"AWS")
 
 			creds := buildMinioCredentials(cfg)
-			v, err := creds.Get()
+			v, err := creds.GetWithContext(&credentials.CredContext{})
 
 			assert.NoError(t, err)
 			assert.Equal(t, ExpectedAccessKey+"AWS", v.AccessKeyID)
@@ -152,7 +153,7 @@ func TestMinioCredentials(t *testing.T) {
 			t.Setenv("AWS_SHARED_CREDENTIALS_FILE", "testdata/fake")
 
 			creds := buildMinioCredentials(cfg)
-			v, err := creds.Get()
+			v, err := creds.GetWithContext(&credentials.CredContext{})
 
 			assert.NoError(t, err)
 			assert.Equal(t, ExpectedAccessKey+"MinioFile", v.AccessKeyID)
@@ -165,7 +166,7 @@ func TestMinioCredentials(t *testing.T) {
 			t.Setenv("AWS_SHARED_CREDENTIALS_FILE", "testdata/aws_credentials")
 
 			creds := buildMinioCredentials(cfg)
-			v, err := creds.Get()
+			v, err := creds.GetWithContext(&credentials.CredContext{})
 
 			assert.NoError(t, err)
 			assert.Equal(t, ExpectedAccessKey+"AWSFile", v.AccessKeyID)
@@ -185,7 +186,7 @@ func TestMinioCredentials(t *testing.T) {
 				// credentials. However, we can return credentials
 				// every request since we're not emulating a full
 				// IMDSv2 flow.
-				w.Write([]byte(`{"Code":"Success","AccessKeyId":"ExampleAccessKeyIDIAM","SecretAccessKey":"ExampleSecretAccessKeyIDIAM"}`))
+				_, _ = w.Write([]byte(`{"Code":"Success","AccessKeyId":"ExampleAccessKeyIDIAM","SecretAccessKey":"ExampleSecretAccessKeyIDIAM"}`))
 			}))
 			defer server.Close()
 
@@ -193,7 +194,7 @@ func TestMinioCredentials(t *testing.T) {
 			creds := buildMinioCredentials(setting.MinioStorageConfig{
 				IamEndpoint: server.URL,
 			})
-			v, err := creds.Get()
+			v, err := creds.GetWithContext(&credentials.CredContext{})
 
 			assert.NoError(t, err)
 			assert.Equal(t, ExpectedAccessKey+"IAM", v.AccessKeyID)

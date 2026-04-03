@@ -131,7 +131,7 @@ func runPushSync(ctx context.Context, m *repo_model.PushMirror) error {
 		remoteURL, err := gitrepo.GitRemoteGetURL(ctx, storageRepo, m.RemoteName)
 		if err != nil {
 			log.Error("GetRemoteURL(%s) Error %v", storageRepo.RelativePath(), err)
-			return errors.New("Unexpected error")
+			return errors.New("unexpected error")
 		}
 
 		if setting.LFS.StartServer {
@@ -140,7 +140,7 @@ func runPushSync(ctx context.Context, m *repo_model.PushMirror) error {
 			gitRepo, err := gitrepo.OpenRepository(ctx, storageRepo)
 			if err != nil {
 				log.Error("OpenRepository: %v", err)
-				return errors.New("Unexpected error")
+				return errors.New("unexpected error")
 			}
 			defer gitRepo.Close()
 

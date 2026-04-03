@@ -364,15 +364,15 @@ func doMergeAndPush(ctx context.Context, pr *issues_model.PullRequest, doer *use
 	// OK we should cache our current head and origin/headbranch
 	mergeHeadSHA, err := git.GetFullCommitID(ctx, mergeCtx.tmpBasePath, "HEAD")
 	if err != nil {
-		return "", fmt.Errorf("Failed to get full commit id for HEAD: %w", err)
+		return "", fmt.Errorf("failed to get full commit id for HEAD: %w", err)
 	}
 	mergeBaseSHA, err := git.GetFullCommitID(ctx, mergeCtx.tmpBasePath, "original_"+tmpRepoBaseBranch)
 	if err != nil {
-		return "", fmt.Errorf("Failed to get full commit id for origin/%s: %w", pr.BaseBranch, err)
+		return "", fmt.Errorf("failed to get full commit id for origin/%s: %w", pr.BaseBranch, err)
 	}
 	mergeCommitID, err := git.GetFullCommitID(ctx, mergeCtx.tmpBasePath, tmpRepoBaseBranch)
 	if err != nil {
-		return "", fmt.Errorf("Failed to get full commit id for the new merge: %w", err)
+		return "", fmt.Errorf("failed to get full commit id for the new merge: %w", err)
 	}
 
 	// Now it's questionable about where this should go - either after or before the push
@@ -565,12 +565,12 @@ func isUserAllowedToMergeInRepoBranch(ctx context.Context, repoID int64, branch 
 // CheckPullBranchProtections checks whether the PR is ready to be merged (reviews and status checks)
 func CheckPullBranchProtections(ctx context.Context, pr *issues_model.PullRequest, skipProtectedFilesCheck bool) (err error) {
 	if err = pr.LoadBaseRepo(ctx); err != nil {
-		return fmt.Errorf("LoadBaseRepo: %w", err)
+		return fmt.Errorf("load base repo: %w", err)
 	}
 
 	pb, err := git_model.GetFirstMatchProtectedBranchRule(ctx, pr.BaseRepoID, pr.BaseBranch)
 	if err != nil {
-		return fmt.Errorf("LoadProtectedBranch: %v", err)
+		return fmt.Errorf("load protected branch: %v", err)
 	}
 	if pb == nil {
 		return nil
@@ -635,13 +635,13 @@ func MergedManually(ctx context.Context, pr *issues_model.PullRequest, doer *use
 
 		objectFormat := git.ObjectFormatFromName(pr.BaseRepo.ObjectFormatName)
 		if len(commitID) != objectFormat.FullLength() {
-			return errors.New("Wrong commit ID")
+			return errors.New("wrong commit ID")
 		}
 
 		commit, err := baseGitRepo.GetCommit(commitID)
 		if err != nil {
 			if git.IsErrNotExist(err) {
-				return errors.New("Wrong commit ID")
+				return errors.New("wrong commit ID")
 			}
 			return err
 		}
@@ -652,14 +652,14 @@ func MergedManually(ctx context.Context, pr *issues_model.PullRequest, doer *use
 			return err
 		}
 		if !ok {
-			return errors.New("Wrong commit ID")
+			return errors.New("wrong commit ID")
 		}
 
 		var merged bool
 		if merged, err = SetMerged(ctx, pr, commitID, timeutil.TimeStamp(commit.Author.When.Unix()), doer, issues_model.PullRequestStatusManuallyMerged); err != nil {
 			return err
 		} else if !merged {
-			return errors.New("SetMerged failed")
+			return errors.New("set merged failed")
 		}
 		return nil
 	})
@@ -677,7 +677,7 @@ func MergedManually(ctx context.Context, pr *issues_model.PullRequest, doer *use
 // SetMerged sets a pull request to merged and closes the corresponding issue
 func SetMerged(ctx context.Context, pr *issues_model.PullRequest, mergedCommitID string, mergedTimeStamp timeutil.TimeStamp, merger *user_model.User, mergeStatus issues_model.PullRequestStatus) (bool, error) {
 	if pr.HasMerged {
-		return false, fmt.Errorf("PullRequest[%d] already merged", pr.Index)
+		return false, fmt.Errorf("pull request[%d] already merged", pr.Index)
 	}
 
 	pr.HasMerged = true
@@ -709,12 +709,12 @@ func SetMerged(ctx context.Context, pr *issues_model.PullRequest, mergedCommitID
 
 		// Removing an auto merge pull and ignore if not exist
 		if err := pull_model.DeleteScheduledAutoMerge(ctx, pr.ID); err != nil && !db.IsErrNotExist(err) {
-			return false, fmt.Errorf("DeleteScheduledAutoMerge[%d]: %v", pr.ID, err)
+			return false, fmt.Errorf("delete scheduled auto merge[%d]: %v", pr.ID, err)
 		}
 
 		// Set issue as closed
 		if _, err := issues_model.SetIssueAsClosed(ctx, pr.Issue, pr.Merger, true); err != nil {
-			return false, fmt.Errorf("ChangeIssueStatus: %w", err)
+			return false, fmt.Errorf("change issue status: %w", err)
 		}
 
 		// We need to save all of the data used to compute this merge as it may have already been changed by checkPullRequestBranchMergeable. FIXME: need to set some state to prevent checkPullRequestBranchMergeable from running whilst we are merging.

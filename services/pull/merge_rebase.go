@@ -40,7 +40,7 @@ func getRebaseAmendMessage(ctx *mergeContext, baseGitRepo *git.Repository) (mess
 func doMergeRebaseFastForward(ctx *mergeContext) error {
 	baseHeadSHA, err := git.GetFullCommitID(ctx, ctx.tmpBasePath, "HEAD")
 	if err != nil {
-		return fmt.Errorf("Failed to get full commit id for HEAD: %w", err)
+		return fmt.Errorf("failed to get full commit id for HEAD: %w", err)
 	}
 
 	cmd := gitcmd.NewCommand("merge", "--ff-only").AddDynamicArguments(tmpRepoStagingBranch)
@@ -52,7 +52,7 @@ func doMergeRebaseFastForward(ctx *mergeContext) error {
 	// Check if anything actually changed before we amend the message, fast forward can skip commits.
 	newMergeHeadSHA, err := git.GetFullCommitID(ctx, ctx.tmpBasePath, "HEAD")
 	if err != nil {
-		return fmt.Errorf("Failed to get full commit id for HEAD: %w", err)
+		return fmt.Errorf("failed to get full commit id for HEAD: %w", err)
 	}
 	if baseHeadSHA == newMergeHeadSHA {
 		return nil

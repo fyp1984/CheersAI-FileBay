@@ -250,7 +250,7 @@ func GetFeeds(ctx context.Context, opts GetFeedsOptions) (ActionList, int64, err
 			count, err = sess.Desc("`action`.created_unix").FindAndCount(&actions)
 		}
 		if err != nil {
-			return nil, 0, fmt.Errorf("FindAndCount: %w", err)
+			return nil, 0, fmt.Errorf("find and count: %w", err)
 		}
 	} else {
 		// First, only query which IDs are necessary, and only then query all actions to speed up the overall query
@@ -259,7 +259,7 @@ func GetFeeds(ctx context.Context, opts GetFeedsOptions) (ActionList, int64, err
 
 		actionIDs := make([]int64, 0, opts.PageSize)
 		if err := sess.Table("action").Desc("`action`.created_unix").Find(&actionIDs); err != nil {
-			return nil, 0, fmt.Errorf("Find(actionsIDs): %w", err)
+			return nil, 0, fmt.Errorf("find action IDs: %w", err)
 		}
 
 		if !opts.DontCount {
@@ -267,17 +267,17 @@ func GetFeeds(ctx context.Context, opts GetFeedsOptions) (ActionList, int64, err
 				Table("action").
 				Cols("`action`.id").Count()
 			if err != nil {
-				return nil, 0, fmt.Errorf("Count: %w", err)
+				return nil, 0, fmt.Errorf("count: %w", err)
 			}
 		}
 
 		if err := db.GetEngine(ctx).In("`action`.id", actionIDs).Desc("`action`.created_unix").Find(&actions); err != nil {
-			return nil, 0, fmt.Errorf("Find: %w", err)
+			return nil, 0, fmt.Errorf("find: %w", err)
 		}
 	}
 
 	if err := ActionList(actions).LoadAttributes(ctx); err != nil {
-		return nil, 0, fmt.Errorf("LoadAttributes: %w", err)
+		return nil, 0, fmt.Errorf("load attributes: %w", err)
 	}
 
 	return actions, count, nil

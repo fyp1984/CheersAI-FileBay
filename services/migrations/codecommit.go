@@ -86,7 +86,7 @@ type CodeCommitDownloader struct {
 // GetRepoInfo returns a repository information
 func (c *CodeCommitDownloader) GetRepoInfo(ctx context.Context) (*base.Repository, error) {
 	output, err := c.codeCommitClient.GetRepository(ctx, &codecommit.GetRepositoryInput{
-		RepositoryName: new(c.repoName),
+		RepositoryName: ptr(c.repoName),
 	})
 	if err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func (c *CodeCommitDownloader) GetComments(ctx context.Context, commentable base
 	for {
 		resp, err := c.codeCommitClient.GetCommentsForPullRequest(ctx, &codecommit.GetCommentsForPullRequestInput{
 			NextToken:     nextToken,
-			PullRequestId: new(strconv.FormatInt(commentable.GetForeignIndex(), 10)),
+			PullRequestId: ptr(strconv.FormatInt(commentable.GetForeignIndex(), 10)),
 		})
 		if err != nil {
 			return nil, false, err
@@ -160,7 +160,7 @@ func (c *CodeCommitDownloader) GetPullRequests(ctx context.Context, page, perPag
 	prs := make([]*base.PullRequest, 0, len(batch))
 	for _, id := range batch {
 		output, err := c.codeCommitClient.GetPullRequest(ctx, &codecommit.GetPullRequestInput{
-			PullRequestId: new(id),
+			PullRequestId: ptr(id),
 		})
 		if err != nil {
 			return nil, false, err
@@ -240,7 +240,7 @@ func (c *CodeCommitDownloader) getAllPullRequestIDs(ctx context.Context) ([]stri
 
 	for {
 		output, err := c.codeCommitClient.ListPullRequests(ctx, &codecommit.ListPullRequestsInput{
-			RepositoryName: new(c.repoName),
+			RepositoryName: ptr(c.repoName),
 			NextToken:      nextToken,
 		})
 		if err != nil {

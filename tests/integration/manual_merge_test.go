@@ -36,9 +36,9 @@ func TestManualMergeAutodetect(t *testing.T) {
 
 		// Enable autodetect manual merge
 		doAPIEditRepository(user2Ctx, &api.EditRepoOption{
-			HasPullRequests:       new(true),
-			AllowManualMerge:      new(true),
-			AutodetectManualMerge: new(true),
+			HasPullRequests:       ptr(true),
+			AllowManualMerge:      ptr(true),
+			AutodetectManualMerge: ptr(true),
 		})(t)
 
 		// Create a PR from a branch

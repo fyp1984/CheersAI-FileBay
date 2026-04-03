@@ -102,8 +102,8 @@ jobs:
 		doTestScheduleUpdate(t, func(t *testing.T, u *url.URL, testContext APITestContext, user *user_model.User, repo *repo_model.Repository) (commitID, expectedSpec string) {
 			// enable manual-merge
 			doAPIEditRepository(testContext, &api.EditRepoOption{
-				HasPullRequests:  new(true),
-				AllowManualMerge: new(true),
+				HasPullRequests:  ptr(true),
+				AllowManualMerge: ptr(true),
 			})(t)
 
 			// update workflow file
@@ -169,7 +169,7 @@ func testScheduleUpdateMirrorSync(t *testing.T) {
 		// enable actions unit for mirror repo
 		assert.False(t, mirrorRepo.UnitEnabled(t.Context(), unit_model.TypeActions))
 		doAPIEditRepository(mirrorContext, &api.EditRepoOption{
-			HasActions: new(true),
+			HasActions: ptr(true),
 		})(t)
 		actionSchedule := unittest.AssertExistsAndLoadBean(t, &actions_model.ActionSchedule{RepoID: mirrorRepo.ID})
 		scheduleSpec := unittest.AssertExistsAndLoadBean(t, &actions_model.ActionScheduleSpec{RepoID: mirrorRepo.ID, ScheduleID: actionSchedule.ID})
@@ -200,11 +200,11 @@ func testScheduleUpdateMirrorSync(t *testing.T) {
 func testScheduleUpdateArchiveAndUnarchive(t *testing.T) {
 	doTestScheduleUpdate(t, func(t *testing.T, u *url.URL, testContext APITestContext, user *user_model.User, repo *repo_model.Repository) (commitID, expectedSpec string) {
 		doAPIEditRepository(testContext, &api.EditRepoOption{
-			Archived: new(true),
+			Archived: ptr(true),
 		})(t)
 		assert.Zero(t, unittest.GetCount(t, &actions_model.ActionSchedule{RepoID: repo.ID}))
 		doAPIEditRepository(testContext, &api.EditRepoOption{
-			Archived: new(false),
+			Archived: ptr(false),
 		})(t)
 		branch, err := git_model.GetBranch(t.Context(), repo.ID, repo.DefaultBranch)
 		assert.NoError(t, err)
@@ -215,11 +215,11 @@ func testScheduleUpdateArchiveAndUnarchive(t *testing.T) {
 func testScheduleUpdateDisableAndEnableActionsUnit(t *testing.T) {
 	doTestScheduleUpdate(t, func(t *testing.T, u *url.URL, testContext APITestContext, user *user_model.User, repo *repo_model.Repository) (commitID, expectedSpec string) {
 		doAPIEditRepository(testContext, &api.EditRepoOption{
-			HasActions: new(false),
+			HasActions: ptr(false),
 		})(t)
 		assert.Zero(t, unittest.GetCount(t, &actions_model.ActionSchedule{RepoID: repo.ID}))
 		doAPIEditRepository(testContext, &api.EditRepoOption{
-			HasActions: new(true),
+			HasActions: ptr(true),
 		})(t)
 		branch, err := git_model.GetBranch(t.Context(), repo.ID, repo.DefaultBranch)
 		assert.NoError(t, err)

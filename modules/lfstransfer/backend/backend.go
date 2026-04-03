@@ -103,7 +103,7 @@ func (g *GiteaBackend) Batch(_ string, pointers []transfer.BatchItem, args trans
 	pointers = pointers[:0]
 	opNum := opMap[g.op]
 	for _, obj := range respBody.Objects {
-		pointer := transfer.Pointer{Oid: obj.Pointer.Oid, Size: obj.Pointer.Size}
+		pointer := transfer.Pointer{Oid: obj.Oid, Size: obj.Size}
 		item := transfer.BatchItem{Pointer: pointer, Args: map[string]string{}}
 		switch opNum {
 		case opDownload:
@@ -126,7 +126,7 @@ func (g *GiteaBackend) Batch(_ string, pointers []transfer.BatchItem, args trans
 				}
 			} else {
 				// must be an error, but the SSH protocol can't propagate individual errors
-				g.logger.Log("object not found", obj.Pointer.Oid, obj.Pointer.Size)
+				g.logger.Log("object not found", obj.Oid, obj.Size)
 				item.Present = false
 			}
 		case opUpload:

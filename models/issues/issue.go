@@ -696,7 +696,7 @@ func (issue *Issue) BlockedByDependencies(ctx context.Context, opts db.ListOptio
 	total, err = sess.FindAndCount(&issueDeps)
 
 	for _, depInfo := range issueDeps {
-		depInfo.Issue.Repo = &depInfo.Repository
+		depInfo.Repo = &depInfo.Repository
 	}
 
 	return issueDeps, total, err
@@ -714,7 +714,7 @@ func (issue *Issue) BlockingDependencies(ctx context.Context) (issueDeps []*Depe
 		Find(&issueDeps)
 
 	for _, depInfo := range issueDeps {
-		depInfo.Issue.Repo = &depInfo.Repository
+		depInfo.Repo = &depInfo.Repository
 	}
 
 	return issueDeps, err

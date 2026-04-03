@@ -23,7 +23,7 @@ func TestFollowLink(t *testing.T) {
 	// get the symlink
 	{
 		lnkFullPath := "foo/bar/link_to_hello"
-		lnk, err := commit.Tree.GetTreeEntryByPath("foo/bar/link_to_hello")
+		lnk, err := commit.GetTreeEntryByPath("foo/bar/link_to_hello")
 		require.NoError(t, err)
 		assert.True(t, lnk.IsLink())
 
@@ -38,7 +38,7 @@ func TestFollowLink(t *testing.T) {
 
 	{
 		// should error when called on a normal file
-		entry, err := commit.Tree.GetTreeEntryByPath("file1.txt")
+		entry, err := commit.GetTreeEntryByPath("file1.txt")
 		require.NoError(t, err)
 		res, err := EntryFollowLink(commit, "file1.txt", entry)
 		assert.ErrorIs(t, err, util.ErrUnprocessableContent)
@@ -47,7 +47,7 @@ func TestFollowLink(t *testing.T) {
 
 	{
 		// should error for broken links
-		entry, err := commit.Tree.GetTreeEntryByPath("foo/broken_link")
+		entry, err := commit.GetTreeEntryByPath("foo/broken_link")
 		require.NoError(t, err)
 		assert.True(t, entry.IsLink())
 		res, err := EntryFollowLink(commit, "foo/broken_link", entry)
@@ -57,7 +57,7 @@ func TestFollowLink(t *testing.T) {
 
 	{
 		// should error for external links
-		entry, err := commit.Tree.GetTreeEntryByPath("foo/outside_repo")
+		entry, err := commit.GetTreeEntryByPath("foo/outside_repo")
 		require.NoError(t, err)
 		assert.True(t, entry.IsLink())
 		res, err := EntryFollowLink(commit, "foo/outside_repo", entry)
@@ -67,7 +67,7 @@ func TestFollowLink(t *testing.T) {
 
 	{
 		// testing fix for short link bug
-		entry, err := commit.Tree.GetTreeEntryByPath("foo/link_short")
+		entry, err := commit.GetTreeEntryByPath("foo/link_short")
 		require.NoError(t, err)
 		res, err := EntryFollowLink(commit, "foo/link_short", entry)
 		assert.ErrorIs(t, err, util.ErrNotExist)

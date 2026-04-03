@@ -123,14 +123,14 @@ func createTemporaryRepoForPR(ctx context.Context, pr *issues_model.PullRequest)
 	if err := addCacheRepo(tmpBasePath, baseRepoPath); err != nil {
 		log.Error("%-v Unable to add base repository to temporary repo [%s -> %s]: %v", pr, pr.BaseRepo.FullName(), tmpBasePath, err)
 		cancel()
-		return nil, nil, fmt.Errorf("Unable to add base repository to temporary repo [%s -> tmpBasePath]: %w", pr.BaseRepo.FullName(), err)
+		return nil, nil, fmt.Errorf("unable to add base repository to temporary repo [%s -> tmpBasePath]: %w", pr.BaseRepo.FullName(), err)
 	}
 
 	if err := prCtx.PrepareGitCmd(gitcmd.NewCommand("remote", "add", "-t").AddDynamicArguments(pr.BaseBranch).AddArguments("-m").AddDynamicArguments(pr.BaseBranch).AddDynamicArguments("origin", baseRepoPath)).
 		RunWithStderr(ctx); err != nil {
 		log.Error("%-v Unable to add base repository as origin [%s -> %s]: %v\n%s\n%s", pr, pr.BaseRepo.FullName(), tmpBasePath, err, prCtx.outbuf.String(), err.Stderr())
 		cancel()
-		return nil, nil, fmt.Errorf("Unable to add base repository as origin [%s -> tmpBasePath]: %w\n%s\n%s", pr.BaseRepo.FullName(), err, prCtx.outbuf.String(), err.Stderr())
+		return nil, nil, fmt.Errorf("unable to add base repository as origin [%s -> tmpBasePath]: %w\n%s\n%s", pr.BaseRepo.FullName(), err, prCtx.outbuf.String(), err.Stderr())
 	}
 
 	if err := prCtx.PrepareGitCmd(gitcmd.NewCommand("fetch", "origin").AddArguments(fetchArgs...).
@@ -138,27 +138,27 @@ func createTemporaryRepoForPR(ctx context.Context, pr *issues_model.PullRequest)
 		RunWithStderr(ctx); err != nil {
 		log.Error("%-v Unable to fetch origin base branch [%s:%s -> base, original_base in %s]: %v:\n%s\n%s", pr, pr.BaseRepo.FullName(), pr.BaseBranch, tmpBasePath, err, prCtx.outbuf.String(), err.Stderr())
 		cancel()
-		return nil, nil, fmt.Errorf("Unable to fetch origin base branch [%s:%s -> base, original_base in tmpBasePath]: %w\n%s\n%s", pr.BaseRepo.FullName(), pr.BaseBranch, err, prCtx.outbuf.String(), err.Stderr())
+		return nil, nil, fmt.Errorf("unable to fetch origin base branch [%s:%s -> base, original_base in tmpBasePath]: %w\n%s\n%s", pr.BaseRepo.FullName(), pr.BaseBranch, err, prCtx.outbuf.String(), err.Stderr())
 	}
 
 	if err := prCtx.PrepareGitCmd(gitcmd.NewCommand("symbolic-ref").AddDynamicArguments("HEAD", git.BranchPrefix+tmpRepoBaseBranch)).
 		RunWithStderr(ctx); err != nil {
 		log.Error("%-v Unable to set HEAD as base branch in [%s]: %v\n%s\n%s", pr, tmpBasePath, err, prCtx.outbuf.String(), err.Stderr())
 		cancel()
-		return nil, nil, fmt.Errorf("Unable to set HEAD as base branch in tmpBasePath: %w\n%s\n%s", err, prCtx.outbuf.String(), err.Stderr())
+		return nil, nil, fmt.Errorf("unable to set HEAD as base branch in tmpBasePath: %w\n%s\n%s", err, prCtx.outbuf.String(), err.Stderr())
 	}
 
 	if err := addCacheRepo(tmpBasePath, headRepoPath); err != nil {
 		log.Error("%-v Unable to add head repository to temporary repo [%s -> %s]: %v", pr, pr.HeadRepo.FullName(), tmpBasePath, err)
 		cancel()
-		return nil, nil, fmt.Errorf("Unable to add head base repository to temporary repo [%s -> tmpBasePath]: %w", pr.HeadRepo.FullName(), err)
+		return nil, nil, fmt.Errorf("unable to add head base repository to temporary repo [%s -> tmpBasePath]: %w", pr.HeadRepo.FullName(), err)
 	}
 
 	if err := prCtx.PrepareGitCmd(gitcmd.NewCommand("remote", "add").AddDynamicArguments(remoteRepoName, headRepoPath)).
 		RunWithStderr(ctx); err != nil {
 		log.Error("%-v Unable to add head repository as head_repo [%s -> %s]: %v\n%s\n%s", pr, pr.HeadRepo.FullName(), tmpBasePath, err, prCtx.outbuf.String(), err.Stderr())
 		cancel()
-		return nil, nil, fmt.Errorf("Unable to add head repository as head_repo [%s -> tmpBasePath]: %w\n%s\n%s", pr.HeadRepo.FullName(), err, prCtx.outbuf.String(), err.Stderr())
+		return nil, nil, fmt.Errorf("unable to add head repository as head_repo [%s -> tmpBasePath]: %w\n%s\n%s", pr.HeadRepo.FullName(), err, prCtx.outbuf.String(), err.Stderr())
 	}
 
 	objectFormat := git.ObjectFormatFromName(pr.BaseRepo.ObjectFormatName)
@@ -180,7 +180,7 @@ func createTemporaryRepoForPR(ctx context.Context, pr *issues_model.PullRequest)
 			}
 		}
 		log.Error("%-v Unable to fetch head_repo head branch [%s:%s -> tracking in %s]: %v:\n%s\n%s", pr, pr.HeadRepo.FullName(), pr.HeadBranch, tmpBasePath, err, prCtx.outbuf.String(), err.Stderr())
-		return nil, nil, fmt.Errorf("Unable to fetch head_repo head branch [%s:%s -> tracking in tmpBasePath]: %w\n%s\n%s", pr.HeadRepo.FullName(), headBranch, err, prCtx.outbuf.String(), err.Stderr())
+		return nil, nil, fmt.Errorf("unable to fetch head_repo head branch [%s:%s -> tracking in tmpBasePath]: %w\n%s\n%s", pr.HeadRepo.FullName(), headBranch, err, prCtx.outbuf.String(), err.Stderr())
 	}
 	prCtx.outbuf.Reset()
 	return prCtx, cancel, nil

@@ -82,7 +82,7 @@ func DeleteRepository(ctx context.Context, repo Repository) error {
 func RenameRepository(ctx context.Context, repo, newRepo Repository) error {
 	dstDir := repoPath(newRepo)
 	if err := os.MkdirAll(filepath.Dir(dstDir), os.ModePerm); err != nil {
-		return fmt.Errorf("Failed to create dir %s: %w", filepath.Dir(dstDir), err)
+		return fmt.Errorf("failed to create dir %s: %w", filepath.Dir(dstDir), err)
 	}
 
 	if err := util.Rename(repoPath(repo), dstDir); err != nil {

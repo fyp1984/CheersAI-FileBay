@@ -312,7 +312,7 @@ func (d *IssuePageMetaData) retrieveReviewersData(ctx *context.Context) {
 			} else {
 				continue
 			}
-			item.CanBeDismissed = ctx.Repo.Permission.IsAdmin() && !isClosed &&
+			item.CanBeDismissed = ctx.Repo.IsAdmin() && !isClosed &&
 				(item.Review.Type == issues_model.ReviewTypeApprove || item.Review.Type == issues_model.ReviewTypeReject)
 			currentPullReviewers = append(currentPullReviewers, item)
 		}

@@ -25,7 +25,7 @@ func InitDBEngine(ctx context.Context) (err error) {
 	for i := 0; i < setting.Database.DBConnectRetries; i++ {
 		select {
 		case <-ctx.Done():
-			return errors.New("Aborted due to shutdown:\nin retry ORM engine initialization")
+			return errors.New("aborted due to shutdown:\nin retry ORM engine initialization")
 		default:
 		}
 		log.Info("ORM engine initialization attempt #%d/%d...", i+1, setting.Database.DBConnectRetries)

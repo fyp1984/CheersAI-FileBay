@@ -92,17 +92,17 @@ func DeleteAttachment(ctx *context.Context) {
 				ctx.ServerError("GetIssueByID", err)
 				return
 			}
-			if !ctx.Repo.Permission.CanWriteIssuesOrPulls(issue.IsPull) {
+			if !ctx.Repo.CanWriteIssuesOrPulls(issue.IsPull) {
 				ctx.HTTPError(http.StatusForbidden)
 				return
 			}
 		} else if attach.ReleaseID > 0 {
-			if !ctx.Repo.Permission.CanWrite(unit.TypeReleases) {
+			if !ctx.Repo.CanWrite(unit.TypeReleases) {
 				ctx.HTTPError(http.StatusForbidden)
 				return
 			}
 		} else {
-			if !ctx.Repo.Permission.IsAdmin() && !ctx.Repo.Permission.IsOwner() {
+			if !ctx.Repo.IsAdmin() && !ctx.Repo.IsOwner() {
 				ctx.HTTPError(http.StatusForbidden)
 				return
 			}
@@ -145,7 +145,7 @@ func ServeAttachment(ctx *context.Context, uuid string) {
 	}
 
 	if unitType == unit.TypeInvalid { // unlinked attachment can only be accessed by the uploader
-		if !(ctx.IsSigned && attach.UploaderID == ctx.Doer.ID) { // We block if not the uploader
+		if !ctx.IsSigned || attach.UploaderID != ctx.Doer.ID { // We block if not the uploader
 			ctx.HTTPError(http.StatusNotFound)
 			return
 		}
@@ -199,7 +199,8 @@ func ServeAttachment(ctx *context.Context, uuid string) {
 	}
 	defer fr.Close()
 
-	common.ServeContentByReadSeeker(ctx.Base, attach.Name, new(attach.CreatedUnix.AsTime()), fr)
+	modTime := attach.CreatedUnix.AsTime()
+	common.ServeContentByReadSeeker(ctx.Base, attach.Name, &modTime, fr)
 }
 
 // GetAttachment serve attachments

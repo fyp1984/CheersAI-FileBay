@@ -16,7 +16,8 @@ import (
 
 func TestHandleGenericETagCache(t *testing.T) {
 	matchedEtag := `"matched-etag"`
-	lastModifiedTime := new(time.Date(2021, time.January, 2, 15, 4, 5, 0, time.FixedZone("test-zone", 8*3600)))
+	lastModifiedTimeValue := time.Date(2021, time.January, 2, 15, 4, 5, 0, time.FixedZone("test-zone", 8*3600))
+	lastModifiedTime := &lastModifiedTimeValue
 	lastModified := lastModifiedTime.UTC().Format(http.TimeFormat)
 	cacheControl := "max-age=0, private, must-revalidate, no-transform"
 	type testCase struct {

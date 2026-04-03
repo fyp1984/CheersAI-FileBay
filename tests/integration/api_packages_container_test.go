@@ -166,7 +166,7 @@ func TestPackageContainer(t *testing.T) {
 
 			readToken = getTokenForLoggedInUser(t, session, auth_model.AccessTokenScopeReadPackage)
 			req := NewRequest(t, "GET", setting.AppURL+"v2/token")
-			req.Request.SetBasicAuth(user.Name, readToken)
+			req.SetBasicAuth(user.Name, readToken)
 			resp := MakeRequest(t, req, http.StatusOK)
 			tokenResponse := &TokenResponse{}
 			DecodeJSON(t, resp, &tokenResponse)
@@ -175,7 +175,7 @@ func TestPackageContainer(t *testing.T) {
 
 			badToken = getTokenForLoggedInUser(t, session, auth_model.AccessTokenScopeReadNotification)
 			req = NewRequest(t, "GET", setting.AppURL+"v2/token")
-			req.Request.SetBasicAuth(user.Name, badToken)
+			req.SetBasicAuth(user.Name, badToken)
 			MakeRequest(t, req, http.StatusUnauthorized)
 
 			testCase := func(scope auth_model.AccessTokenScope, expectedAuthStatus, expectedStatus int) {

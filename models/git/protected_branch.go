@@ -427,14 +427,14 @@ func UpdateProtectBranch(ctx context.Context, repo *repo_model.Repository, prote
 		}
 
 		if _, err = db.GetEngine(ctx).Insert(protectBranch); err != nil {
-			return fmt.Errorf("Insert: %v", err)
+			return fmt.Errorf("insert: %v", err)
 		}
 		return nil
 	}
 
 	// update the rule
 	if _, err = db.GetEngine(ctx).ID(protectBranch.ID).AllCols().Update(protectBranch); err != nil {
-		return fmt.Errorf("Update: %v", err)
+		return fmt.Errorf("update: %v", err)
 	}
 
 	return nil

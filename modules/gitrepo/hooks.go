@@ -131,7 +131,7 @@ func createDelegateHooks(hookDir string) (err error) {
 		}
 
 		if err = ensureExecutable(oldHookPath); err != nil {
-			return fmt.Errorf("Unable to set %s executable. Error %w", oldHookPath, err)
+			return fmt.Errorf("unable to set %s executable: %w", oldHookPath, err)
 		}
 
 		if err = util.Remove(newHookPath); err != nil && !os.IsNotExist(err) {
@@ -142,7 +142,7 @@ func createDelegateHooks(hookDir string) (err error) {
 		}
 
 		if err = ensureExecutable(newHookPath); err != nil {
-			return fmt.Errorf("Unable to set %s executable. Error %w", oldHookPath, err)
+			return fmt.Errorf("unable to set %s executable: %w", newHookPath, err)
 		}
 	}
 

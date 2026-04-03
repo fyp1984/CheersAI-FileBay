@@ -49,13 +49,13 @@ func checkHooks(ctx context.Context, logger log.Logger, autofix bool) error {
 		results, err := gitrepo.CheckDelegateHooks(ctx, repo)
 		if err != nil {
 			logger.Critical("Unable to check delegate hooks for repo %-v. ERROR: %v", repo, err)
-			return fmt.Errorf("Unable to check delegate hooks for repo %-v. ERROR: %w", repo, err)
+			return fmt.Errorf("unable to check delegate hooks for repo %-v: %w", repo, err)
 		}
 		if len(results) > 0 && autofix {
 			logger.Warn("Regenerated hooks for %s", repo.FullName())
 			if err := gitrepo.CreateDelegateHooks(ctx, repo); err != nil {
 				logger.Critical("Unable to recreate delegate hooks for %-v. ERROR: %v", repo, err)
-				return fmt.Errorf("Unable to recreate delegate hooks for %-v. ERROR: %w", repo, err)
+				return fmt.Errorf("unable to recreate delegate hooks for %-v: %w", repo, err)
 			}
 		}
 		for _, result := range results {

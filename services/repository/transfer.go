@@ -154,7 +154,7 @@ func transferOwnership(ctx context.Context, doer *user_model.User, newOwnerName 
 
 	// Check if new owner has repository with same name.
 	if has, err := isRepositoryModelOrDirExist(ctx, newOwner, repo.Name); err != nil {
-		return fmt.Errorf("IsRepositoryExist: %w", err)
+		return fmt.Errorf("is repository exist: %w", err)
 	} else if has {
 		return repo_model.ErrRepoAlreadyExist{
 			Uname: newOwnerName,
@@ -179,7 +179,7 @@ func transferOwnership(ctx context.Context, doer *user_model.User, newOwnerName 
 	// Remove redundant collaborators.
 	collaborators, _, err := repo_model.GetCollaborators(ctx, &repo_model.FindCollaborationOptions{RepoID: repo.ID})
 	if err != nil {
-		return fmt.Errorf("GetCollaborators: %w", err)
+		return fmt.Errorf("get collaborators: %w", err)
 	}
 
 	// Dummy object.
@@ -196,7 +196,7 @@ func transferOwnership(ctx context.Context, doer *user_model.User, newOwnerName 
 		if c.ID != newOwner.ID {
 			isMember, err := organization.IsOrganizationMember(ctx, newOwner.ID, c.ID)
 			if err != nil {
-				return fmt.Errorf("IsOrgMember: %w", err)
+				return fmt.Errorf("is org member: %w", err)
 			} else if !isMember {
 				continue
 			}
@@ -217,27 +217,27 @@ func transferOwnership(ctx context.Context, doer *user_model.User, newOwnerName 
 		// Remove project's issues that belong to old organization's projects
 		projects, err := project_model.GetAllProjectsIDsByOwnerIDAndType(ctx, oldOwner.ID, project_model.TypeOrganization)
 		if err != nil {
-			return fmt.Errorf("Unable to find old org projects: %w", err)
+			return fmt.Errorf("unable to find old org projects: %w", err)
 		}
 		issues, err := issues_model.GetIssueIDsByRepoID(ctx, repo.ID)
 		if err != nil {
-			return fmt.Errorf("Unable to find repo's issues: %w", err)
+			return fmt.Errorf("unable to find repo's issues: %w", err)
 		}
 		err = project_model.DeleteAllProjectIssueByIssueIDsAndProjectIDs(ctx, issues, projects)
 		if err != nil {
-			return fmt.Errorf("Unable to delete project's issues: %w", err)
+			return fmt.Errorf("unable to delete project's issues: %w", err)
 		}
 	}
 
 	if newOwner.IsOrganization() {
 		teams, err := organization.FindOrgTeams(ctx, newOwner.ID)
 		if err != nil {
-			return fmt.Errorf("LoadTeams: %w", err)
+			return fmt.Errorf("load teams: %w", err)
 		}
 		for _, t := range teams {
 			if t.IncludesAllRepositories {
 				if err := addRepositoryToTeam(ctx, t, repo); err != nil {
-					return fmt.Errorf("AddRepository: %w", err)
+					return fmt.Errorf("add repository: %w", err)
 				}
 			}
 		}
@@ -273,7 +273,7 @@ func transferOwnership(ctx context.Context, doer *user_model.User, newOwnerName 
 					WHERE
 						issue.repo_id = ? AND ((label.org_id = 0 AND issue.repo_id != label.repo_id) OR (label.repo_id = 0 AND label.org_id != ?))
 		) AS il_too )`, repo.ID, newOwner.ID); err != nil {
-			return fmt.Errorf("Unable to remove old org labels: %w", err)
+			return fmt.Errorf("unable to remove old org labels: %w", err)
 		}
 
 		if _, err := sess.Exec(`DELETE FROM comment WHERE comment.id IN (
@@ -285,7 +285,7 @@ func transferOwnership(ctx context.Context, doer *user_model.User, newOwnerName 
 					WHERE
 						com.type = ? AND issue.repo_id = ? AND ((label.org_id = 0 AND issue.repo_id != label.repo_id) OR (label.repo_id = 0 AND label.org_id != ?))
 		) AS il_too)`, issues_model.CommentTypeLabel, repo.ID, newOwner.ID); err != nil {
-			return fmt.Errorf("Unable to remove old org label comments: %w", err)
+			return fmt.Errorf("unable to remove old org label comments: %w", err)
 		}
 	}
 
@@ -353,7 +353,7 @@ func changeRepositoryName(ctx context.Context, repo *repo_model.Repository, newR
 
 	has, err := isRepositoryModelOrDirExist(ctx, repo.Owner, newRepoName)
 	if err != nil {
-		return fmt.Errorf("IsRepositoryExist: %w", err)
+		return fmt.Errorf("is repository exist: %w", err)
 	} else if has {
 		return repo_model.ErrRepoAlreadyExist{
 			Uname: repo.OwnerName,

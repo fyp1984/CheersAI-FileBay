@@ -38,7 +38,7 @@ func initGlobalRunnerToken(ctx context.Context) error {
 	}
 
 	if len(token) < 32 {
-		return errors.New("GITEA_RUNNER_REGISTRATION_TOKEN must be at least 32 random characters")
+		return errors.New("runner registration token must be at least 32 random characters")
 	}
 
 	existing, err := actions_model.GetRunnerToken(ctx, token)

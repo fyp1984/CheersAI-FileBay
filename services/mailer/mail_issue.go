@@ -65,7 +65,7 @@ func mailIssueCommentToParticipants(ctx context.Context, comment *mailComment, m
 
 	// =========== Repo watchers ===========
 	// Make repo watchers last, since it's likely the list with the most users
-	if !(comment.Issue.IsPull && comment.Issue.PullRequest.IsWorkInProgress(ctx) && comment.ActionType != activities_model.ActionCreatePullRequest) {
+	if !comment.Issue.IsPull || !comment.Issue.PullRequest.IsWorkInProgress(ctx) || comment.ActionType == activities_model.ActionCreatePullRequest {
 		ids, err = repo_model.GetRepoWatchersIDs(ctx, comment.Issue.RepoID)
 		if err != nil {
 			return fmt.Errorf("GetRepoWatchersIDs(%d): %w", comment.Issue.RepoID, err)
@@ -117,9 +117,8 @@ func mailIssueCommentBatch(ctx context.Context, comment *mailComment, users []*u
 		}
 		// At this point we exclude:
 		// user that don't have all mails enabled or users only get mail on mention and this is one ...
-		if !(user.EmailNotificationsPreference == user_model.EmailNotificationsEnabled ||
-			user.EmailNotificationsPreference == user_model.EmailNotificationsAndYourOwn ||
-			fromMention && user.EmailNotificationsPreference == user_model.EmailNotificationsOnMention) {
+		if user.EmailNotificationsPreference != user_model.EmailNotificationsEnabled &&
+			user.EmailNotificationsPreference != user_model.EmailNotificationsAndYourOwn && (!fromMention || user.EmailNotificationsPreference != user_model.EmailNotificationsOnMention) {
 			continue
 		}
 

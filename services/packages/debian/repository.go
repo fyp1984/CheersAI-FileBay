@@ -220,18 +220,18 @@ func buildPackagesIndices(ctx context.Context, ownerID int64, repoVersion *packa
 	}
 	for _, pfd := range pfds {
 		if addSeparator {
-			fmt.Fprintln(w)
+			_, _ = fmt.Fprintln(w)
 		}
 		addSeparator = true
 
-		fmt.Fprintf(w, "%s\n", strings.TrimSpace(pfd.Properties.GetByName(debian_module.PropertyControl)))
+		_, _ = fmt.Fprintf(w, "%s\n", strings.TrimSpace(pfd.Properties.GetByName(debian_module.PropertyControl)))
 
-		fmt.Fprintf(w, "Filename: pool/%s/%s/%s\n", distribution, component, pfd.File.Name)
-		fmt.Fprintf(w, "Size: %d\n", pfd.Blob.Size)
-		fmt.Fprintf(w, "MD5sum: %s\n", pfd.Blob.HashMD5)
-		fmt.Fprintf(w, "SHA1: %s\n", pfd.Blob.HashSHA1)
-		fmt.Fprintf(w, "SHA256: %s\n", pfd.Blob.HashSHA256)
-		fmt.Fprintf(w, "SHA512: %s\n", pfd.Blob.HashSHA512)
+		_, _ = fmt.Fprintf(w, "Filename: pool/%s/%s/%s\n", distribution, component, pfd.File.Name)
+		_, _ = fmt.Fprintf(w, "Size: %d\n", pfd.Blob.Size)
+		_, _ = fmt.Fprintf(w, "MD5sum: %s\n", pfd.Blob.HashMD5)
+		_, _ = fmt.Fprintf(w, "SHA1: %s\n", pfd.Blob.HashSHA1)
+		_, _ = fmt.Fprintf(w, "SHA256: %s\n", pfd.Blob.HashSHA256)
+		_, _ = fmt.Fprintf(w, "SHA512: %s\n", pfd.Blob.HashSHA512)
 	}
 	gzw.Close()
 	xzw.Close()
@@ -344,14 +344,14 @@ func buildReleaseFiles(ctx context.Context, ownerID int64, repoVersion *packages
 
 	w := io.MultiWriter(sw, &buf)
 
-	fmt.Fprintf(w, "Origin: %s\n", setting.AppName)
-	fmt.Fprintf(w, "Label: %s\n", setting.AppName)
-	fmt.Fprintf(w, "Suite: %s\n", distribution)
-	fmt.Fprintf(w, "Codename: %s\n", distribution)
-	fmt.Fprintf(w, "Components: %s\n", strings.Join(components, " "))
-	fmt.Fprintf(w, "Architectures: %s\n", strings.Join(architectures, " "))
-	fmt.Fprintf(w, "Date: %s\n", time.Now().UTC().Format(time.RFC1123))
-	fmt.Fprint(w, "Acquire-By-Hash: yes\n")
+	_, _ = fmt.Fprintf(w, "Origin: %s\n", setting.AppName)
+	_, _ = fmt.Fprintf(w, "Label: %s\n", setting.AppName)
+	_, _ = fmt.Fprintf(w, "Suite: %s\n", distribution)
+	_, _ = fmt.Fprintf(w, "Codename: %s\n", distribution)
+	_, _ = fmt.Fprintf(w, "Components: %s\n", strings.Join(components, " "))
+	_, _ = fmt.Fprintf(w, "Architectures: %s\n", strings.Join(architectures, " "))
+	_, _ = fmt.Fprintf(w, "Date: %s\n", time.Now().UTC().Format(time.RFC1123))
+	_, _ = fmt.Fprint(w, "Acquire-By-Hash: yes\n")
 
 	pfds, err := packages_model.GetPackageFileDescriptors(ctx, pfs)
 	if err != nil {
@@ -361,20 +361,20 @@ func buildReleaseFiles(ctx context.Context, ownerID int64, repoVersion *packages
 	var md5, sha1, sha256, sha512 strings.Builder
 	for _, pfd := range pfds {
 		path := fmt.Sprintf("%s/binary-%s/%s", pfd.Properties.GetByName(debian_module.PropertyComponent), pfd.Properties.GetByName(debian_module.PropertyArchitecture), pfd.File.Name)
-		fmt.Fprintf(&md5, " %s %d %s\n", pfd.Blob.HashMD5, pfd.Blob.Size, path)
-		fmt.Fprintf(&sha1, " %s %d %s\n", pfd.Blob.HashSHA1, pfd.Blob.Size, path)
-		fmt.Fprintf(&sha256, " %s %d %s\n", pfd.Blob.HashSHA256, pfd.Blob.Size, path)
-		fmt.Fprintf(&sha512, " %s %d %s\n", pfd.Blob.HashSHA512, pfd.Blob.Size, path)
+		_, _ = fmt.Fprintf(&md5, " %s %d %s\n", pfd.Blob.HashMD5, pfd.Blob.Size, path)
+		_, _ = fmt.Fprintf(&sha1, " %s %d %s\n", pfd.Blob.HashSHA1, pfd.Blob.Size, path)
+		_, _ = fmt.Fprintf(&sha256, " %s %d %s\n", pfd.Blob.HashSHA256, pfd.Blob.Size, path)
+		_, _ = fmt.Fprintf(&sha512, " %s %d %s\n", pfd.Blob.HashSHA512, pfd.Blob.Size, path)
 	}
 
-	fmt.Fprintln(w, "MD5Sum:")
-	fmt.Fprint(w, md5.String())
-	fmt.Fprintln(w, "SHA1:")
-	fmt.Fprint(w, sha1.String())
-	fmt.Fprintln(w, "SHA256:")
-	fmt.Fprint(w, sha256.String())
-	fmt.Fprintln(w, "SHA512:")
-	fmt.Fprint(w, sha512.String())
+	_, _ = fmt.Fprintln(w, "MD5Sum:")
+	_, _ = fmt.Fprint(w, md5.String())
+	_, _ = fmt.Fprintln(w, "SHA1:")
+	_, _ = fmt.Fprint(w, sha1.String())
+	_, _ = fmt.Fprintln(w, "SHA256:")
+	_, _ = fmt.Fprint(w, sha256.String())
+	_, _ = fmt.Fprintln(w, "SHA512:")
+	_, _ = fmt.Fprint(w, sha512.String())
 
 	sw.Close()
 

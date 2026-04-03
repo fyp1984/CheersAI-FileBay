@@ -107,7 +107,7 @@ func ReconsiderRepoIssuesAssignee(ctx context.Context, repo *repo_model.Reposito
 	if _, err := db.GetEngine(ctx).Where(builder.Eq{"assignee_id": user.ID}).
 		In("issue_id", builder.Select("id").From("issue").Where(builder.Eq{"repo_id": repo.ID})).
 		Delete(&issues_model.IssueAssignees{}); err != nil {
-		return fmt.Errorf("Could not delete assignee[%d] %w", user.ID, err)
+		return fmt.Errorf("could not delete assignee[%d]: %w", user.ID, err)
 	}
 	return nil
 }

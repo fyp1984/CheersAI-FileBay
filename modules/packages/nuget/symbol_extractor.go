@@ -74,7 +74,7 @@ func ExtractPortablePdb(r io.ReaderAt, size int64) (PortablePdbList, error) {
 				id, err := ParseDebugHeaderID(buf)
 				if err != nil {
 					_ = buf.Close()
-					return fmt.Errorf("Invalid PDB file: %w", err)
+					return fmt.Errorf("invalid PDB file: %w", err)
 				}
 
 				if _, err := buf.Seek(0, io.SeekStart); err != nil {

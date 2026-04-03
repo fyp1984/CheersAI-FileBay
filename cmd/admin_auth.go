@@ -79,11 +79,11 @@ func runListAuth(ctx context.Context, c *cli.Command) error {
 
 	// loop through each source and print
 	w := tabwriter.NewWriter(os.Stdout, c.Int("min-width"), c.Int("tab-width"), c.Int("padding"), padChar, flags)
-	fmt.Fprintf(w, "ID\tName\tType\tEnabled\n")
+	_, _ = fmt.Fprintf(w, "ID\tName\tType\tEnabled\n")
 	for _, source := range authSources {
-		fmt.Fprintf(w, "%d\t%s\t%s\t%t\n", source.ID, source.Name, source.Type.String(), source.IsActive)
+		_, _ = fmt.Fprintf(w, "%d\t%s\t%s\t%t\n", source.ID, source.Name, source.Type.String(), source.IsActive)
 	}
-	w.Flush()
+	_ = w.Flush()
 
 	return nil
 }

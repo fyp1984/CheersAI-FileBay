@@ -123,15 +123,15 @@ func readArmoredSign(r io.Reader) (body io.Reader, err error) {
 func ExtractSignature(s string) (*packet.Signature, error) {
 	r, err := readArmoredSign(strings.NewReader(s))
 	if err != nil {
-		return nil, errors.New("Failed to read signature armor")
+		return nil, errors.New("failed to read signature armor")
 	}
 	p, err := packet.Read(r)
 	if err != nil {
-		return nil, errors.New("Failed to read signature packet")
+		return nil, errors.New("failed to read signature packet")
 	}
 	sig, ok := p.(*packet.Signature)
 	if !ok {
-		return nil, errors.New("Packet is not a signature")
+		return nil, errors.New("packet is not a signature")
 	}
 	return sig, nil
 }

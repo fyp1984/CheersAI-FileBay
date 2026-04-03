@@ -33,7 +33,7 @@ func Run(ctx context.Context, t *admin_model.Task) error {
 	case structs.TaskTypeMigrateRepo:
 		return runMigrateTask(ctx, t)
 	default:
-		return fmt.Errorf("Unknown task type: %d", t.Type)
+		return fmt.Errorf("unknown task type: %d", t.Type)
 	}
 }
 

@@ -130,7 +130,7 @@ func ListMyRepos(ctx *context.APIContext) {
 		results[i] = convert.ToRepo(ctx, repo, permission)
 	}
 
-	ctx.SetLinkHeader(count, opts.ListOptions.PageSize)
+	ctx.SetLinkHeader(count, opts.PageSize)
 	ctx.SetTotalCountHeader(count)
 	ctx.JSON(http.StatusOK, &results)
 }

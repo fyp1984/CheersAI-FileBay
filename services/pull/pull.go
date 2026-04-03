@@ -332,7 +332,7 @@ func ChangeTargetBranch(ctx context.Context, pr *issues_model.PullRequest, doer 
 			NewRef: targetBranch,
 		}
 		if _, err = issues_model.CreateComment(ctx, options); err != nil {
-			return fmt.Errorf("CreateChangeTargetBranchComment: %w", err)
+			return fmt.Errorf("create change target branch comment: %w", err)
 		}
 
 		// Delete all old push comments and insert new push comments
@@ -351,7 +351,7 @@ func ChangeTargetBranch(ctx context.Context, pr *issues_model.PullRequest, doer 
 func checkForInvalidation(ctx context.Context, requests issues_model.PullRequestList, repoID int64, doer *user_model.User, branch string) error {
 	repo, err := repo_model.GetRepositoryByID(ctx, repoID)
 	if err != nil {
-		return fmt.Errorf("GetRepositoryByIDCtx: %w", err)
+		return fmt.Errorf("get repository by ID from context: %w", err)
 	}
 	gitRepo, err := gitrepo.OpenRepository(ctx, repo)
 	if err != nil {
@@ -516,7 +516,7 @@ func checkIfPRContentChanged(ctx context.Context, pr *issues_model.PullRequest, 
 
 	mergeBase, err = gitrepo.MergeBase(ctx, pr.BaseRepo, pr.BaseBranch, pr.GetGitHeadRefName())
 	if err != nil {
-		return false, "", fmt.Errorf("GetMergeBase: %w", err)
+		return false, "", fmt.Errorf("get merge base: %w", err)
 	}
 
 	cmd := gitcmd.NewCommand("diff", "--name-only", "-z").AddDynamicArguments(newCommitID, oldCommitID, mergeBase)
@@ -537,7 +537,7 @@ func checkIfPRContentChanged(ctx context.Context, pr *issues_model.PullRequest, 
 			pr.ID, pr.BaseRepo.FullName(), pr.BaseBranch, pr.HeadRepo.FullName(), pr.HeadBranch,
 			err)
 
-		return false, mergeBase, fmt.Errorf("Unable to run git diff --name-only -z %s %s %s: %w", newCommitID, oldCommitID, mergeBase, err)
+		return false, mergeBase, fmt.Errorf("unable to run git diff --name-only -z %s %s %s: %w", newCommitID, oldCommitID, mergeBase, err)
 	}
 
 	return false, mergeBase, nil
@@ -596,7 +596,7 @@ func pushToBaseRepoHelper(ctx context.Context, pr *issues_model.PullRequest, pre
 			return err
 		}
 		log.Error("Unable to push PR head for %s#%d (%-v:%s) due to Error: %v", pr.BaseRepo.FullName(), pr.Index, pr.BaseRepo, gitRefName, err)
-		return fmt.Errorf("Push: %s:%s %s:%s %w", pr.HeadRepo.FullName(), pr.HeadBranch, pr.BaseRepo.FullName(), gitRefName, err)
+		return fmt.Errorf("push %s:%s %s:%s: %w", pr.HeadRepo.FullName(), pr.HeadBranch, pr.BaseRepo.FullName(), gitRefName, err)
 	}
 
 	return nil

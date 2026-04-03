@@ -84,7 +84,7 @@ func GetCollaborators(ctx context.Context, opts *FindCollaborationOptions) ([]*C
 
 	usersMap := make(map[int64]*user_model.User)
 	if err := db.GetEngine(ctx).In("id", userIDs).Find(&usersMap); err != nil {
-		return nil, 0, fmt.Errorf("Find users map by user ids: %w", err)
+		return nil, 0, fmt.Errorf("find users map by user ids: %w", err)
 	}
 
 	for _, c := range collaborations {

@@ -133,7 +133,7 @@ func getPinnedIssuesMaxPinOrder(ctx context.Context, repoID int64, isPull bool) 
 // MovePin moves a Pinned Issue to a new Position
 func MovePin(ctx context.Context, issue *Issue, newPosition int) error {
 	if newPosition < 1 {
-		return errors.New("The Position can't be lower than 1")
+		return errors.New("the position can't be lower than 1")
 	}
 
 	issuePin, err := GetIssuePin(ctx, issue)

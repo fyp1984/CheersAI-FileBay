@@ -431,13 +431,13 @@ func prepareNewPullRequestTitleContent(ci *git_service.CompareInfo, commits []*g
 	if len(commits) > 0 {
 		// the "commits" are from "ShowPrettyFormatLogToList", which is ordered from newest to oldest, here take the oldest one
 		c := commits[len(commits)-1]
-		title = strings.TrimSpace(c.UserCommit.Summary())
+		title = strings.TrimSpace(c.Summary())
 	}
 
 	if len(commits) == 1 {
 		// FIXME: GIT-COMMIT-MESSAGE-ENCODING: try to convert the encoding for commit message explicitly, ideally it should be done by a git commit struct method
 		c := commits[0]
-		_, content, _ = strings.Cut(strings.TrimSpace(c.UserCommit.CommitMessage), "\n")
+		_, content, _ = strings.Cut(strings.TrimSpace(c.CommitMessage), "\n")
 		content = strings.TrimSpace(content)
 		content = string(charset.ToUTF8([]byte(content), charset.ConvertOpts{}))
 	}
@@ -783,7 +783,7 @@ func ExcerptBlob(ctx *context.Context) {
 		ctx.ServerError("GetCommit", err)
 		return
 	}
-	blob, err := commit.Tree.GetBlobByPath(filePath)
+	blob, err := commit.GetBlobByPath(filePath)
 	if err != nil {
 		ctx.ServerError("GetBlobByPath", err)
 		return
