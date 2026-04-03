@@ -8,7 +8,6 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/base64"
-	"math/big"
 	"testing"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -54,8 +53,12 @@ func TestECDSASigningKeyToJWK(t *testing.T) {
 
 			// Verify the decoded coordinates reconstruct the original public key point
 			pubKey := privKey.Public().(*ecdsa.PublicKey)
-			assert.Equal(t, 0, new(big.Int).SetBytes(xBytes).Cmp(pubKey.X))
-			assert.Equal(t, 0, new(big.Int).SetBytes(yBytes).Cmp(pubKey.Y))
+			pubKeyBytes, err := pubKey.Bytes()
+			require.NoError(t, err)
+			require.Len(t, pubKeyBytes, 1+tc.coordLen*2)
+			assert.Equal(t, byte(4), pubKeyBytes[0])
+			assert.Equal(t, xBytes, pubKeyBytes[1:1+tc.coordLen])
+			assert.Equal(t, yBytes, pubKeyBytes[1+tc.coordLen:])
 		})
 	}
 }

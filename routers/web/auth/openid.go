@@ -55,13 +55,13 @@ func allowedOpenIDURI(uri string) (err error) {
 			}
 		}
 		// must match one of this or be refused
-		return errors.New("URI not allowed by whitelist")
+		return errors.New("uri not allowed by whitelist")
 	}
 
 	// A blacklist match expliclty forbids
 	for _, pat := range setting.Service.OpenIDBlacklist {
 		if pat.MatchString(uri) {
-			return errors.New("URI forbidden by blacklist")
+			return errors.New("uri forbidden by blacklist")
 		}
 	}
 

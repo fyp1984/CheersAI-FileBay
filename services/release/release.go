@@ -260,7 +260,7 @@ func UpdateRelease(ctx context.Context, doer *user_model.User, gitRepo *git.Repo
 	addAttachmentUUIDs, delAttachmentUUIDs []string, editAttachments map[string]string,
 ) error {
 	if rel.ID == 0 {
-		return errors.New("UpdateRelease only accepts an exist release")
+		return errors.New("update release only accepts an existing release")
 	}
 	isTagCreated, err := createTag(ctx, gitRepo, rel, "")
 	if err != nil {
@@ -390,23 +390,23 @@ func DeleteReleaseByID(ctx context.Context, repo *repo_model.Repository, rel *re
 		notify_service.DeleteRef(ctx, doer, repo, refName)
 
 		if _, err := db.DeleteByID[repo_model.Release](ctx, rel.ID); err != nil {
-			return fmt.Errorf("DeleteReleaseByID: %w", err)
+			return fmt.Errorf("delete release by ID: %w", err)
 		}
 	} else {
 		rel.IsTag = true
 
 		if err := repo_model.UpdateRelease(ctx, rel); err != nil {
-			return fmt.Errorf("Update: %w", err)
+			return fmt.Errorf("update: %w", err)
 		}
 	}
 
 	rel.Repo = repo
 	if err := rel.LoadAttributes(ctx); err != nil {
-		return fmt.Errorf("LoadAttributes: %w", err)
+		return fmt.Errorf("load attributes: %w", err)
 	}
 
 	if err := repo_model.DeleteAttachmentsByRelease(ctx, rel.ID); err != nil {
-		return fmt.Errorf("DeleteAttachments: %w", err)
+		return fmt.Errorf("delete attachments: %w", err)
 	}
 
 	for i := range rel.Attachments {

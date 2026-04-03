@@ -72,9 +72,9 @@ func TestAPIReposGitCommitList(t *testing.T) {
 	DecodeJSON(t, resp, &apiData)
 
 	assert.Len(t, apiData, 2)
-	assert.Equal(t, "cfe3b3c1fd36fba04f9183287b106497e1afe986", apiData[0].CommitMeta.SHA)
+	assert.Equal(t, "cfe3b3c1fd36fba04f9183287b106497e1afe986", apiData[0].SHA)
 	compareCommitFiles(t, []string{"link_hi", "test.csv"}, apiData[0].Files)
-	assert.Equal(t, "c8e31bc7688741a5287fcde4fbb8fc129ca07027", apiData[1].CommitMeta.SHA)
+	assert.Equal(t, "c8e31bc7688741a5287fcde4fbb8fc129ca07027", apiData[1].SHA)
 	compareCommitFiles(t, []string{"test.csv"}, apiData[1].Files)
 
 	assert.Equal(t, "2", resp.Header().Get("X-Total"))
@@ -96,11 +96,11 @@ func TestAPIReposGitCommitListNotMaster(t *testing.T) {
 	DecodeJSON(t, resp, &apiData)
 
 	assert.Len(t, apiData, 3)
-	assert.Equal(t, "69554a64c1e6030f051e5c3f94bfbd773cd6a324", apiData[0].CommitMeta.SHA)
+	assert.Equal(t, "69554a64c1e6030f051e5c3f94bfbd773cd6a324", apiData[0].SHA)
 	compareCommitFiles(t, []string{"readme.md"}, apiData[0].Files)
-	assert.Equal(t, "27566bd5738fc8b4e3fef3c5e72cce608537bd95", apiData[1].CommitMeta.SHA)
+	assert.Equal(t, "27566bd5738fc8b4e3fef3c5e72cce608537bd95", apiData[1].SHA)
 	compareCommitFiles(t, []string{"readme.md"}, apiData[1].Files)
-	assert.Equal(t, "5099b81332712fe655e34e8dd63574f503f61811", apiData[2].CommitMeta.SHA)
+	assert.Equal(t, "5099b81332712fe655e34e8dd63574f503f61811", apiData[2].SHA)
 	compareCommitFiles(t, []string{"readme.md"}, apiData[2].Files)
 
 	assert.Equal(t, "3", resp.Header().Get("X-Total"))
@@ -140,7 +140,7 @@ func TestAPIReposGitCommitListDifferentBranch(t *testing.T) {
 	DecodeJSON(t, resp, &apiData)
 
 	assert.Len(t, apiData, 1)
-	assert.Equal(t, "f27c2b2b03dcab38beaf89b0ab4ff61f6de63441", apiData[0].CommitMeta.SHA)
+	assert.Equal(t, "f27c2b2b03dcab38beaf89b0ab4ff61f6de63441", apiData[0].SHA)
 	compareCommitFiles(t, []string{"readme.md"}, apiData[0].Files)
 }
 
@@ -160,7 +160,7 @@ func TestAPIReposGitCommitListWithoutSelectFields(t *testing.T) {
 	DecodeJSON(t, resp, &apiData)
 
 	assert.Len(t, apiData, 1)
-	assert.Equal(t, "f27c2b2b03dcab38beaf89b0ab4ff61f6de63441", apiData[0].CommitMeta.SHA)
+	assert.Equal(t, "f27c2b2b03dcab38beaf89b0ab4ff61f6de63441", apiData[0].SHA)
 	assert.Equal(t, (*api.CommitStats)(nil), apiData[0].Stats)
 	assert.Equal(t, (*api.PayloadCommitVerification)(nil), apiData[0].RepoCommit.Verification)
 	assert.Equal(t, ([]*api.CommitAffectedFiles)(nil), apiData[0].Files)
@@ -205,7 +205,7 @@ func TestGetFileHistory(t *testing.T) {
 	DecodeJSON(t, resp, &apiData)
 
 	assert.Len(t, apiData, 1)
-	assert.Equal(t, "f27c2b2b03dcab38beaf89b0ab4ff61f6de63441", apiData[0].CommitMeta.SHA)
+	assert.Equal(t, "f27c2b2b03dcab38beaf89b0ab4ff61f6de63441", apiData[0].SHA)
 	compareCommitFiles(t, []string{"readme.md"}, apiData[0].Files)
 
 	assert.Equal(t, "1", resp.Header().Get("X-Total"))
@@ -226,7 +226,7 @@ func TestGetFileHistoryNotOnMaster(t *testing.T) {
 	DecodeJSON(t, resp, &apiData)
 
 	assert.Len(t, apiData, 1)
-	assert.Equal(t, "c8e31bc7688741a5287fcde4fbb8fc129ca07027", apiData[0].CommitMeta.SHA)
+	assert.Equal(t, "c8e31bc7688741a5287fcde4fbb8fc129ca07027", apiData[0].SHA)
 	compareCommitFiles(t, []string{"test.csv"}, apiData[0].Files)
 
 	assert.Equal(t, "1", resp.Header().Get("X-Total"))

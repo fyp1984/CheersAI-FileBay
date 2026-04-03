@@ -14,3 +14,8 @@ log/
 indexers/
 queues/
 *.test
+modules/migration/bindata.dat
+modules/options/bindata.dat
+modules/public/bindata.dat
+modules/templates/bindata.dat
+public/assets/licenses.txt

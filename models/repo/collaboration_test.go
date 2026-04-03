@@ -25,7 +25,7 @@ func TestRepository_GetCollaborators(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, collaborators, int(expectedLen))
 		for _, collaborator := range collaborators {
-			assert.Equal(t, collaborator.User.ID, collaborator.Collaboration.UserID)
+			assert.Equal(t, collaborator.ID, collaborator.Collaboration.UserID)
 			assert.Equal(t, repoID, collaborator.Collaboration.RepoID)
 		}
 	}

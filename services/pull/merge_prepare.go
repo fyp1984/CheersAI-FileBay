@@ -140,7 +140,7 @@ func prepareTemporaryRepoForMerge(ctx *mergeContext) error {
 	infoPath := filepath.Join(ctx.tmpBasePath, ".git", "info")
 	if err := os.MkdirAll(infoPath, 0o700); err != nil {
 		log.Error("%-v Unable to create .git/info in %s: %v", ctx.pr, ctx.tmpBasePath, err)
-		return fmt.Errorf("Unable to create .git/info in tmpBasePath: %w", err)
+		return fmt.Errorf("unable to create .git/info in tmpBasePath: %w", err)
 	}
 
 	// Enable sparse-checkout
@@ -148,7 +148,7 @@ func prepareTemporaryRepoForMerge(ctx *mergeContext) error {
 	sparseCheckoutListFile, err := os.OpenFile(filepath.Join(infoPath, "sparse-checkout"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		log.Error("%-v Unable to write .git/info/sparse-checkout file in %s: %v", ctx.pr, ctx.tmpBasePath, err)
-		return fmt.Errorf("Unable to write .git/info/sparse-checkout file in tmpBasePath: %w", err)
+		return fmt.Errorf("unable to write .git/info/sparse-checkout file in tmpBasePath: %w", err)
 	}
 	defer sparseCheckoutListFile.Close() // we will close it earlier but we need to ensure it is closed if there is an error
 
@@ -159,7 +159,7 @@ func prepareTemporaryRepoForMerge(ctx *mergeContext) error {
 
 	if err := sparseCheckoutListFile.Close(); err != nil {
 		log.Error("%-v Unable to close .git/info/sparse-checkout file in %s: %v", ctx.pr, ctx.tmpBasePath, err)
-		return fmt.Errorf("Unable to close .git/info/sparse-checkout file in tmpBasePath: %w", err)
+		return fmt.Errorf("unable to close .git/info/sparse-checkout file in tmpBasePath: %w", err)
 	}
 
 	setConfig := func(key, value string) error {
@@ -197,7 +197,7 @@ func prepareTemporaryRepoForMerge(ctx *mergeContext) error {
 	if err := ctx.PrepareGitCmd(gitcmd.NewCommand("read-tree", "HEAD")).
 		RunWithStderr(ctx); err != nil {
 		log.Error("git read-tree HEAD: %v\n%s\n%s", err, ctx.outbuf.String(), err.Stderr())
-		return fmt.Errorf("Unable to read base branch in to the index: %w\n%s\n%s", err, ctx.outbuf.String(), err.Stderr())
+		return fmt.Errorf("unable to read base branch into the index: %w\n%s\n%s", err, ctx.outbuf.String(), err.Stderr())
 	}
 	ctx.outbuf.Reset()
 	return nil

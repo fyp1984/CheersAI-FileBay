@@ -13,7 +13,7 @@ import (
 )
 
 // ErrInvalidReceiveHook FIXME
-var ErrInvalidReceiveHook = errors.New("Invalid JSON payload received over webhook")
+var ErrInvalidReceiveHook = errors.New("invalid JSON payload received over webhook")
 
 // Hook a hook is a web hook when one repository changed
 type Hook struct {

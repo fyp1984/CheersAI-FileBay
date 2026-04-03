@@ -460,7 +460,7 @@ func PushUpdateDeleteTags(ctx context.Context, repo *Repository, tags []string) 
 		Where("repo_id = ? AND is_tag = ?", repo.ID, true).
 		In("lower_tag_name", lowerTags).
 		Delete(new(Release)); err != nil {
-		return fmt.Errorf("Delete: %w", err)
+		return fmt.Errorf("delete: %w", err)
 	}
 
 	if _, err := db.GetEngine(ctx).
@@ -470,7 +470,7 @@ func PushUpdateDeleteTags(ctx context.Context, repo *Repository, tags []string) 
 		Update(&Release{
 			IsDraft: true,
 		}); err != nil {
-		return fmt.Errorf("Update: %w", err)
+		return fmt.Errorf("update: %w", err)
 	}
 
 	return nil

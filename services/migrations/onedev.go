@@ -192,7 +192,7 @@ func (d *OneDevDownloader) GetRepoInfo(ctx context.Context) (*base.Repository, e
 		return nil, err
 	}
 	if len(info) != 1 {
-		return nil, fmt.Errorf("Project %s not found", d.repoPath)
+		return nil, fmt.Errorf("project %s not found", d.repoPath)
 	}
 
 	d.repoID = info[0].ID

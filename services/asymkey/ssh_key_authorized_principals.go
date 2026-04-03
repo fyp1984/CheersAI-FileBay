@@ -61,8 +61,8 @@ func rewriteAllPrincipalKeys(ctx context.Context) error {
 		return err
 	}
 	defer func() {
-		t.Close()
-		os.Remove(tmpPath)
+		_ = t.Close()
+		_ = os.Remove(tmpPath)
 	}()
 
 	if setting.SSH.AuthorizedPrincipalsBackup {

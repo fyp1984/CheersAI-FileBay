@@ -40,11 +40,11 @@ func deleteOrganization(ctx context.Context, org *org_model.Organization) error 
 		&actions_model.ActionRunner{OwnerID: org.ID},
 		&actions_model.ActionRunnerToken{OwnerID: org.ID},
 	); err != nil {
-		return fmt.Errorf("DeleteBeans: %w", err)
+		return fmt.Errorf("delete beans: %w", err)
 	}
 
 	if _, err := db.GetEngine(ctx).ID(org.ID).Delete(new(user_model.User)); err != nil {
-		return fmt.Errorf("Delete: %w", err)
+		return fmt.Errorf("delete: %w", err)
 	}
 
 	return nil

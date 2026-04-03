@@ -173,15 +173,15 @@ func ForkRepository(ctx context.Context, doer, owner *user_model.User, opts Fork
 	var gitRepo *git.Repository
 	gitRepo, err = gitrepo.OpenRepository(ctx, repo)
 	if err != nil {
-		return nil, fmt.Errorf("OpenRepository: %w", err)
+		return nil, fmt.Errorf("open repository: %w", err)
 	}
 	defer gitRepo.Close()
 
 	if _, _, err = repo_module.SyncRepoBranchesWithRepo(ctx, repo, gitRepo, doer.ID); err != nil {
-		return nil, fmt.Errorf("SyncRepoBranchesWithRepo: %w", err)
+		return nil, fmt.Errorf("sync repo branches with repo: %w", err)
 	}
 	if _, err = repo_module.SyncReleasesWithTags(ctx, repo, gitRepo); err != nil {
-		return nil, fmt.Errorf("Sync releases from git tags failed: %v", err)
+		return nil, fmt.Errorf("sync releases from git tags failed: %v", err)
 	}
 
 	// 7 - Update the repository
@@ -201,7 +201,7 @@ func ForkRepository(ctx context.Context, doer, owner *user_model.User, opts Fork
 	// 8 - update repository status to be ready
 	repo.Status = repo_model.RepositoryReady
 	if err = repo_model.UpdateRepositoryColsWithAutoTime(ctx, repo, "status"); err != nil {
-		return nil, fmt.Errorf("UpdateRepositoryCols: %w", err)
+		return nil, fmt.Errorf("update repository cols: %w", err)
 	}
 
 	notify_service.ForkRepository(ctx, doer, opts.BaseRepo, repo)

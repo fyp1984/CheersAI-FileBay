@@ -475,11 +475,11 @@ func SearchUsers(ctx *context.APIContext) {
 			if order, ok := searchModeMap[sortMode]; ok {
 				orderBy = order
 			} else {
-				ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("Invalid sort mode: \"%s\"", sortMode))
+				ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("invalid sort mode: %q", sortMode))
 				return
 			}
 		} else {
-			ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("Invalid sort order: \"%s\"", sortOrder))
+			ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("invalid sort order: %q", sortOrder))
 			return
 		}
 	}
@@ -490,7 +490,7 @@ func SearchUsers(ctx *context.APIContext) {
 		if visibility, ok := api.VisibilityModes[visibilityParam]; ok {
 			visible = []api.VisibleType{visibility}
 		} else {
-			ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("Invalid visibility: \"%s\"", visibilityParam))
+			ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("invalid visibility: %q", visibilityParam))
 			return
 		}
 	}

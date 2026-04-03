@@ -422,7 +422,7 @@ func SearchEmails(ctx context.Context, opts *SearchEmailOptions) ([]*SearchEmail
 	count, err := db.GetEngine(ctx).Join("INNER", "`user`", "`user`.id = email_address.uid").
 		Where(cond).Count(new(EmailAddress))
 	if err != nil {
-		return nil, 0, fmt.Errorf("Count: %w", err)
+		return nil, 0, fmt.Errorf("count: %w", err)
 	}
 
 	orderby := opts.SortType.String()

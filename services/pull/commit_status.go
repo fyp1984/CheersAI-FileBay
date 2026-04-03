@@ -69,7 +69,7 @@ func MergeRequiredContextsCommitStatus(commitStatuses []*git_model.CommitStatus,
 func IsPullCommitStatusPass(ctx context.Context, pr *issues_model.PullRequest) (bool, error) {
 	pb, err := git_model.GetFirstMatchProtectedBranchRule(ctx, pr.BaseRepoID, pr.BaseBranch)
 	if err != nil {
-		return false, fmt.Errorf("GetLatestCommitStatus: %w", err)
+		return false, fmt.Errorf("get latest commit status: %w", err)
 	}
 	if pb == nil || !pb.EnableStatusCheck {
 		return true, nil
@@ -86,25 +86,25 @@ func IsPullCommitStatusPass(ctx context.Context, pr *issues_model.PullRequest) (
 func GetPullRequestCommitStatusState(ctx context.Context, pr *issues_model.PullRequest) (commitstatus.CommitStatusState, error) {
 	// Ensure HeadRepo is loaded
 	if err := pr.LoadHeadRepo(ctx); err != nil {
-		return "", fmt.Errorf("LoadHeadRepo: %w", err)
+		return "", fmt.Errorf("load head repo: %w", err)
 	}
 
 	// check if all required status checks are successful
 	headGitRepo, closer, err := gitrepo.RepositoryFromContextOrOpen(ctx, pr.HeadRepo)
 	if err != nil {
-		return "", fmt.Errorf("OpenRepository: %w", err)
+		return "", fmt.Errorf("open repository: %w", err)
 	}
 	defer closer.Close()
 
 	if pr.Flow == issues_model.PullRequestFlowGithub {
 		if exist, err := git_model.IsBranchExist(ctx, pr.HeadRepo.ID, pr.HeadBranch); err != nil {
-			return "", fmt.Errorf("IsBranchExist: %w", err)
+			return "", fmt.Errorf("is branch exist: %w", err)
 		} else if !exist {
-			return "", errors.New("Head branch does not exist, can not merge")
+			return "", errors.New("head branch does not exist, can not merge")
 		}
 	}
 	if pr.Flow == issues_model.PullRequestFlowAGit && !gitrepo.IsReferenceExist(ctx, pr.HeadRepo, pr.GetGitHeadRefName()) {
-		return "", errors.New("Head branch does not exist, can not merge")
+		return "", errors.New("head branch does not exist, can not merge")
 	}
 
 	var sha string
@@ -118,17 +118,17 @@ func GetPullRequestCommitStatusState(ctx context.Context, pr *issues_model.PullR
 	}
 
 	if err := pr.LoadBaseRepo(ctx); err != nil {
-		return "", fmt.Errorf("LoadBaseRepo: %w", err)
+		return "", fmt.Errorf("load base repo: %w", err)
 	}
 
 	commitStatuses, err := git_model.GetLatestCommitStatus(ctx, pr.BaseRepo.ID, sha, db.ListOptionsAll)
 	if err != nil {
-		return "", fmt.Errorf("GetLatestCommitStatus: %w", err)
+		return "", fmt.Errorf("get latest commit status: %w", err)
 	}
 
 	pb, err := git_model.GetFirstMatchProtectedBranchRule(ctx, pr.BaseRepoID, pr.BaseBranch)
 	if err != nil {
-		return "", fmt.Errorf("LoadProtectedBranch: %w", err)
+		return "", fmt.Errorf("load protected branch: %w", err)
 	}
 	var requiredContexts []string
 	if pb != nil {

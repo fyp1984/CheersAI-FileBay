@@ -196,7 +196,7 @@ func (t *TemporaryUploadRepository) WriteTree(ctx context.Context) (string, erro
 	stdout, _, err := gitcmd.NewCommand("write-tree").WithDir(t.basePath).RunStdString(ctx)
 	if err != nil {
 		log.Error("Unable to write tree in temporary repo: %s(%s): Error: %v", t.repo.FullName(), t.basePath, err)
-		return "", fmt.Errorf("Unable to write-tree in temporary repo for: %s Error: %w", t.repo.FullName(), err)
+		return "", fmt.Errorf("unable to write-tree in temporary repo for %s: %w", t.repo.FullName(), err)
 	}
 	return strings.TrimSpace(stdout), nil
 }
@@ -214,7 +214,7 @@ func (t *TemporaryUploadRepository) GetLastCommitByRef(ctx context.Context, ref 
 	stdout, _, err := gitcmd.NewCommand("rev-parse").AddDynamicArguments(ref).WithDir(t.basePath).RunStdString(ctx)
 	if err != nil {
 		log.Error("Unable to get last ref for %s in temporary repo: %s(%s): Error: %v", ref, t.repo.FullName(), t.basePath, err)
-		return "", fmt.Errorf("Unable to rev-parse %s in temporary repo for: %s Error: %w", ref, t.repo.FullName(), err)
+		return "", fmt.Errorf("unable to rev-parse %s in temporary repo for %s: %w", ref, t.repo.FullName(), err)
 	}
 	return strings.TrimSpace(stdout), nil
 }
@@ -259,7 +259,8 @@ func (t *TemporaryUploadRepository) CommitTree(ctx context.Context, opts *Commit
 	authorDate := opts.AuthorTime
 	committerDate := opts.CommitterTime
 	if authorDate == nil && committerDate == nil {
-		authorDate = new(time.Now())
+		now := time.Now()
+		authorDate = &now
 		committerDate = authorDate
 	} else if authorDate == nil {
 		authorDate = committerDate
@@ -354,7 +355,7 @@ func (t *TemporaryUploadRepository) Push(ctx context.Context, doer *user_model.U
 		}
 		log.Error("Unable to push back to repo from temporary repo: %s (%s)\nError: %v",
 			t.repo.FullName(), t.basePath, err)
-		return fmt.Errorf("Unable to push back to repo from temporary repo: %s (%s) Error: %v",
+		return fmt.Errorf("unable to push back to repo from temporary repo: %s (%s): %v",
 			t.repo.FullName(), t.basePath, err)
 	}
 	return nil

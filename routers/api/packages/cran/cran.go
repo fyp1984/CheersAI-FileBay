@@ -80,7 +80,7 @@ func enumeratePackages(ctx *context.Context, format string, opts *cran_model.Sea
 
 	for i, pd := range pds {
 		if i > 0 {
-			fmt.Fprintln(w)
+			_, _ = fmt.Fprintln(w)
 		}
 
 		var pfd *packages_model.PackageFileDescriptor
@@ -95,29 +95,29 @@ func enumeratePackages(ctx *context.Context, format string, opts *cran_model.Sea
 
 		metadata := pd.Metadata.(*cran_module.Metadata)
 
-		fmt.Fprintln(w, "Package:", pd.Package.Name)
-		fmt.Fprintln(w, "Version:", pd.Version.Version)
+		_, _ = fmt.Fprintln(w, "Package:", pd.Package.Name)
+		_, _ = fmt.Fprintln(w, "Version:", pd.Version.Version)
 		if metadata.License != "" {
-			fmt.Fprintln(w, "License:", metadata.License)
+			_, _ = fmt.Fprintln(w, "License:", metadata.License)
 		}
 		if len(metadata.Depends) > 0 {
-			fmt.Fprintln(w, "Depends:", strings.Join(metadata.Depends, ", "))
+			_, _ = fmt.Fprintln(w, "Depends:", strings.Join(metadata.Depends, ", "))
 		}
 		if len(metadata.Imports) > 0 {
-			fmt.Fprintln(w, "Imports:", strings.Join(metadata.Imports, ", "))
+			_, _ = fmt.Fprintln(w, "Imports:", strings.Join(metadata.Imports, ", "))
 		}
 		if len(metadata.LinkingTo) > 0 {
-			fmt.Fprintln(w, "LinkingTo:", strings.Join(metadata.LinkingTo, ", "))
+			_, _ = fmt.Fprintln(w, "LinkingTo:", strings.Join(metadata.LinkingTo, ", "))
 		}
 		if len(metadata.Suggests) > 0 {
-			fmt.Fprintln(w, "Suggests:", strings.Join(metadata.Suggests, ", "))
+			_, _ = fmt.Fprintln(w, "Suggests:", strings.Join(metadata.Suggests, ", "))
 		}
 		needsCompilation := "no"
 		if metadata.NeedsCompilation {
 			needsCompilation = "yes"
 		}
-		fmt.Fprintln(w, "NeedsCompilation:", needsCompilation)
-		fmt.Fprintln(w, "MD5sum:", pfd.Blob.HashMD5)
+		_, _ = fmt.Fprintln(w, "NeedsCompilation:", needsCompilation)
+		_, _ = fmt.Fprintln(w, "MD5sum:", pfd.Blob.HashMD5)
 	}
 }
 

@@ -30,11 +30,12 @@ func TestMSTeamsPayload(t *testing.T) {
 		assert.Empty(t, pl.Sections[0].Text)
 		assert.Len(t, pl.Sections[0].Facts, 2)
 		for _, fact := range pl.Sections[0].Facts {
-			if fact.Name == "Repository:" {
+			switch fact.Name {
+			case "Repository:":
 				assert.Equal(t, p.Repo.FullName, fact.Value)
-			} else if fact.Name == "branch:" {
+			case "branch:":
 				assert.Equal(t, "test", fact.Value)
-			} else {
+			default:
 				t.Fail()
 			}
 		}
@@ -56,11 +57,12 @@ func TestMSTeamsPayload(t *testing.T) {
 		assert.Empty(t, pl.Sections[0].Text)
 		assert.Len(t, pl.Sections[0].Facts, 2)
 		for _, fact := range pl.Sections[0].Facts {
-			if fact.Name == "Repository:" {
+			switch fact.Name {
+			case "Repository:":
 				assert.Equal(t, p.Repo.FullName, fact.Value)
-			} else if fact.Name == "branch:" {
+			case "branch:":
 				assert.Equal(t, "test", fact.Value)
-			} else {
+			default:
 				t.Fail()
 			}
 		}
@@ -82,11 +84,12 @@ func TestMSTeamsPayload(t *testing.T) {
 		assert.Empty(t, pl.Sections[0].Text)
 		assert.Len(t, pl.Sections[0].Facts, 2)
 		for _, fact := range pl.Sections[0].Facts {
-			if fact.Name == "Repository:" {
+			switch fact.Name {
+			case "Repository:":
 				assert.Equal(t, p.Repo.FullName, fact.Value)
-			} else if fact.Name == "Forkee:" {
+			case "Forkee:":
 				assert.Equal(t, p.Forkee.FullName, fact.Value)
-			} else {
+			default:
 				t.Fail()
 			}
 		}
@@ -108,11 +111,12 @@ func TestMSTeamsPayload(t *testing.T) {
 		assert.Equal(t, "[2020558](http://localhost:3000/test/repo/commit/2020558fe2e34debb818a514715839cabd25e778) commit message - user1\n\n[2020558](http://localhost:3000/test/repo/commit/2020558fe2e34debb818a514715839cabd25e778) commit message - user1", pl.Sections[0].Text)
 		assert.Len(t, pl.Sections[0].Facts, 2)
 		for _, fact := range pl.Sections[0].Facts {
-			if fact.Name == "Repository:" {
+			switch fact.Name {
+			case "Repository:":
 				assert.Equal(t, p.Repo.FullName, fact.Value)
-			} else if fact.Name == "Commit count:" {
+			case "Commit count:":
 				assert.Equal(t, "2", fact.Value)
-			} else {
+			default:
 				t.Fail()
 			}
 		}
@@ -135,11 +139,12 @@ func TestMSTeamsPayload(t *testing.T) {
 		assert.Equal(t, "issue body", pl.Sections[0].Text)
 		assert.Len(t, pl.Sections[0].Facts, 2)
 		for _, fact := range pl.Sections[0].Facts {
-			if fact.Name == "Repository:" {
+			switch fact.Name {
+			case "Repository:":
 				assert.Equal(t, p.Repository.FullName, fact.Value)
-			} else if fact.Name == "Issue #:" {
+			case "Issue #:":
 				assert.Equal(t, "2", fact.Value)
-			} else {
+			default:
 				t.Fail()
 			}
 		}
@@ -158,11 +163,12 @@ func TestMSTeamsPayload(t *testing.T) {
 		assert.Empty(t, pl.Sections[0].Text)
 		assert.Len(t, pl.Sections[0].Facts, 2)
 		for _, fact := range pl.Sections[0].Facts {
-			if fact.Name == "Repository:" {
+			switch fact.Name {
+			case "Repository:":
 				assert.Equal(t, p.Repository.FullName, fact.Value)
-			} else if fact.Name == "Issue #:" {
+			case "Issue #:":
 				assert.Equal(t, "2", fact.Value)
-			} else {
+			default:
 				t.Fail()
 			}
 		}
@@ -184,11 +190,12 @@ func TestMSTeamsPayload(t *testing.T) {
 		assert.Equal(t, "more info needed", pl.Sections[0].Text)
 		assert.Len(t, pl.Sections[0].Facts, 2)
 		for _, fact := range pl.Sections[0].Facts {
-			if fact.Name == "Repository:" {
+			switch fact.Name {
+			case "Repository:":
 				assert.Equal(t, p.Repository.FullName, fact.Value)
-			} else if fact.Name == "Issue #:" {
+			case "Issue #:":
 				assert.Equal(t, "2", fact.Value)
-			} else {
+			default:
 				t.Fail()
 			}
 		}
@@ -210,11 +217,12 @@ func TestMSTeamsPayload(t *testing.T) {
 		assert.Equal(t, "fixes bug #2", pl.Sections[0].Text)
 		assert.Len(t, pl.Sections[0].Facts, 2)
 		for _, fact := range pl.Sections[0].Facts {
-			if fact.Name == "Repository:" {
+			switch fact.Name {
+			case "Repository:":
 				assert.Equal(t, p.Repository.FullName, fact.Value)
-			} else if fact.Name == "Pull request #:" {
+			case "Pull request #:":
 				assert.Equal(t, "12", fact.Value)
-			} else {
+			default:
 				t.Fail()
 			}
 		}
@@ -236,11 +244,12 @@ func TestMSTeamsPayload(t *testing.T) {
 		assert.Equal(t, "changes requested", pl.Sections[0].Text)
 		assert.Len(t, pl.Sections[0].Facts, 2)
 		for _, fact := range pl.Sections[0].Facts {
-			if fact.Name == "Repository:" {
+			switch fact.Name {
+			case "Repository:":
 				assert.Equal(t, p.Repository.FullName, fact.Value)
-			} else if fact.Name == "Issue #:" {
+			case "Issue #:":
 				assert.Equal(t, "12", fact.Value)
-			} else {
+			default:
 				t.Fail()
 			}
 		}
@@ -263,11 +272,12 @@ func TestMSTeamsPayload(t *testing.T) {
 		assert.Equal(t, "good job", pl.Sections[0].Text)
 		assert.Len(t, pl.Sections[0].Facts, 2)
 		for _, fact := range pl.Sections[0].Facts {
-			if fact.Name == "Repository:" {
+			switch fact.Name {
+			case "Repository:":
 				assert.Equal(t, p.Repository.FullName, fact.Value)
-			} else if fact.Name == "Pull request #:" {
+			case "Pull request #:":
 				assert.Equal(t, "12", fact.Value)
-			} else {
+			default:
 				t.Fail()
 			}
 		}
@@ -404,11 +414,12 @@ func TestMSTeamsPayload(t *testing.T) {
 		assert.Empty(t, pl.Sections[0].Text)
 		assert.Len(t, pl.Sections[0].Facts, 2)
 		for _, fact := range pl.Sections[0].Facts {
-			if fact.Name == "Repository:" {
+			switch fact.Name {
+			case "Repository:":
 				assert.Equal(t, p.Repository.FullName, fact.Value)
-			} else if fact.Name == "Tag:" {
+			case "Tag:":
 				assert.Equal(t, "v1.0", fact.Value)
-			} else {
+			default:
 				t.Fail()
 			}
 		}

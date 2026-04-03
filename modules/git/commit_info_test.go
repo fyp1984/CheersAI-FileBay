@@ -92,9 +92,9 @@ func testGetCommitsInfo(t *testing.T, repo1 *Repository) {
 		}
 		assert.NotNil(t, commit)
 		assert.NotNil(t, commit.Tree)
-		assert.NotNil(t, commit.Tree.repo)
+		assert.NotNil(t, commit.repo)
 
-		tree, err := commit.Tree.SubTree(testCase.Path)
+		tree, err := commit.SubTree(testCase.Path)
 		if err != nil {
 			assert.NoError(t, err, "Unable to get subtree: %s of commit: %s from testcase due to error: %v", testCase.Path, testCase.CommitID, err)
 			// no point trying to do anything else for this test.
@@ -200,7 +200,7 @@ func BenchmarkEntries_GetCommitsInfo(b *testing.B) {
 
 		if commit, err = repo.GetBranchCommit("master"); err != nil {
 			b.Fatal(err)
-		} else if entries, err = commit.Tree.ListEntries(); err != nil {
+		} else if entries, err = commit.ListEntries(); err != nil {
 			b.Fatal(err)
 		}
 		b.ResetTimer()

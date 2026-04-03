@@ -214,7 +214,7 @@ func publicKeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 	// it shouldn't be reused across different ssh conn (sessions), each pub key should have its own "Permissions"
 	ctx.Permissions().Permissions = &gossh.Permissions{}
 	setPermExt := func(keyID int64) {
-		ctx.Permissions().Permissions.Extensions = map[string]string{
+		ctx.Permissions().Extensions = map[string]string{
 			giteaPermissionExtensionKeyID: strconv.FormatInt(keyID, 10),
 		}
 	}

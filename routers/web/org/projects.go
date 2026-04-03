@@ -657,7 +657,7 @@ func MoveIssues(ctx *context.Context) {
 
 	for _, issue := range movedIssues {
 		if issue.RepoID != project.RepoID && issue.Repo.OwnerID != project.OwnerID {
-			ctx.ServerError("Some issue's repoID is not equal to project's repoID", errors.New("Some issue's repoID is not equal to project's repoID"))
+			ctx.ServerError("some issue's repoID is not equal to project's repoID", errors.New("some issue's repoID is not equal to project's repoID"))
 			return
 		}
 	}

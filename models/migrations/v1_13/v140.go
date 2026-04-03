@@ -29,7 +29,7 @@ func FixLanguageStatsToSaveSize(x *xorm.Engine) error {
 	}
 
 	if err := x.Sync(new(LanguageStat)); err != nil {
-		return fmt.Errorf("Sync: %w", err)
+		return fmt.Errorf("sync: %w", err)
 	}
 
 	x.Delete(&RepoIndexerStatus{IndexerType: RepoIndexerTypeStats})

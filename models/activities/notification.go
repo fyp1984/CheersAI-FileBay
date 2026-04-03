@@ -381,7 +381,7 @@ func SetNotificationStatus(ctx context.Context, notificationID int64, user *user
 	}
 
 	if notification.UserID != user.ID {
-		return nil, fmt.Errorf("Can't change notification of another user: %d, %d", notification.UserID, user.ID)
+		return nil, fmt.Errorf("can't change notification of another user: %d, %d", notification.UserID, user.ID)
 	}
 
 	notification.Status = status

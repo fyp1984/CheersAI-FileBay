@@ -153,7 +153,7 @@ func (e *escapeStreamer) brokenRune(bs []byte) error {
 	e.escaped.Escaped = true
 	e.escaped.HasBadRunes = true
 
-	if err := e.PassthroughHTMLStreamer.StartTag("span", html.Attribute{
+	if err := e.StartTag("span", html.Attribute{
 		Key: "class",
 		Val: "broken-code-point",
 	}); err != nil {
@@ -163,14 +163,14 @@ func (e *escapeStreamer) brokenRune(bs []byte) error {
 		return err
 	}
 
-	return e.PassthroughHTMLStreamer.EndTag("span")
+	return e.EndTag("span")
 }
 
 func (e *escapeStreamer) ambiguousRune(r, c rune) error {
 	e.escaped.Escaped = true
 	e.escaped.HasAmbiguous = true
 
-	if err := e.PassthroughHTMLStreamer.StartTag("span", html.Attribute{
+	if err := e.StartTag("span", html.Attribute{
 		Key: "class",
 		Val: "ambiguous-code-point",
 	}, html.Attribute{
@@ -179,7 +179,7 @@ func (e *escapeStreamer) ambiguousRune(r, c rune) error {
 	}); err != nil {
 		return err
 	}
-	if err := e.PassthroughHTMLStreamer.StartTag("span", html.Attribute{
+	if err := e.StartTag("span", html.Attribute{
 		Key: "class",
 		Val: "char",
 	}); err != nil {
@@ -188,18 +188,18 @@ func (e *escapeStreamer) ambiguousRune(r, c rune) error {
 	if err := e.PassthroughHTMLStreamer.Text(string(r)); err != nil {
 		return err
 	}
-	if err := e.PassthroughHTMLStreamer.EndTag("span"); err != nil {
+	if err := e.EndTag("span"); err != nil {
 		return err
 	}
 
-	return e.PassthroughHTMLStreamer.EndTag("span")
+	return e.EndTag("span")
 }
 
 func (e *escapeStreamer) invisibleRune(r rune) error {
 	e.escaped.Escaped = true
 	e.escaped.HasInvisible = true
 
-	if err := e.PassthroughHTMLStreamer.StartTag("span", html.Attribute{
+	if err := e.StartTag("span", html.Attribute{
 		Key: "class",
 		Val: "escaped-code-point",
 	}, html.Attribute{
@@ -208,7 +208,7 @@ func (e *escapeStreamer) invisibleRune(r rune) error {
 	}); err != nil {
 		return err
 	}
-	if err := e.PassthroughHTMLStreamer.StartTag("span", html.Attribute{
+	if err := e.StartTag("span", html.Attribute{
 		Key: "class",
 		Val: "char",
 	}); err != nil {
@@ -217,11 +217,11 @@ func (e *escapeStreamer) invisibleRune(r rune) error {
 	if err := e.PassthroughHTMLStreamer.Text(string(r)); err != nil {
 		return err
 	}
-	if err := e.PassthroughHTMLStreamer.EndTag("span"); err != nil {
+	if err := e.EndTag("span"); err != nil {
 		return err
 	}
 
-	return e.PassthroughHTMLStreamer.EndTag("span")
+	return e.EndTag("span")
 }
 
 type runeCountType struct {

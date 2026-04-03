@@ -133,7 +133,7 @@ func NewGitlabDownloader(ctx context.Context, baseURL, repoPath, token string) (
 
 	if gr == nil {
 		log.Trace("Error getting project, project is nil")
-		return nil, errors.New("Error getting project, project is nil")
+		return nil, errors.New("error getting project, project is nil")
 	}
 
 	return &GitlabDownloader{

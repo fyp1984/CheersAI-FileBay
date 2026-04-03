@@ -153,7 +153,7 @@ func VerifyCert(r *http.Request) (*asymkey_model.PublicKey, error) {
 
 	// check the CA of the cert
 	if !c.IsUserAuthority(cert.SignatureKey) {
-		return nil, errors.New("CA check failed")
+		return nil, errors.New("ca check failed")
 	}
 
 	// Create a verifier

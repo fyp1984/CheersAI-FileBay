@@ -172,7 +172,7 @@ func Search(ctx *context.APIContext) {
 		opts.Collaborate = optional.Some(true)
 	case "":
 	default:
-		ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("Invalid search mode: \"%s\"", mode))
+		ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("invalid search mode: %q", mode))
 		return
 	}
 
@@ -194,11 +194,11 @@ func Search(ctx *context.APIContext) {
 			if orderBy, ok := searchModeMap[sortMode]; ok {
 				opts.OrderBy = orderBy
 			} else {
-				ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("Invalid sort mode: \"%s\"", sortMode))
+				ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("invalid sort mode: %q", sortMode))
 				return
 			}
 		} else {
-			ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("Invalid sort order: \"%s\"", sortOrder))
+			ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("invalid sort order: %q", sortOrder))
 			return
 		}
 	}
@@ -682,7 +682,7 @@ func updateBasicProperties(ctx *context.APIContext, opts api.EditRepoOption) err
 			case db.IsErrNamePatternNotAllowed(err):
 				ctx.APIError(http.StatusUnprocessableEntity, err)
 			default:
-				ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("ChangeRepositoryName: %w", err))
+				ctx.APIError(http.StatusUnprocessableEntity, fmt.Errorf("change repository name: %w", err))
 			}
 			return err
 		}
@@ -779,12 +779,12 @@ func updateRepoUnits(ctx *context.APIContext, opts api.EditRepoOption) error {
 		if *opts.HasIssues && opts.ExternalTracker != nil && !unit_model.TypeExternalTracker.UnitGlobalDisabled() {
 			// Check that values are valid
 			if !validation.IsValidExternalURL(opts.ExternalTracker.ExternalTrackerURL) {
-				err := errors.New("External tracker URL not valid")
+				err := errors.New("external tracker URL not valid")
 				ctx.APIError(http.StatusUnprocessableEntity, err)
 				return err
 			}
 			if len(opts.ExternalTracker.ExternalTrackerFormat) != 0 && !validation.IsValidExternalTrackerURLFormat(opts.ExternalTracker.ExternalTrackerFormat) {
-				err := errors.New("External tracker URL format not valid")
+				err := errors.New("external tracker URL format not valid")
 				ctx.APIError(http.StatusUnprocessableEntity, err)
 				return err
 			}
@@ -841,7 +841,7 @@ func updateRepoUnits(ctx *context.APIContext, opts api.EditRepoOption) error {
 		if *opts.HasWiki && opts.ExternalWiki != nil && !unit_model.TypeExternalWiki.UnitGlobalDisabled() {
 			// Check that values are valid
 			if !validation.IsValidExternalURL(opts.ExternalWiki.ExternalWikiURL) {
-				err := errors.New("External wiki URL not valid")
+				err := errors.New("external wiki URL not valid")
 				ctx.APIError(http.StatusUnprocessableEntity, "Invalid external wiki URL")
 				return err
 			}
@@ -898,24 +898,25 @@ func updateRepoUnits(ctx *context.APIContext, opts api.EditRepoOption) error {
 			}
 			if unit == nil {
 				// Unit doesn't exist yet but is being enabled, create with defaults
-				unit = new(repo_model.DefaultPullRequestsUnit(repo.ID))
+				defaultUnit := repo_model.DefaultPullRequestsUnit(repo.ID)
+				unit = &defaultUnit
 			}
 
-			changed := new(false)
+			changed := false
 			config := unit.PullRequestsConfig()
-			optional.AssignPtrValue(changed, &config.IgnoreWhitespaceConflicts, opts.IgnoreWhitespaceConflicts)
-			optional.AssignPtrValue(changed, &config.AllowMerge, opts.AllowMerge)
-			optional.AssignPtrValue(changed, &config.AllowRebase, opts.AllowRebase)
-			optional.AssignPtrValue(changed, &config.AllowRebaseMerge, opts.AllowRebaseMerge)
-			optional.AssignPtrValue(changed, &config.AllowSquash, opts.AllowSquash)
-			optional.AssignPtrValue(changed, &config.AllowFastForwardOnly, opts.AllowFastForwardOnly)
-			optional.AssignPtrValue(changed, &config.AllowManualMerge, opts.AllowManualMerge)
-			optional.AssignPtrValue(changed, &config.AutodetectManualMerge, opts.AutodetectManualMerge)
-			optional.AssignPtrValue(changed, &config.AllowRebaseUpdate, opts.AllowRebaseUpdate)
-			optional.AssignPtrValue(changed, &config.DefaultDeleteBranchAfterMerge, opts.DefaultDeleteBranchAfterMerge)
-			optional.AssignPtrValue(changed, &config.DefaultAllowMaintainerEdit, opts.DefaultAllowMaintainerEdit)
-			optional.AssignPtrString(changed, &config.DefaultMergeStyle, opts.DefaultMergeStyle)
-			if *changed || mustInsertPullRequestUnit {
+			optional.AssignPtrValue(&changed, &config.IgnoreWhitespaceConflicts, opts.IgnoreWhitespaceConflicts)
+			optional.AssignPtrValue(&changed, &config.AllowMerge, opts.AllowMerge)
+			optional.AssignPtrValue(&changed, &config.AllowRebase, opts.AllowRebase)
+			optional.AssignPtrValue(&changed, &config.AllowRebaseMerge, opts.AllowRebaseMerge)
+			optional.AssignPtrValue(&changed, &config.AllowSquash, opts.AllowSquash)
+			optional.AssignPtrValue(&changed, &config.AllowFastForwardOnly, opts.AllowFastForwardOnly)
+			optional.AssignPtrValue(&changed, &config.AllowManualMerge, opts.AllowManualMerge)
+			optional.AssignPtrValue(&changed, &config.AutodetectManualMerge, opts.AutodetectManualMerge)
+			optional.AssignPtrValue(&changed, &config.AllowRebaseUpdate, opts.AllowRebaseUpdate)
+			optional.AssignPtrValue(&changed, &config.DefaultDeleteBranchAfterMerge, opts.DefaultDeleteBranchAfterMerge)
+			optional.AssignPtrValue(&changed, &config.DefaultAllowMaintainerEdit, opts.DefaultAllowMaintainerEdit)
+			optional.AssignPtrString(&changed, &config.DefaultMergeStyle, opts.DefaultMergeStyle)
+			if changed || mustInsertPullRequestUnit {
 				units = append(units, repo_model.RepoUnit{
 					RepoID: repo.ID,
 					Type:   unit_model.TypePullRequests,

@@ -34,10 +34,10 @@ func Test_registerHasher(t *testing.T) {
 	}))
 
 	assert.Equal(t, "password$salt$",
-		Parse("Test_registerHasher").PasswordSaltHasher.HashWithSaltBytes("password", []byte("salt")))
+		Parse("Test_registerHasher").HashWithSaltBytes("password", []byte("salt")))
 
 	assert.Equal(t, "password$salt$config",
-		Parse("Test_registerHasher$config").PasswordSaltHasher.HashWithSaltBytes("password", []byte("salt")))
+		Parse("Test_registerHasher$config").HashWithSaltBytes("password", []byte("salt")))
 
 	delete(availableHasherFactories, "Test_registerHasher")
 }

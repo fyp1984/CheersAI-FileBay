@@ -66,19 +66,19 @@ func NewUpload(ctx context.Context, name string, buf []byte, file multipart.File
 
 	localPath := upload.LocalPath()
 	if err = os.MkdirAll(filepath.Dir(localPath), os.ModePerm); err != nil {
-		return nil, fmt.Errorf("MkdirAll: %w", err)
+		return nil, fmt.Errorf("mkdir all: %w", err)
 	}
 
 	fw, err := os.Create(localPath)
 	if err != nil {
-		return nil, fmt.Errorf("Create: %w", err)
+		return nil, fmt.Errorf("create: %w", err)
 	}
 	defer fw.Close()
 
 	if _, err = fw.Write(buf); err != nil {
-		return nil, fmt.Errorf("Write: %w", err)
+		return nil, fmt.Errorf("write: %w", err)
 	} else if _, err = io.Copy(fw, file); err != nil {
-		return nil, fmt.Errorf("Copy: %w", err)
+		return nil, fmt.Errorf("copy: %w", err)
 	}
 
 	if _, err := db.GetEngine(ctx).Insert(upload); err != nil {

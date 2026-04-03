@@ -253,10 +253,10 @@ Gitea or set your environment appropriately.`, "")
 			newCommitIDs[count] = newCommitID
 			refFullNames[count] = refFullName
 			count++
-			fmt.Fprintf(out, "*")
+			_, _ = fmt.Fprintf(out, "*")
 
 			if count >= hookBatchSize {
-				fmt.Fprintf(out, " Checking %d references\n", count)
+				_, _ = fmt.Fprintf(out, " Checking %d references\n", count)
 
 				hookOptions.OldCommitIDs = oldCommitIDs
 				hookOptions.NewCommitIDs = newCommitIDs
@@ -269,10 +269,10 @@ Gitea or set your environment appropriately.`, "")
 				lastline = 0
 			}
 		} else {
-			fmt.Fprintf(out, ".")
+			_, _ = fmt.Fprintf(out, ".")
 		}
 		if lastline >= hookBatchSize {
-			fmt.Fprintf(out, "\n")
+			_, _ = fmt.Fprintf(out, "\n")
 			lastline = 0
 		}
 	}
@@ -282,17 +282,17 @@ Gitea or set your environment appropriately.`, "")
 		hookOptions.NewCommitIDs = newCommitIDs[:count]
 		hookOptions.RefFullNames = refFullNames[:count]
 
-		fmt.Fprintf(out, " Checking %d references\n", count)
+		_, _ = fmt.Fprintf(out, " Checking %d references\n", count)
 
 		extra := private.HookPreReceive(ctx, username, reponame, hookOptions)
 		if extra.HasError() {
 			return fail(ctx, extra.UserMsg, "HookPreReceive(last) failed: %v", extra.Error)
 		}
 	} else if lastline > 0 {
-		fmt.Fprintf(out, "\n")
+		_, _ = fmt.Fprintf(out, "\n")
 	}
 
-	fmt.Fprintf(out, "Checked %d references in total\n", total)
+	_, _ = fmt.Fprintf(out, "Checked %d references in total\n", total)
 	return nil
 }
 
@@ -391,7 +391,7 @@ Gitea or set your environment appropriately.`, "")
 			continue
 		}
 
-		fmt.Fprintf(out, ".")
+		_, _ = fmt.Fprintf(out, ".")
 		commitID, _ := git.NewIDFromString(newCommitIDs[count])
 		if refFullNames[count] == git.BranchPrefix+"master" && !commitID.IsZero() && count == total {
 			masterPushed = true
@@ -400,7 +400,7 @@ Gitea or set your environment appropriately.`, "")
 		total++
 
 		if count >= hookBatchSize {
-			fmt.Fprintf(out, " Processing %d references\n", count)
+			_, _ = fmt.Fprintf(out, " Processing %d references\n", count)
 			hookOptions.OldCommitIDs = oldCommitIDs
 			hookOptions.NewCommitIDs = newCommitIDs
 			hookOptions.RefFullNames = refFullNames
@@ -424,7 +424,7 @@ Gitea or set your environment appropriately.`, "")
 				return fail(ctx, extra.UserMsg, "SetDefaultBranch failed: %v", extra.Error)
 			}
 		}
-		fmt.Fprintf(out, "Processed %d references in total\n", total)
+		_, _ = fmt.Fprintf(out, "Processed %d references in total\n", total)
 
 		_ = dWriter.Close()
 		hookPrintResults(results)
@@ -435,7 +435,7 @@ Gitea or set your environment appropriately.`, "")
 	hookOptions.NewCommitIDs = newCommitIDs[:count]
 	hookOptions.RefFullNames = refFullNames[:count]
 
-	fmt.Fprintf(out, " Processing %d references\n", count)
+	_, _ = fmt.Fprintf(out, " Processing %d references\n", count)
 
 	resp, extra := private.HookPostReceive(ctx, repoUser, repoName, hookOptions)
 	if resp == nil {
@@ -446,7 +446,7 @@ Gitea or set your environment appropriately.`, "")
 	wasEmpty = wasEmpty || resp.RepoWasEmpty
 	results = append(results, resp.Results...)
 
-	fmt.Fprintf(out, "Processed %d references in total\n", total)
+	_, _ = fmt.Fprintf(out, "Processed %d references in total\n", total)
 
 	if wasEmpty && masterPushed {
 		// We need to tell the repo to reset the default branch to master

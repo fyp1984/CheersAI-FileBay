@@ -574,7 +574,7 @@ func SearchRepositoryByCondition(ctx context.Context, opts SearchRepoOptions, co
 	}
 	repos := make(RepositoryList, 0, defaultSize)
 	if err := sess.Find(&repos); err != nil {
-		return nil, 0, fmt.Errorf("Repo: %w", err)
+		return nil, 0, fmt.Errorf("repo: %w", err)
 	}
 
 	if opts.PageSize <= 0 {
@@ -583,7 +583,7 @@ func SearchRepositoryByCondition(ctx context.Context, opts SearchRepoOptions, co
 
 	if loadAttributes {
 		if err := repos.LoadAttributes(ctx); err != nil {
-			return nil, 0, fmt.Errorf("LoadAttributes: %w", err)
+			return nil, 0, fmt.Errorf("load attributes: %w", err)
 		}
 	}
 
@@ -621,7 +621,7 @@ func searchRepositoryByCondition(ctx context.Context, opts SearchRepoOptions, co
 			Where(cond).
 			Count(new(Repository))
 		if err != nil {
-			return nil, 0, fmt.Errorf("Count: %w", err)
+			return nil, 0, fmt.Errorf("count: %w", err)
 		}
 	}
 
@@ -771,7 +771,7 @@ func GetUserRepositories(ctx context.Context, opts SearchRepoOptions) (Repositor
 
 	count, err := sess.Where(cond).Count(new(Repository))
 	if err != nil {
-		return nil, 0, fmt.Errorf("Count: %w", err)
+		return nil, 0, fmt.Errorf("count: %w", err)
 	}
 
 	sess = sess.Where(cond).OrderBy(opts.OrderBy.String())

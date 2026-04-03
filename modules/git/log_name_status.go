@@ -155,7 +155,7 @@ func (g *LogNameStatusRepoParser) Next(treepath string, paths2ids map[string]int
 		}
 	}
 
-	if err == io.EOF || !(g.next[0] == '\n' || g.next[0] == '\000') {
+	if err == io.EOF || (g.next[0] != '\n' && g.next[0] != '\000') {
 		return &ret, nil
 	}
 

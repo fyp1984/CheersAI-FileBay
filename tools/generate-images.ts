@@ -3,15 +3,19 @@ import {initWasm, Resvg} from '@resvg/resvg-wasm';
 import {optimize} from 'svgo';
 import {readFile, writeFile} from 'node:fs/promises';
 import {argv, exit} from 'node:process';
+import {html} from '../web_src/js/utils/html.ts';
 
 function pngToSvg(pngBytes: Uint8Array) {
   const pngBase64 = Buffer.from(pngBytes).toString('base64');
-  return [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">',
-    `<image href="data:image/png;base64,${pngBase64}" width="512" height="512"/>`,
-    '</svg>',
-  ].join('');
+  return html`<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><image href="data:image/png;base64,${pngBase64}" width="512" height="512"/></svg>`;
+}
+
+async function readFileOrNull(path: URL) {
+  try {
+    return await readFile(path);
+  } catch {
+    return null;
+  }
 }
 
 async function generate(svg: string, path: string, {size, bg}: {size: number, bg?: boolean}) {
@@ -48,8 +52,8 @@ async function generate(svg: string, path: string, {size, bg}: {size: number, bg
 
 async function main() {
   const gitea = argv.slice(2).includes('gitea');
-  const logoPng = await readFile(new URL('../assets/logo.png', import.meta.url)).catch(() => null);
-  const faviconPng = await readFile(new URL('../assets/favicon.png', import.meta.url)).catch(() => null);
+  const logoPng = await readFileOrNull(new URL('../assets/logo.png', import.meta.url));
+  const faviconPng = await readFileOrNull(new URL('../assets/favicon.png', import.meta.url));
   const logoSvg = logoPng ? pngToSvg(logoPng) : await readFile(new URL('../assets/logo.svg', import.meta.url), 'utf8');
   const faviconSvg = faviconPng ? pngToSvg(faviconPng) : await readFile(new URL('../assets/favicon.svg', import.meta.url), 'utf8');
   await initWasm(await readFile(new URL(import.meta.resolve('@resvg/resvg-wasm/index_bg.wasm'))));

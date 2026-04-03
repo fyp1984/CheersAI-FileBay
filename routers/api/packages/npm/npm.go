@@ -30,7 +30,7 @@ import (
 )
 
 // errInvalidTagName indicates an invalid tag name
-var errInvalidTagName = errors.New("The tag name is invalid")
+var errInvalidTagName = errors.New("the tag name is invalid")
 
 func apiError(ctx *context.Context, status int, obj any) {
 	message := helper.ProcessErrorForUser(ctx, status, obj)

@@ -34,24 +34,24 @@ func Verify(ctx context.Context, response string) (bool, error) {
 	// Basically a copy of http.PostForm, but with a context
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, strings.NewReader(post.Encode()))
 	if err != nil {
-		return false, fmt.Errorf("Failed to create CAPTCHA request: %w", err)
+		return false, fmt.Errorf("failed to create CAPTCHA request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("Failed to send CAPTCHA response: %s", err)
+		return false, fmt.Errorf("failed to send CAPTCHA response: %s", err)
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return false, fmt.Errorf("Failed to read CAPTCHA response: %s", err)
+		return false, fmt.Errorf("failed to read CAPTCHA response: %s", err)
 	}
 
 	var jsonResponse Response
 	err = json.Unmarshal(body, &jsonResponse)
 	if err != nil {
-		return false, fmt.Errorf("Failed to parse CAPTCHA response: %s", err)
+		return false, fmt.Errorf("failed to parse CAPTCHA response: %s", err)
 	}
 	var respErr error
 	if len(jsonResponse.ErrorCodes) > 0 {

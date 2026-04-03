@@ -133,17 +133,17 @@ func ParseRepositoryURL(ctx context.Context, repoURL string) (*RepositoryURL, er
 		}
 	}
 
-	switch parsed.URL.Scheme {
+	switch parsed.Scheme {
 	case "http", "https":
 		if !httplib.IsCurrentGiteaSiteURL(ctx, repoURL) {
 			return ret, nil
 		}
-		fillPathParts(strings.TrimPrefix(parsed.URL.Path, setting.AppSubURL))
+		fillPathParts(strings.TrimPrefix(parsed.Path, setting.AppSubURL))
 	case "ssh", "git+ssh":
 		domainSSH := setting.SSH.Domain
 		domainCur := httplib.GuessCurrentHostDomain(ctx)
-		urlDomain, _, _ := net.SplitHostPort(parsed.URL.Host)
-		urlDomain = util.IfZero(urlDomain, parsed.URL.Host)
+		urlDomain, _, _ := net.SplitHostPort(parsed.Host)
+		urlDomain = util.IfZero(urlDomain, parsed.Host)
 		if urlDomain == "" {
 			return ret, nil
 		}
@@ -152,7 +152,7 @@ func ParseRepositoryURL(ctx context.Context, repoURL string) (*RepositoryURL, er
 		// check whether URL domain is current domain from context
 		domainMatches = domainMatches || (domainCur != "" && domainCur == urlDomain)
 		if domainMatches {
-			fillPathParts(parsed.URL.Path)
+			fillPathParts(parsed.Path)
 		}
 	}
 	return ret, nil

@@ -133,7 +133,7 @@ func NewWebContext(base *Base, render Render, session session.Store) *Context {
 		Repo:  &Repository{},
 		Org:   &Organization{},
 	}
-	ctx.TemplateContext = NewTemplateContextForWeb(ctx, ctx.Base.Req, ctx.Base.Locale)
+	ctx.TemplateContext = NewTemplateContextForWeb(ctx, ctx.Req, ctx.Locale)
 	ctx.Flash = &middleware.Flash{DataStore: ctx, Values: url.Values{}}
 	ctx.SetContextValue(WebContextKey, ctx)
 	return ctx

@@ -41,7 +41,7 @@ func InitWiki(ctx context.Context, repo *repo_model.Repository) error {
 
 	// wiki's object format should be the same as repository's
 	if err := gitrepo.InitRepository(ctx, repo.WikiStorageRepo(), repo.ObjectFormatName); err != nil {
-		return fmt.Errorf("InitRepository: %w", err)
+		return fmt.Errorf("init repository: %w", err)
 	} else if err = gitrepo.CreateDelegateHooks(ctx, repo.WikiStorageRepo()); err != nil {
 		return fmt.Errorf("createDelegateHooks: %w", err)
 	} else if err = gitrepo.SetDefaultBranch(ctx, repo.WikiStorageRepo(), repo.DefaultWikiBranch); err != nil {
@@ -98,7 +98,7 @@ func updateWikiPage(ctx context.Context, doer *user_model.User, repo *repo_model
 	defer releaser()
 
 	if err = InitWiki(ctx, repo); err != nil {
-		return fmt.Errorf("InitWiki: %w", err)
+		return fmt.Errorf("init wiki: %w", err)
 	}
 
 	hasDefaultBranch := gitrepo.IsBranchExist(ctx, repo.WikiStorageRepo(), repo.DefaultWikiBranch)
@@ -264,7 +264,7 @@ func DeleteWikiPage(ctx context.Context, doer *user_model.User, repo *repo_model
 	defer releaser()
 
 	if err = InitWiki(ctx, repo); err != nil {
-		return fmt.Errorf("InitWiki: %w", err)
+		return fmt.Errorf("init wiki: %w", err)
 	}
 
 	basePath, cleanup, err := repo_module.CreateTemporaryPath("update-wiki")
@@ -356,7 +356,7 @@ func DeleteWikiPage(ctx context.Context, doer *user_model.User, repo *repo_model
 		if git.IsErrPushOutOfDate(err) || git.IsErrPushRejected(err) {
 			return err
 		}
-		return fmt.Errorf("Push: %w", err)
+		return fmt.Errorf("push: %w", err)
 	}
 
 	return nil

@@ -240,13 +240,13 @@ func createCodeComment(ctx context.Context, doer *user_model.User, repo *repo_mo
 				invalidated = first[0].Invalidated
 				patch = first[0].Patch
 			} else if err != nil && !issues_model.IsErrCommentNotExist(err) {
-				return nil, fmt.Errorf("Find first comment for %d line %d path %s. Error: %w", reviewID, line, treePath, err)
+				return nil, fmt.Errorf("find first comment for %d line %d path %s: %w", reviewID, line, treePath, err)
 			} else {
 				review, err := issues_model.GetReviewByID(ctx, reviewID)
 				if err == nil && len(review.CommitID) > 0 {
 					head = review.CommitID
 				} else if err != nil && !issues_model.IsErrReviewNotExist(err) {
-					return nil, fmt.Errorf("GetReviewByID %d. Error: %w", reviewID, err)
+					return nil, fmt.Errorf("get review by ID %d: %w", reviewID, err)
 				}
 			}
 		}

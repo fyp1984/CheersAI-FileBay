@@ -234,7 +234,7 @@ type minioFileInfo struct {
 }
 
 func (m minioFileInfo) Name() string {
-	return path.Base(m.ObjectInfo.Key)
+	return path.Base(m.Key)
 }
 
 func (m minioFileInfo) Size() int64 {
@@ -246,7 +246,7 @@ func (m minioFileInfo) ModTime() time.Time {
 }
 
 func (m minioFileInfo) IsDir() bool {
-	return strings.HasSuffix(m.ObjectInfo.Key, "/")
+	return strings.HasSuffix(m.Key, "/")
 }
 
 func (m minioFileInfo) Mode() os.FileMode {

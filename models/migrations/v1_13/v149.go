@@ -18,7 +18,7 @@ func AddCreatedAndUpdatedToMilestones(x *xorm.Engine) error {
 	}
 
 	if err := x.Sync(new(Milestone)); err != nil {
-		return fmt.Errorf("Sync: %w", err)
+		return fmt.Errorf("sync: %w", err)
 	}
 	return nil
 }

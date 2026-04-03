@@ -100,7 +100,7 @@ func parseSMTPConfig(c *cli.Command, conf *smtp.Source) error {
 		conf.Auth = c.String("auth-type")
 		validAuthTypes := []string{"PLAIN", "LOGIN", "CRAM-MD5"}
 		if !util.SliceContainsString(validAuthTypes, strings.ToUpper(c.String("auth-type"))) {
-			return errors.New("Auth must be one of PLAIN/LOGIN/CRAM-MD5")
+			return errors.New("auth must be one of PLAIN/LOGIN/CRAM-MD5")
 		}
 		conf.Auth = c.String("auth-type")
 	}

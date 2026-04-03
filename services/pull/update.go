@@ -45,7 +45,7 @@ func Update(ctx context.Context, pr *issues_model.PullRequest, doer *user_model.
 		if err != nil {
 			return err
 		} else if diffCount.Behind == 0 {
-			return fmt.Errorf("HeadBranch of PR %d is up to date", pr.Index)
+			return fmt.Errorf("head branch of PR %d is up to date", pr.Index)
 		}
 	}
 

@@ -86,7 +86,7 @@ func TestAdminUserDeleteFailure(t *testing.T) {
 		{
 			name:        "no required flags are provided",
 			args:        []string{"delete"},
-			expectedErr: "You must provide the id, username or email of a user to delete",
+			expectedErr: "you must provide the id, username or email of a user to delete",
 		},
 	}
 

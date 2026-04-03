@@ -143,7 +143,7 @@ func (ctx *APIContext) APIError(status int, obj any) {
 	if status == http.StatusInternalServerError {
 		log.ErrorWithSkip(1, "APIError: %s", message)
 
-		if setting.IsProd && !(ctx.Doer != nil && ctx.Doer.IsAdmin) {
+		if setting.IsProd && (ctx.Doer == nil || !ctx.Doer.IsAdmin) {
 			message = ""
 		}
 	}
@@ -270,7 +270,7 @@ func (ctx *APIContext) APIErrorNotFound(objs ...any) {
 func ReferencesGitRepo(allowEmpty ...bool) func(ctx *APIContext) {
 	return func(ctx *APIContext) {
 		// Empty repository does not have reference information.
-		if ctx.Repo.Repository.IsEmpty && !(len(allowEmpty) != 0 && allowEmpty[0]) {
+		if ctx.Repo.Repository.IsEmpty && (len(allowEmpty) == 0 || !allowEmpty[0]) {
 			return
 		}
 

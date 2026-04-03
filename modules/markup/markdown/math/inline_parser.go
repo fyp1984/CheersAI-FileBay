@@ -161,12 +161,12 @@ func trimBlock(node *Inline, block text.Reader) {
 
 	// trim first space and last space
 	first := node.FirstChild().(*ast.Text)
-	if !(!first.Segment.IsEmpty() && block.Source()[first.Segment.Start] == ' ') {
+	if first.Segment.IsEmpty() || block.Source()[first.Segment.Start] != ' ' {
 		return
 	}
 
 	last := node.LastChild().(*ast.Text)
-	if !(!last.Segment.IsEmpty() && block.Source()[last.Segment.Stop-1] == ' ') {
+	if last.Segment.IsEmpty() || block.Source()[last.Segment.Stop-1] != ' ' {
 		return
 	}
 

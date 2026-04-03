@@ -94,11 +94,12 @@ func TestTotalTimesForEachUser(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, total, 2)
 	for user, time := range total {
-		if user.ID == 2 {
+		switch user.ID {
+		case 2:
 			assert.EqualValues(t, 3662, time)
-		} else if user.ID == 1 {
+		case 1:
 			assert.EqualValues(t, 20, time)
-		} else {
+		default:
 			assert.Error(t, assert.AnError)
 		}
 	}

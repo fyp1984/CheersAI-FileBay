@@ -63,7 +63,7 @@ func RenameExistingUserAvatarName(x *xorm.Engine) error {
 
 			if stat, err := os.Stat(filepath.Join(setting.Avatar.Storage.Path, oldAvatar)); err != nil || !stat.Mode().IsRegular() {
 				if err == nil {
-					err = fmt.Errorf("Error: \"%s\" is not a regular file", oldAvatar)
+					err = fmt.Errorf("error: \"%s\" is not a regular file", oldAvatar)
 				}
 				log.Warn("[user: %s] os.Stat: %v", user.LowerName, err)
 				// avatar doesn't exist in the storage

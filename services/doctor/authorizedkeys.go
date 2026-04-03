@@ -30,12 +30,12 @@ func checkAuthorizedKeys(ctx context.Context, logger log.Logger, autofix bool) e
 	if err != nil {
 		if !autofix {
 			logger.Critical("Unable to open authorized_keys file. ERROR: %v", err)
-			return fmt.Errorf("Unable to open authorized_keys file. ERROR: %w", err)
+			return fmt.Errorf("unable to open authorized_keys file: %w", err)
 		}
 		logger.Warn("Unable to open authorized_keys. (ERROR: %v). Attempting to rewrite...", err)
 		if err = asymkey_service.RewriteAllPublicKeys(ctx); err != nil {
 			logger.Critical("Unable to rewrite authorized_keys file. ERROR: %v", err)
-			return fmt.Errorf("Unable to rewrite authorized_keys file. ERROR: %w", err)
+			return fmt.Errorf("unable to rewrite authorized_keys file: %w", err)
 		}
 	}
 	defer f.Close()
@@ -60,7 +60,7 @@ func checkAuthorizedKeys(ctx context.Context, logger log.Logger, autofix bool) e
 	regenerated := &bytes.Buffer{}
 	if err := asymkey_model.RegeneratePublicKeys(ctx, regenerated); err != nil {
 		logger.Critical("Unable to regenerate authorized_keys file. ERROR: %v", err)
-		return fmt.Errorf("Unable to regenerate authorized_keys file. ERROR: %w", err)
+		return fmt.Errorf("unable to regenerate authorized_keys file: %w", err)
 	}
 	scanner = bufio.NewScanner(regenerated)
 	for scanner.Scan() {
@@ -83,7 +83,7 @@ func checkAuthorizedKeys(ctx context.Context, logger log.Logger, autofix bool) e
 		err = asymkey_service.RewriteAllPublicKeys(ctx)
 		if err != nil {
 			logger.Critical("Unable to rewrite authorized_keys file. ERROR: %v", err)
-			return fmt.Errorf("Unable to rewrite authorized_keys file. ERROR: %w", err)
+			return fmt.Errorf("unable to rewrite authorized_keys file: %w", err)
 		}
 	}
 	return nil
