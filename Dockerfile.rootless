@@ -38,8 +38,9 @@ RUN --mount=type=cache,target="/root/.cache/go-build" \
 
 COPY docker/rootless /tmp/local
 
-# Set permissions for builds that made under windows which strips the executable bit from file
-RUN chmod 755 /tmp/local/usr/local/bin/* \
+# Normalize Windows line endings and restore executable bits for rootless entrypoint scripts.
+RUN sed -i 's/\r$//' /tmp/local/usr/local/bin/* && \
+    chmod 755 /tmp/local/usr/local/bin/* \
               /go/src/code.gitea.io/gitea/gitea
 
 FROM docker.io/library/alpine:3.23 AS gitea-rootless
@@ -72,6 +73,7 @@ RUN chown git:git /var/lib/gitea /etc/gitea
 
 COPY --from=build-env /tmp/local /
 COPY --from=build-env --chown=root:root /go/src/code.gitea.io/gitea/gitea /app/gitea/gitea
+RUN ln -s /app/gitea/gitea /usr/local/bin/gitea
 
 # git:git
 USER 1000:1000

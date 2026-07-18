@@ -10,7 +10,12 @@ dist/
 gitea
 gitea.exe
 data/
-log/
+.tmp/
+logs/
+/deploy/knowledge/.env
+/deploy/knowledge/.runtime/
+/deploy/knowledge/runtime/
+/log/
 indexers/
 queues/
 *.test

@@ -1,0 +1,533 @@
+{{template "base/head" .}}
+<div role="main" aria-label="{{ctx.Locale.Tr "knowledge.title"}}" class="page-content">
+	<div class="ui container">
+		{{template "base/alert" .}}
+		<style>
+			.knowledge-workbench { display: grid; grid-template-columns: 224px minmax(0, 1fr); gap: 24px; align-items: start; }
+			.knowledge-sidebar { position: sticky; top: 16px; border: 1px solid var(--color-secondary); border-radius: 8px; background: var(--color-box-body); padding: 12px; }
+			.knowledge-sidebar .brand { padding: 8px 10px 14px; font-weight: 700; }
+			.knowledge-sidebar a { display: block; padding: 9px 10px; border-radius: 6px; color: var(--color-text); }
+			.knowledge-sidebar a:hover { background: var(--color-hover); text-decoration: none; }
+			.knowledge-sidebar a.active { background: var(--color-primary-light-2); color: var(--color-primary); font-weight: 700; }
+			.knowledge-sidebar .section-label { padding: 14px 10px 5px; color: var(--color-text-light-2); font-size: 12px; font-weight: 600; }
+			.knowledge-view { display: none; }
+			.knowledge-overview { display: block; }
+			.knowledge-anchor { position: absolute; }
+			{{if .KnowledgeSearchResult}}.knowledge-overview { display: none; } .knowledge-search { display: block; }{{end}}
+			#knowledge-search:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-submit:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-tasks:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-space:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-data:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-upload:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-review:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-publish:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-library:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-connector:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-apps:target ~ .knowledge-workbench .knowledge-view { display: none; }
+			#knowledge-search:target ~ .knowledge-workbench .knowledge-search,
+			#knowledge-submit:target ~ .knowledge-workbench .knowledge-submit,
+			#knowledge-tasks:target ~ .knowledge-workbench .knowledge-tasks,
+			#knowledge-space:target ~ .knowledge-workbench .knowledge-content,
+			#knowledge-data:target ~ .knowledge-workbench .knowledge-data,
+			#knowledge-upload:target ~ .knowledge-workbench .knowledge-content,
+			#knowledge-review:target ~ .knowledge-workbench .knowledge-review,
+			#knowledge-publish:target ~ .knowledge-workbench .knowledge-publish,
+			#knowledge-library:target ~ .knowledge-workbench .knowledge-library,
+			#knowledge-connector:target ~ .knowledge-workbench .knowledge-connector,
+			#knowledge-apps:target ~ .knowledge-workbench .knowledge-apps { display: block; }
+			#knowledge-space:target ~ .knowledge-workbench .knowledge-upload-card,
+			#knowledge-upload:target ~ .knowledge-workbench .knowledge-space-card { display: none; }
+			#knowledge-search:target ~ .knowledge-workbench a[data-step="search"],
+			#knowledge-submit:target ~ .knowledge-workbench a[data-step="submit"],
+			#knowledge-tasks:target ~ .knowledge-workbench a[data-step="tasks"],
+			#knowledge-space:target ~ .knowledge-workbench a[data-step="space"],
+			#knowledge-data:target ~ .knowledge-workbench a[data-step="source"],
+			#knowledge-upload:target ~ .knowledge-workbench a[data-step="upload"],
+			#knowledge-review:target ~ .knowledge-workbench a[data-step="review"],
+			#knowledge-publish:target ~ .knowledge-workbench a[data-step="publish"],
+			#knowledge-library:target ~ .knowledge-workbench a[data-step="library"],
+			#knowledge-connector:target ~ .knowledge-workbench a[data-step="connector"],
+			#knowledge-apps:target ~ .knowledge-workbench a[data-step="apps"] { background: var(--color-primary-light-2); color: var(--color-primary); font-weight: 700; }
+			.knowledge-advanced { margin-top: 14px; border: 1px solid var(--color-secondary); border-radius: 6px; padding: 10px 14px; }
+			.knowledge-advanced summary { cursor: pointer; font-weight: 600; }
+			.knowledge-advanced .hint { color: var(--color-text-light-2); margin: 8px 0 14px; }
+			.knowledge-next-step { margin-bottom: 16px; }
+			.knowledge-next-step .workflow-card { color: var(--color-text); border-top: 3px solid var(--color-primary); transition: transform .15s ease, box-shadow .15s ease; }
+			.knowledge-next-step .workflow-card:hover { color: var(--color-text); text-decoration: none; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0, 0, 0, .12); }
+			.knowledge-step-kicker { color: var(--color-primary); font-size: 12px; font-weight: 700; letter-spacing: .04em; margin-bottom: 4px; }
+			.knowledge-choice { min-height: 150px; border-top-width: 4px !important; }
+			.knowledge-choice .description { line-height: 1.6; }
+			.knowledge-flow { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; padding: 12px 14px; background: var(--color-box-body); border: 1px solid var(--color-secondary-alpha-20); border-radius: 6px; }
+			.knowledge-flow-step { display: inline-flex; align-items: center; gap: 6px; color: var(--color-text-light-2); font-size: 13px; }
+			.knowledge-flow-step::after { content: "→"; margin-left: 4px; color: var(--color-text-light-3); }
+			.knowledge-flow-step:last-child::after { display: none; }
+			.knowledge-flow-step strong { color: var(--color-primary); }
+			@media (max-width: 767px) { .knowledge-workbench { display: block; } .knowledge-sidebar { position: static; margin-bottom: 16px; } .knowledge-sidebar a { display: inline-block; } }
+		</style>
+		<i id="knowledge-overview" class="knowledge-anchor"></i><i id="knowledge-search" class="knowledge-anchor"></i><i id="knowledge-submit" class="knowledge-anchor"></i><i id="knowledge-tasks" class="knowledge-anchor"></i><i id="knowledge-space" class="knowledge-anchor"></i><i id="knowledge-data" class="knowledge-anchor"></i><i id="knowledge-upload" class="knowledge-anchor"></i><i id="knowledge-review" class="knowledge-anchor"></i><i id="knowledge-publish" class="knowledge-anchor"></i><i id="knowledge-library" class="knowledge-anchor"></i><i id="knowledge-connector" class="knowledge-anchor"></i><i id="knowledge-apps" class="knowledge-anchor"></i>
+		<div class="knowledge-workbench">
+			<aside class="knowledge-sidebar" aria-label="知识库工作台导航">
+				<div class="brand">{{svg "octicon-book" 18}} 知识库工作台</div>
+				<div class="section-label">日常使用</div>
+				<a href="#knowledge-overview">开始使用</a>
+				<a href="#knowledge-search" data-step="search">我要查资料</a>
+				<a href="#knowledge-submit" data-step="submit">我要提交资料</a>
+				{{if .IsAdmin}}
+					<div class="section-label">知识管理</div>
+					<a href="#knowledge-tasks" data-step="tasks">待我处理{{if gt .KnowledgeReviewTaskCount 0}} <span class="ui mini red circular label">{{.KnowledgeReviewTaskCount}}</span>{{end}}</a>
+					<a href="#knowledge-library" data-step="library">资料与空间台账</a>
+					<a href="#knowledge-connector" data-step="connector">数据库接入</a>
+					<a href="#knowledge-apps" data-step="apps">Dify 应用授权</a>
+				{{end}}
+			</aside>
+			<div class="knowledge-main">
+			<section class="knowledge-view knowledge-overview">
+		<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
+			<div>
+				<h1 class="ui header tw-mb-1">{{svg "octicon-book" 28}} 企业知识库</h1>
+				<div class="text light-2">不用理解系统怎么管理知识。请选择你现在想完成的事情。</div>
+			</div>
+			{{if .IsAdmin}}<div>
+				{{if .KnowledgeConfigError}}
+					<span class="ui red label">配置未就绪</span>
+				{{else}}
+					<span class="ui green label">服务就绪</span>
+				{{end}}
+			</div>{{end}}
+		</div>
+
+		{{if and .IsAdmin .KnowledgeConfigError}}
+			<div class="ui warning message">
+				<div class="header">RAGFlow 配置尚未就绪</div>
+				<p>{{.KnowledgeConfigError}}</p>
+			</div>
+		{{end}}
+
+		<div class="ui {{if .IsAdmin}}three{{else}}two{{end}} stackable cards knowledge-next-step">
+			<a href="#knowledge-search" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">日常使用</div><div class="header">我要查资料</div><div class="description">输入问题，查看答案引用来自哪份现行资料。找不到时系统会明确提示。</div></div></a>
+			<a href="#knowledge-submit" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">提交新资料</div><div class="header">我要提交资料</div><div class="description">系统会一步一步引导你完成资料夹、来源登记和脱敏文件提交。</div></div></a>
+			{{if .IsAdmin}}<a href="#knowledge-tasks" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">知识管理</div><div class="header">处理待办</div><div class="description">在这里审核来源、核验内容、处理索引并发布有效版本。</div></div></a>{{end}}
+		</div>
+		<div class="ui info message"><div class="header">第一次使用怎么做？</div><p>如果你只是找制度或答案，点击“我要查资料”。如果要把资料放进知识库，点击“我要提交资料”，每次只完成当前页面提示的一件事。</p></div>
+			</section>
+			<section class="knowledge-view knowledge-search">
+		<h2 class="ui header tw-mb-1">查找答案</h2>
+		<div class="text light-2 tw-mb-3">直接输入业务问题；系统只返回你有权限查看、仍然有效的知识，并展示引用依据。</div>
+		<h3 class="ui top attached header">开始检索</h3>
+		<div class="ui attached segment">
+			<form class="ui form" action="{{AppSubUrl}}/knowledge/search" method="post">
+				<div class="fields">
+					<div class="five wide field"><label>检索范围</label><select name="space_id"><option value="">我有权限的全部知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
+					<div class="nine wide required field"><label>问题</label><input name="query" value="{{.KnowledgeSearchQuery}}" placeholder="例如：客户投诉应在多长时间内响应？" maxlength="2048" required></div>
+					<div class="two wide field"><label>&nbsp;</label><button class="ui primary button">检索知识</button></div>
+				</div>
+			</form>
+			{{if .KnowledgeSearchResult}}
+				<div class="ui divider"></div>
+				{{if .KnowledgeSearchResult.Citations}}
+					<div class="ui relaxed divided list">{{range .KnowledgeSearchResult.Citations}}<div class="item"><div class="content"><div class="header">{{.Title}}</div><div class="description">{{.Content}}</div><div class="text light-2 tw-mt-1">引用：发布 #{{.PublicationID}} · 修订 #{{.RevisionID}} · 相关度 {{printf "%.3f" .Score}}</div></div></div>{{end}}</div>
+				{{else}}<div class="ui info message">未找到当前有权限且有效的知识引用。</div>{{end}}
+			{{end}}
+		</div>
+			</section>
+			<section class="knowledge-view knowledge-submit">
+				<h2 class="ui header tw-mb-1">提交一份资料</h2>
+				<div class="text light-2 tw-mb-3">每次只完成当前一步。提交成功后，系统会自动带你进入下一步，不会回到工作台重新找入口。</div>
+				<div class="knowledge-flow" aria-label="资料入库流程">
+					<div class="knowledge-flow-step"><strong>1</strong> 创建资料夹</div>
+					<div class="knowledge-flow-step"><strong>2</strong> 登记并启用来源</div>
+					<div class="knowledge-flow-step"><strong>3</strong> 选择仓库文件</div>
+					<div class="knowledge-flow-step"><strong>4</strong> 六项审核</div>
+					<div class="knowledge-flow-step"><strong>5</strong> 索引并生效</div>
+				</div>
+				<div class="ui three stackable cards knowledge-next-step">
+					<a href="#knowledge-space" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">第一次使用时先做</div><div class="header">1. 创建资料夹</div><div class="description">给同一类资料准备一个私有空间，例如“客户运营知识库”。只需名称和说明。</div></div></a>
+					<a href="#knowledge-data" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">有资料夹后做</div><div class="header">2. 告诉系统资料来自哪里</div><div class="description">选择资料夹、填写资料名称和类型。系统会记录来源并等待管理员启用。</div></div></a>
+					<a href="#knowledge-upload" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">来源启用后做</div><div class="header">3. 上传脱敏文件</div><div class="description">选择已启用来源，上传本地已脱敏的文件。提交后由审核人处理。</div></div></a>
+				</div>
+				<div class="ui warning message"><div class="header">请不要上传原始敏感文件</div><p>客户信息、个人信息和未经审批的原件必须先在本地脱敏。提交人不需要负责审核和发布。</p></div>
+			</section>
+			<section class="knowledge-view knowledge-tasks">
+				{{if .IsAdmin}}
+					<h2 class="ui header tw-mb-1">待我处理</h2>
+					<div class="text light-2 tw-mb-3">这里是知识管理员的工作入口。按待办处理即可，不需要先浏览资料台账或技术配置。</div>
+					<div class="ui three stackable cards knowledge-next-step">
+						<a href="#knowledge-data" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">先处理来源</div><div class="header">审核并启用资料来源</div><div class="description">确认资料归属和责任后启用；启用前不能提交正式知识。</div></div></a>
+						<a href="#knowledge-review" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">再核验内容</div><div class="header">完成六项审核</div><div class="description">确认来源、内容、权限、敏感、格式和发布条件；不能审核自己提交的资料。</div></div></a>
+						<a href="#knowledge-publish" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">最后使其生效</div><div class="header">处理索引并发布</div><div class="description">索引成功、抽检通过后再让版本生效；有风险时从这里下架。</div></div></a>
+					</div>
+					{{if gt .KnowledgeReviewTaskCount 0}}
+						<h3 class="ui top attached header">需要你审核的资料（{{.KnowledgeReviewTaskCount}}）</h3>
+						<div class="ui attached segment"><div class="ui relaxed divided list">{{range .KnowledgeApprovals}}{{if .CanReview}}<a class="item" href="#knowledge-review"><div class="content"><div class="header">{{.Title}}</div><div class="description">提交人 #{{.RequestedBy}} · 六项审核待完成。点击进入审核。</div></div></a>{{end}}{{end}}</div></div>
+					{{else}}
+						<div class="ui positive message">当前没有需要你处理的资料。</div>
+					{{end}}
+				{{else}}<div class="ui warning message">待办处理仅对知识管理员开放。</div>{{end}}
+			</section>
+			<section class="knowledge-view knowledge-content">
+
+		<div class="ui two column stackable grid tw-mb-4">
+			<div class="column knowledge-space-card">
+				<h3 class="ui top attached header">创建资料夹</h3>
+				<div class="ui attached segment">
+					<div class="ui info message">资料夹用于放同一业务主题的资料，例如“客户运营知识库”。创建成功后，系统会自动进入“登记资料来源”。</div>
+					<form class="ui form" action="{{AppSubUrl}}/knowledge/spaces" method="post">
+						<div class="required field">
+							<label>空间名称</label>
+							<input name="name" placeholder="企业知识库" maxlength="255" required>
+						</div>
+						<div class="field">
+							<label>空间说明</label>
+							<textarea name="description" rows="3" maxlength="255" placeholder="由知识治理流程统一管理的私有空间"></textarea>
+						</div>
+						<button class="ui primary button">创建私有知识空间</button>
+					</form>
+				</div>
+			</div>
+			<div class="column knowledge-upload-card">
+				<h3 class="ui top attached header">从 FileBay 仓库选择资料</h3>
+				<div class="ui attached segment">
+					<div class="ui info message"><strong>推荐方式：</strong>先在 FileBay 仓库完成脱敏和版本管理，再在这里选择已脱敏版本。系统会固定本次选择的仓库提交版本。</div>
+					<form class="ui form" action="{{AppSubUrl}}/knowledge/repository-artifacts" method="post">
+						<div class="required field"><label>知识空间</label><select name="space_id" required><option value="">请选择知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
+						<div class="field"><label>修订已有文档（可选）</label><select name="document_id"><option value="">新建逻辑文档</option>{{range .KnowledgeDocuments}}<option value="{{.ID}}">#{{.ID}} {{.Title}}</option>{{end}}</select></div>
+						<div class="required field"><label>知识标题</label><input name="title" maxlength="255" placeholder="例如：客户投诉处理规范" required></div>
+						<div class="required field"><label>已启用数据源</label><select name="data_source_id" required><option value="">请先登记并启用数据源</option>{{range .KnowledgeEnabledDataSources}}<option value="{{.ID}}">{{.SourceCode}} · {{.Name}}</option>{{end}}</select></div>
+						<div class="required field"><label>仓库中的已脱敏文件</label><select name="repository_selection" required onchange="const p=this.value.split('|'); this.form.repository_id.value=p[0]||''; this.form.repository_commit.value=p[1]||''; this.form.repository_path.value=p.slice(2).join('|')||'';"><option value="">请选择仓库文件</option>{{range .KnowledgeRepositoryArtifacts}}<option value="{{.RepoID}}|{{.CommitSHA}}|{{.Path}}">{{.RepoName}} · {{.Path}}</option>{{end}}</select><input type="hidden" name="repository_id"><input type="hidden" name="repository_commit"><input type="hidden" name="repository_path"><div class="help">只显示当前账号有读取权限、且符合知识库格式与大小限制的文件。</div></div>
+						<div class="inline required field"><div class="ui checkbox"><input name="repository_masked" type="checkbox" value="true" checked required><label>我确认所选仓库版本已完成脱敏</label></div></div>
+						<button class="ui primary button">从仓库提交待审核</button>
+					</form>
+					<details class="knowledge-advanced"><summary>没有放进仓库？使用本地上传（备用）</summary><div class="hint">请先在本地完成脱敏；业务资料建议先提交到 FileBay 仓库，再使用上方方式。</div>
+					<form class="ui form" action="{{AppSubUrl}}/knowledge/revisions" method="post" enctype="multipart/form-data">
+						<div class="required field">
+							<label>知识空间</label>
+							<select name="space_id" required>
+								<option value="">请选择知识空间</option>
+								{{range .KnowledgeSpaces}}
+									<option value="{{.ID}}">{{.Name}}</option>
+								{{end}}
+							</select>
+						</div>
+						<div class="field">
+							<label>修订已有文档（可选）</label>
+							<select name="document_id"><option value="">新建逻辑文档</option>{{range .KnowledgeDocuments}}<option value="{{.ID}}">#{{.ID}} {{.Title}}</option>{{end}}</select>
+							<div class="help">选择后会新增不可变修订版；不选择则创建新文档。</div>
+						</div>
+						<div class="required field">
+							<label>知识标题</label>
+							<input name="title" maxlength="255" placeholder="例如：客户投诉处理规范" required>
+						</div>
+						<div class="required field">
+							<label>已启用数据源</label>
+							<select name="data_source_id" required>
+								<option value="">请先登记并启用数据源</option>
+								{{range .KnowledgeEnabledDataSources}}
+									<option value="{{.ID}}">{{.SourceCode}} · {{.Name}}</option>
+								{{end}}
+							</select>
+						</div>
+						<div class="required field">
+							<label>已在本地脱敏的文件</label>
+							<input name="artifact" type="file" accept=".pdf,.docx,.pptx,.xlsx,.md,.txt" required>
+						</div>
+						<div class="inline required field">
+							<div class="ui checkbox">
+								<input name="masked" type="checkbox" value="true" checked required>
+								<label>我确认该文件已在客户端完成脱敏后再提交</label>
+							</div>
+						</div>
+						<details class="knowledge-advanced">
+							<summary>版本关系（通常无需填写）</summary>
+							<div class="hint">文件类型、脱敏策略版本和脱敏清单由系统按文件和已启用数据源自动生成并再次校验。只有需要修订既有内容时，才调整以下两项。</div>
+							<div class="two fields">
+								<div class="field"><label>文档版本</label><input name="version_no" value="V1.0" placeholder="V1.0"></div>
+								<div class="field"><label>与现行版本关系</label><select name="revision_relation"><option value="new">新建主题</option><option value="revision">修订版</option><option value="replacement">替代版</option><option value="supplement">补充版</option></select></div>
+							</div>
+						</details>
+						<button class="ui primary button">提交待审核</button>
+						<div class="help">系统会拒绝本地路径、未脱敏声明、不支持的文件类型和校验不一致的文件；来源授权、适用范围和脱敏策略均由已启用数据源继承。</div>
+					</form>
+					</details>
+				</div>
+			</div>
+		</div>
+			</section>
+			<section class="knowledge-view knowledge-data">
+
+		<h3 class="ui top attached header">第二步：登记并启用资料来源</h3>
+		<div class="ui attached segment">
+			{{if .IsAdmin}}<form class="tw-mb-3" action="{{AppSubUrl}}/knowledge/data-sources/expire-due" method="post"><button class="ui small basic button">检查并停用已到期数据源</button></form>{{end}}
+			<div class="ui info message"><div class="header">只需填写三项，其他治理信息由系统带入</div><p>登记成功后会保留在本页，方便另一位管理员立即审核启用；启用后系统会自动带你进入“从仓库选择资料”。</p></div>
+			<form class="ui form" action="{{AppSubUrl}}/knowledge/data-sources" method="post">
+				<div class="three fields">
+					<div class="required field"><label>资料放在哪个知识空间？</label><select name="space_id" required><option value="">请选择知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
+					<div class="required field"><label>这批资料叫什么？</label><input name="name" placeholder="例如：客户投诉处理制度" maxlength="255" required></div>
+					<div class="required field"><label>资料属于哪一类？</label><select name="source_type" required><option value="policy">制度、办法、通知</option><option value="procedure">流程、作业手册</option><option value="product">产品说明、规则</option><option value="training">培训课件、讲义</option><option value="faq">常见问答</option><option value="case">案例与复盘</option><option value="ticket">工单整理资料</option><option value="public_material">外部公开材料</option></select></div>
+				</div>
+				<button class="ui primary button">提交来源，等待管理员启用</button>
+			</form>
+		</div>
+
+		<h3 class="ui top attached header tw-mt-4">已登记数据源</h3>
+		<div class="ui attached segment">
+			{{if .KnowledgeDataSources}}
+				<table class="ui very basic striped table">
+					<thead><tr><th>数据源</th><th>空间</th><th>分类与级别</th><th>责任人</th><th>生效状态</th><th>审核与接入操作</th></tr></thead>
+					<tbody>{{range .KnowledgeDataSources}}
+						<tr><td><strong>{{.Name}}</strong><div class="text light-2">{{.SourceCode}} · {{.SourceTypeLabel}}</div></td><td>#{{.SpaceID}}</td><td>{{.BusinessDomainCode}} / {{.ContentTypeCode}}<div class="text light-2">{{.SecurityLevelLabel}}</div></td><td>{{.ContentOwnerName}}<div class="text light-2">维护：{{.MaintenanceOwnerName}}</div></td><td><span class="ui label">{{.StatusLabel}}</span><div class="text light-2">{{.SearchabilityLabel}}</div></td><td>{{if .CanApprove}}<form action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/enable" method="post"><button class="ui small primary button">审核并启用</button></form>{{end}}{{if .CanSync}}<form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/sync" method="post"><input type="hidden" name="mode" value="preview"><button class="ui small basic button">预览脱敏视图</button></form><form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/sync" method="post"><input type="hidden" name="mode" value="sync"><button class="ui small primary button">执行增量同步</button></form>{{end}}{{if and (not .CanApprove) (not .CanSync)}}<span class="text light-2">—</span>{{end}}</td></tr>
+					{{end}}</tbody>
+				</table>
+			{{else}}<div class="ui placeholder segment"><div class="ui icon header">{{svg "octicon-database" 32}}尚未登记数据源</div><p>请先创建知识空间，再登记来源、责任人、密级和适用范围。</p></div>{{end}}
+		</div>
+
+		{{if .KnowledgeSyncRuns}}<h3 class="ui top attached header tw-mt-4">数据接入运行记录</h3><div class="ui attached segment"><table class="ui very basic striped table"><thead><tr><th>运行编号</th><th>数据源</th><th>模式</th><th>状态</th><th>读取记录</th><th>待审核文档</th><th>错误代码</th></tr></thead><tbody>{{range .KnowledgeSyncRuns}}<tr><td>#{{.ID}}</td><td>#{{.DataSourceID}}</td><td>{{if eq .Mode "preview"}}预览{{else}}增量同步{{end}}</td><td>{{.Status}}</td><td>{{.RecordsRead}}</td><td>{{.DocumentsQueued}}</td><td>{{.ErrorCode}}</td></tr>{{end}}</tbody></table></div>{{end}}
+			</section>
+			<section class="knowledge-view knowledge-connector">
+				{{if .IsAdmin}}
+				<h3 class="ui top attached header">数据库接入（技术管理员）</h3>
+				<div class="ui attached segment">
+					<div class="ui warning message"><div class="header">仅接入已审批的脱敏只读视图</div><p>此页面由技术管理员与数据所有者共同完成。不得填写密码、完整连接串、原始表名或未脱敏字段。</p></div>
+					<form class="ui form" action="{{AppSubUrl}}/knowledge/data-sources" method="post">
+						<input type="hidden" name="source_type" value="database">
+						<input type="hidden" name="connector_type" value="mysql">
+						<div class="two fields"><div class="required field"><label>知识空间</label><select name="space_id" required><option value="">请选择知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div><div class="required field"><label>数据源名称</label><input name="name" placeholder="例如：已脱敏客服问答库" maxlength="255" required></div></div>
+						<div class="four fields"><div class="required field"><label>密钥引用</label><input name="secret_ref" placeholder="secret-ref:env/KB_MYSQL_DSN" required></div><div class="required field"><label>已审批的视图</label><input name="read_scope" placeholder='{"view":"v_kb_masked_faq"}' required></div><div class="required field"><label>审批单引用</label><input name="query_template_ref" placeholder="approval-ref:mysql-view-v1" required></div><div class="required field"><label>结构版本</label><input name="schema_version" value="v1" required></div></div>
+						<div class="three fields"><div class="required field"><label>字段映射</label><input name="field_mapping_json" placeholder='{"id":"record_id","title":"question","content":"answer_markdown","cursor":"updated_at"}' required></div><div class="required field"><label>增量游标字段</label><input name="incremental_cursor_field" placeholder="updated_at" required></div><div class="required field"><label>保留规则</label><input name="data_retention_rule" value="仅保留已脱敏视图记录" required></div></div>
+						<button class="ui primary button">提交数据库来源审核</button>
+					</form>
+				</div>
+				{{else}}<div class="ui warning message">数据库接入仅对技术管理员开放。</div>{{end}}
+			</section>
+			<section class="knowledge-view knowledge-library">
+
+		<h3 class="ui top attached header">知识空间</h3>
+		<div class="ui attached segment">
+			{{if .KnowledgeSpaces}}
+				<table class="ui very basic striped table">
+					<thead>
+						<tr>
+							<th>名称</th>
+							<th>管理方式</th>
+							<th>状态</th>
+							<th>发布代次</th>
+							<th>撤销代次</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						{{range .KnowledgeSpaces}}
+							<tr>
+								<td>
+									<strong>{{.Name}}</strong>
+								</td>
+								<td>由企业知识库统一管理</td>
+								<td><span class="ui label">{{if eq .Status "active"}}已启用{{else if eq .Status "archived"}}已归档{{else}}{{.Status}}{{end}}</span></td>
+								<td>{{.PublicationGeneration}}</td>
+								<td>{{.RevocationGeneration}}</td>
+								<td><form action="{{AppSubUrl}}/knowledge/spaces/{{.ID}}/delete-empty" method="post" onsubmit="return confirm('仅能删除没有资料、审核、授权和审计记录的空资料夹。确定删除吗？');"><button class="ui tiny basic red button">删除空资料夹</button></form></td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
+			{{else}}
+				<div class="ui placeholder segment">
+					<div class="ui icon header">
+						{{svg "octicon-database" 32}}
+						尚未创建知识空间
+					</div>
+				</div>
+			{{end}}
+		</div>
+
+		<h3 class="ui top attached header tw-mt-4">知识文档</h3>
+		<div class="ui attached segment">
+			{{if .KnowledgeDocuments}}
+				<table class="ui very basic striped table">
+					<thead>
+						<tr>
+							<th>编号</th>
+							<th>标题</th>
+							<th>知识空间</th>
+							<th>数据源</th>
+							<th>治理状态</th>
+							<th>修订号</th>
+							<th>仓库路径</th>
+						</tr>
+					</thead>
+					<tbody>
+						{{range .KnowledgeDocuments}}
+							<tr>
+								<td>{{.ID}}</td>
+								<td>
+									<strong>{{.Title}}</strong>
+									<div class="text light-2">{{.MIMEType}}</div>
+								</td>
+								<td>{{.SpaceID}}</td>
+								<td>{{if .DataSourceID}}#{{.DataSourceID}}{{else}}<span class="text light-2">历史记录未绑定</span>{{end}}</td>
+								<td><span class="ui label">{{.GovernanceLabel}}</span></td>
+								<td>{{.CurrentRevisionID}}</td>
+								<td><code>{{.RepoPath}}</code></td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
+			{{else}}
+				<div class="ui placeholder segment">
+					<div class="ui icon header">
+						{{svg "octicon-file" 32}}
+						暂无提交的知识文档
+					</div>
+				</div>
+			{{end}}
+		</div>
+
+			</section>
+			<section class="knowledge-view knowledge-review">
+		<h3 class="ui top attached header tw-mt-4">第四步：完成六项审核</h3>
+		<div class="ui attached segment">
+			{{if .KnowledgeApprovals}}
+				<table class="ui very basic striped table">
+					<thead>
+						<tr>
+							<th>审核单</th>
+							<th>文档</th>
+							<th>修订号</th>
+							<th>提交人</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						{{range .KnowledgeApprovals}}
+							<tr>
+								<td>#{{.ID}}</td>
+								<td>
+									<strong>{{.Title}}</strong>
+									<div class="text light-2">{{.FileName}}</div>
+								</td>
+								<td>{{.RevisionID}}</td>
+								<td>{{.RequestedBy}}</td>
+								<td>
+									{{$revisionID := .RevisionID}}<div class="ui tiny labels">{{range .ReviewChecks}}<span class="ui label">{{.ReviewLabel}}：{{.StatusLabel}}</span>{{end}}</div>
+									{{if .CanReview}}{{range .ReviewChecks}}{{if .CanReview}}<form class="ui tiny form tw-mt-2" action="{{AppSubUrl}}/knowledge/reviews/{{$revisionID}}/{{.ReviewType}}/pass" method="post"><input type="hidden" name="comment" value="审核通过"><button class="ui tiny basic button">通过{{.ReviewLabel}}</button></form>{{end}}{{end}}{{end}}
+									{{if .CanApprove}}<form class="ui form tw-mt-2" action="{{AppSubUrl}}/knowledge/approvals/{{.ID}}/approve" method="post"><input type="hidden" name="comment" value="六项审核均通过"><button class="ui small primary button">批准并创建索引任务</button></form>{{else}}<div class="text light-2 tw-mt-2">六项审核全部通过后才能批准</div>{{end}}
+									{{if .CanReview}}<form class="ui form tw-mt-2" action="{{AppSubUrl}}/knowledge/approvals/{{.ID}}/reject" method="post"><input type="hidden" name="comment" value="审核不通过"><button class="ui small basic red button">驳回修订</button></form>{{end}}
+								</td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
+			{{else}}
+				<div class="ui placeholder segment">
+					<div class="ui icon header">
+						{{svg "octicon-shield-check" 32}}
+						暂无待审核知识
+					</div>
+				</div>
+			{{end}}
+		</div>
+
+			</section>
+			<section class="knowledge-view knowledge-apps">
+		<h3 class="ui top attached header tw-mt-4">Dify 外部知识授权</h3>
+		<div class="ui attached segment">
+			{{if .KnowledgeNewDifyToken}}<div class="ui positive message"><div class="header">请立即保存此 Dify 应用密钥</div><p><code>{{.KnowledgeNewDifyToken}}</code></p><p>该密钥只显示这一次，系统仅保存其摘要。Dify 外部知识端点填写：<code>{{AppSubUrl}}/api/knowledge/external/retrieval</code></p></div>{{end}}
+			<div class="ui info message">每个 Dify 应用只能访问一个固定知识空间及指定密级上限，Dify 不会直接取得 RAGFlow 密钥。</div>
+			{{if .IsAdmin}}<form class="ui form" action="{{AppSubUrl}}/knowledge/dify-bindings" method="post"><div class="four fields"><div class="required field"><label>应用名称</label><input name="name" placeholder="客服问答助手" required></div><div class="required field"><label>Dify 知识库标识</label><input name="dify_knowledge_id" placeholder="dify-kb-customer-service" required></div><div class="required field"><label>知识空间</label><select name="space_id" required><option value="">请选择</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div><div class="required field"><label>最高可用密级</label><select name="max_security_level"><option value="internal">二级内部</option><option value="public">一级公开</option><option value="restricted">三级受限</option></select></div></div><button class="ui primary button">创建 Dify 授权</button></form>{{end}}
+			{{if .KnowledgeDifyBindings}}<table class="ui very basic striped table tw-mt-4"><thead><tr><th>应用</th><th>Dify 知识库标识</th><th>空间</th><th>授权上限</th><th>密钥尾号</th><th>状态</th></tr></thead><tbody>{{range .KnowledgeDifyBindings}}<tr><td>{{.Name}}</td><td><code>{{.DifyKnowledgeID}}</code></td><td>#{{.SpaceID}}</td><td>{{.MaxSecurityLevel}}</td><td>******{{.TokenHint}}</td><td>{{if .Enabled}}<span class="ui green label">已启用</span>{{else}}<span class="ui label">已停用</span>{{end}}</td></tr>{{end}}</tbody></table>{{end}}
+		</div>
+
+			</section>
+			<section class="knowledge-view knowledge-publish">
+		<h3 class="ui top attached header tw-mt-4">第五步：索引并发布</h3>
+		<div class="ui attached segment">
+			{{if .KnowledgePublications}}
+				<table class="ui very basic striped table">
+					<thead>
+						<tr>
+							<th>编号</th>
+							<th>文档</th>
+							<th>发布代次</th>
+							<th>有效性</th>
+							<th>索引状态</th>
+							<th>当前生效</th><th>生命周期操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						{{range .KnowledgePublications}}
+							<tr>
+								<td>{{.ID}}</td>
+								<td>{{.DocumentID}}</td>
+								<td>{{.Generation}}</td>
+								<td><span class="ui label">{{.ValidityLabel}}</span></td>
+								<td><span class="ui label">{{.IndexLabel}}</span></td>
+								<td>{{if .IsCurrent}}是{{else}}否{{end}}</td><td>{{if .CanActivate}}<form action="{{AppSubUrl}}/knowledge/publications/{{.ID}}/activate" method="post"><button class="ui small primary button">评测通过并生效</button></form>{{end}}{{if .CanRetry}}<form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/publications/{{.ID}}/retry-index" method="post"><button class="ui small basic button">重新索引</button></form>{{end}}{{if .CanUnpublish}}<form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/publications/{{.ID}}/unpublish" method="post"><input type="hidden" name="reason" value="治理下架"><button class="ui small basic red button">下架并撤销检索</button></form>{{end}}{{if and (not .CanActivate) (not .CanRetry) (not .CanUnpublish)}}<span class="text light-2">—</span>{{end}}</td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
+			{{else}}
+				<div class="ui placeholder segment">
+					<div class="ui icon header">
+						{{svg "octicon-package" 32}}
+						暂无发布快照
+					</div>
+				</div>
+			{{end}}
+		</div>
+
+		<h3 class="ui top attached header tw-mt-4">最近索引任务</h3>
+		<div class="ui attached segment">
+			{{if .KnowledgeJobs}}
+				<table class="ui very basic striped table">
+					<thead>
+						<tr>
+							<th>编号</th>
+							<th>发布快照</th>
+							<th>任务类型</th>
+							<th>状态</th>
+							<th>尝试次数</th>
+							<th>引擎配置</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						{{range .KnowledgeJobs}}
+							<tr>
+								<td>{{.ID}}</td>
+								<td>{{.PublicationID}}</td>
+								<td>{{.JobTypeLabel}}</td>
+								<td><span class="ui label">{{.StatusLabel}}</span></td>
+								<td>{{.Attempt}} / {{.MaxAttempts}}</td>
+								<td>
+									{{.EngineProfileVersion}}
+									{{if .LastError}}<div class="text red">{{.LastError}}</div>{{end}}
+								</td>
+								<td>
+									{{if .CanProcess}}
+										<form action="{{AppSubUrl}}/knowledge/jobs/{{.ID}}/process" method="post">
+										<button class="ui small button">立即处理</button>
+										</form>
+									{{else}}
+										<span class="text light-2">—</span>
+									{{end}}
+								</td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
+			{{else}}
+				<div class="ui placeholder segment">
+					<div class="ui icon header">
+						{{svg "octicon-clock" 32}}
+						暂无索引任务
+					</div>
+				</div>
+			{{end}}
+		</div>
+			</section>
+			</div>
+		</div>
+	</div>
+</div>
+{{template "base/footer" .}}

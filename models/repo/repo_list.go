@@ -153,17 +153,23 @@ func (repos RepositoryList) LoadAttributes(ctx context.Context) error {
 // SearchRepoOptions holds the search options
 type SearchRepoOptions struct {
 	db.ListOptions
-	Actor           *user_model.User
-	Keyword         string
-	OwnerID         int64
-	PriorityOwnerID int64
-	TeamID          int64
-	OrderBy         db.SearchOrderBy
-	Private         bool // Include private repositories in results
-	StarredByID     int64
-	WatchedByID     int64
-	AllPublic       bool // Include also all public repositories of users and public organisations
-	AllLimited      bool // Include also all public repositories of limited organisations
+	Actor   *user_model.User
+	Keyword string
+	// ExcludeIDs removes implementation repositories from a caller-specific
+	// listing without affecting their normal authorization or direct access.
+	ExcludeIDs []int64
+	// ExcludeDescriptionPrefixes removes legacy implementation repositories
+	// that were created before their governance-space record was persisted.
+	ExcludeDescriptionPrefixes []string
+	OwnerID                    int64
+	PriorityOwnerID            int64
+	TeamID                     int64
+	OrderBy                    db.SearchOrderBy
+	Private                    bool // Include private repositories in results
+	StarredByID                int64
+	WatchedByID                int64
+	AllPublic                  bool // Include also all public repositories of users and public organisations
+	AllLimited                 bool // Include also all public repositories of limited organisations
 	// None -> include public and private
 	// True -> include just private
 	// False -> include just public
@@ -361,6 +367,14 @@ func UserOrgPublicUnitRepoCond(userID, orgID int64) builder.Cond {
 // SearchRepositoryCondition creates a query condition according search repository options
 func SearchRepositoryCondition(opts SearchRepoOptions) builder.Cond {
 	cond := builder.NewCond()
+	if len(opts.ExcludeIDs) > 0 {
+		cond = cond.And(builder.NotIn("id", opts.ExcludeIDs))
+	}
+	for _, prefix := range opts.ExcludeDescriptionPrefixes {
+		if prefix != "" {
+			cond = cond.And(builder.Expr("description NOT LIKE ?", prefix+"%"))
+		}
+	}
 
 	if opts.Private {
 		if opts.Actor != nil && !opts.Actor.IsAdmin && opts.Actor.ID != opts.OwnerID {

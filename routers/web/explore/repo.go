@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"code.gitea.io/gitea/models/db"
+	knowledge_model "code.gitea.io/gitea/models/knowledge"
 	repo_model "code.gitea.io/gitea/models/repo"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
@@ -28,7 +29,10 @@ type RepoSearchOptions struct {
 	Restricted       bool
 	PageSize         int
 	OnlyShowRelevant bool
-	TplName          templates.TplName
+	// ExcludeKnowledgeRepositories keeps the Git repositories used as FileBay
+	// implementation storage out of the ordinary repository discovery screen.
+	ExcludeKnowledgeRepositories bool
+	TplName                      templates.TplName
 }
 
 // RenderRepoSearch render repositories search page
@@ -94,15 +98,32 @@ func RenderRepoSearch(ctx *context.Context, opts *RepoSearchOptions) {
 	private := ctx.FormOptionalBool("private")
 	ctx.Data["IsPrivate"] = private
 
+	var excludeIDs []int64
+	if opts.ExcludeKnowledgeRepositories {
+		var spaces []knowledge_model.Space
+		if err := db.GetEngine(ctx).Cols("repo_id").Find(&spaces); err != nil {
+			ctx.ServerError("ListKnowledgeSpaceRepositoryIDs", err)
+			return
+		}
+		for _, space := range spaces {
+			excludeIDs = append(excludeIDs, space.RepoID)
+		}
+	}
+
 	repos, count, err = repo_model.SearchRepository(ctx, repo_model.SearchRepoOptions{
 		ListOptions: db.ListOptions{
 			Page:     page,
 			PageSize: opts.PageSize,
 		},
-		Actor:              ctx.Doer,
-		OrderBy:            orderBy,
-		Private:            opts.Private,
-		Keyword:            keyword,
+		Actor:      ctx.Doer,
+		OrderBy:    orderBy,
+		Private:    opts.Private,
+		Keyword:    keyword,
+		ExcludeIDs: excludeIDs,
+		ExcludeDescriptionPrefixes: []string{
+			"Managed knowledge base:", // legacy trial repositories
+			"由企业知识库管理：",
+		},
 		OwnerID:            opts.OwnerID,
 		AllPublic:          true,
 		AllLimited:         true,
@@ -168,10 +189,11 @@ func Repos(ctx *context.Context) {
 	}
 
 	RenderRepoSearch(ctx, &RepoSearchOptions{
-		PageSize:         setting.UI.ExplorePagingNum,
-		OwnerID:          ownerID,
-		Private:          ctx.Doer != nil,
-		TplName:          tplExploreRepos,
-		OnlyShowRelevant: onlyShowRelevant,
+		PageSize:                     setting.UI.ExplorePagingNum,
+		OwnerID:                      ownerID,
+		Private:                      ctx.Doer != nil,
+		TplName:                      tplExploreRepos,
+		OnlyShowRelevant:             onlyShowRelevant,
+		ExcludeKnowledgeRepositories: true,
 	})
 }

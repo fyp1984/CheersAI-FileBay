@@ -5,6 +5,8 @@ package setting
 
 import (
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -142,6 +144,23 @@ type testLocalStoragePathCase struct {
 }
 
 func testLocalStoragePath(t *testing.T, appDataPath, iniStr string, cases []testLocalStoragePathCase) {
+	// The fixtures model Unix deployment paths. Convert them to stable native
+	// absolute paths on Windows so the assertions test storage inheritance,
+	// rather than filepath's platform-specific definition of an absolute path.
+	if runtime.GOOS == "windows" {
+		root := t.TempDir()
+		for source, target := range map[string]string{
+			"/appdata":    filepath.Join(root, "appdata"),
+			"/data/gitea": filepath.Join(root, "data", "gitea"),
+			"/tmp/gitea":  filepath.Join(root, "tmp", "gitea"),
+		} {
+			appDataPath = strings.ReplaceAll(appDataPath, source, target)
+			iniStr = strings.ReplaceAll(iniStr, source, target)
+			for index := range cases {
+				cases[index].expectedPath = strings.ReplaceAll(cases[index].expectedPath, source, target)
+			}
+		}
+	}
 	cfg, err := NewConfigProviderFromData(iniStr)
 	assert.NoError(t, err)
 	AppDataPath = appDataPath

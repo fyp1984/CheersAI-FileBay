@@ -31,6 +31,7 @@ import (
 	"code.gitea.io/gitea/routers/web/explore"
 	"code.gitea.io/gitea/routers/web/feed"
 	"code.gitea.io/gitea/routers/web/healthcheck"
+	knowledge_web "code.gitea.io/gitea/routers/web/knowledge"
 	"code.gitea.io/gitea/routers/web/misc"
 	"code.gitea.io/gitea/routers/web/org"
 	org_setting "code.gitea.io/gitea/routers/web/org/setting"
@@ -1720,6 +1721,33 @@ func registerWebRoutes(m *web.Router, webAuth *AuthMiddleware) {
 		m.Post("/purge", user.NotificationPurgePost)
 		m.Get("/new", user.NewAvailable)
 	}, reqSignIn)
+
+	m.Group("/knowledge", func() {
+		m.Get("", knowledge_web.Dashboard)
+		m.Post("/spaces", knowledge_web.CreateSpace)
+		m.Post("/spaces/{id}/delete-empty", knowledge_web.DeleteEmptySpace)
+		m.Post("/data-sources", knowledge_web.CreateDataSource)
+		m.Post("/data-sources/{id}/enable", knowledge_web.EnableDataSource)
+		m.Post("/data-sources/{id}/sync", knowledge_web.SyncMySQL)
+		m.Post("/data-sources/expire-due", knowledge_web.ExpireDueDataSources)
+		m.Post("/revisions", knowledge_web.UploadRevision)
+		m.Post("/repository-artifacts", knowledge_web.ImportRepositoryArtifact)
+		m.Post("/reviews/{revisionID}/{reviewType}/pass", knowledge_web.CompleteReview)
+		m.Post("/approvals/{id}/approve", knowledge_web.Approve)
+		m.Post("/approvals/{id}/reject", knowledge_web.Reject)
+		m.Post("/publications/{id}/activate", knowledge_web.ActivatePublication)
+		m.Post("/publications/{id}/retry-index", knowledge_web.RetryPublicationIndex)
+		m.Post("/publications/{id}/unpublish", knowledge_web.UnpublishPublication)
+		m.Post("/jobs/{id}/process", knowledge_web.ProcessJob)
+		m.Post("/dify-bindings", knowledge_web.CreateDifyBinding)
+		m.Post("/search", knowledge_web.Search)
+		m.Post("/feedback", knowledge_web.CreateFeedback)
+	}, reqSignIn, knowledge_web.Enabled)
+
+	// Dify appends "/retrieval" to its configured External Knowledge endpoint.
+	// The handler performs its own fixed-scope Bearer authentication and never
+	// accepts a FileBay session or direct RAGFlow credential.
+	m.Post("/api/knowledge/external/retrieval", knowledge_web.ExternalRetrieval)
 
 	if setting.API.EnableSwagger {
 		m.Get("/swagger.v1.json", SwaggerV1Json)

@@ -26,6 +26,7 @@ import (
 	"code.gitea.io/gitea/models/migrations/v1_24"
 	"code.gitea.io/gitea/models/migrations/v1_25"
 	"code.gitea.io/gitea/models/migrations/v1_26"
+	"code.gitea.io/gitea/models/migrations/v1_27"
 	"code.gitea.io/gitea/models/migrations/v1_6"
 	"code.gitea.io/gitea/models/migrations/v1_7"
 	"code.gitea.io/gitea/models/migrations/v1_8"
@@ -402,6 +403,9 @@ func prepareMigrationTasks() []*migration {
 		newMigration(325, "Fix missed repo_id when migrate attachments", v1_26.FixMissedRepoIDWhenMigrateAttachments),
 		newMigration(326, "Migrate commit status target URL to use run ID and job ID", v1_26.FixCommitStatusTargetURLToUseRunAndJobID),
 		newMigration(327, "Add disabled state to action runners", v1_26.AddDisabledToActionRunner),
+		newMigration(328, "Add governed knowledge-base tables", v1_27.AddKnowledgeBaseTables),
+		newMigration(329, "Add knowledge data-source governance", v1_27.AddKnowledgeDataSourceGovernance),
+		newMigration(330, "Add knowledge trial governance and retrieval tables", v1_27.AddKnowledgeTrialGovernanceTables),
 	}
 	return preparedMigrations
 }
