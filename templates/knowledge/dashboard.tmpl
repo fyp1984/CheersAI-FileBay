@@ -3,21 +3,22 @@
 	<div class="ui container">
 		{{template "base/alert" .}}
 		<style>
-			.knowledge-workbench { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 32px; align-items: start; max-width: 1180px; margin: 0 auto; }
-			.knowledge-sidebar { position: sticky; top: 20px; border: 1px solid var(--color-secondary-alpha-20); border-radius: 12px; background: var(--color-box-body); padding: 12px; box-shadow: 0 1px 2px rgba(0, 0, 0, .03); }
-			.knowledge-sidebar .brand { display: flex; align-items: center; gap: 8px; padding: 10px 12px 18px; font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
-			.knowledge-sidebar a { display: flex; align-items: center; justify-content: space-between; min-height: 38px; margin: 2px 0; padding: 8px 10px; border-radius: 8px; color: var(--color-text-light-1); font-size: 14px; }
-			.knowledge-sidebar a:hover { background: var(--color-hover); color: var(--color-text); text-decoration: none; }
-			.knowledge-sidebar a.active { background: var(--color-primary-light-2); color: var(--color-primary); font-weight: 700; }
-			.knowledge-sidebar .section-label { padding: 18px 10px 6px; color: var(--color-text-light-2); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+			/* Dify-style workspace primitives: compact hierarchy, one interaction language, no native controls. */
+			.knowledge-workbench { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 36px; align-items: start; max-width: 1220px; margin: 0 auto; }
+			.knowledge-sidebar { position: sticky; top: 20px; border: 1px solid var(--color-secondary-alpha-20); border-radius: 14px; background: var(--color-box-body); padding: 14px 12px; box-shadow: 0 8px 24px rgba(16, 24, 40, .035); }
+			.knowledge-sidebar .brand { display: flex; align-items: center; gap: 9px; padding: 10px 12px 20px; font-size: 15px; font-weight: 700; letter-spacing: -.015em; }
+			.knowledge-sidebar a { display: flex; align-items: center; justify-content: space-between; min-height: 40px; margin: 2px 0; padding: 9px 11px; border: 1px solid transparent; border-radius: 9px; color: var(--color-text-light-1); font-size: 14px; font-weight: 500; transition: background .15s ease, border-color .15s ease, color .15s ease; }
+			.knowledge-sidebar a:hover { background: var(--color-hover); border-color: var(--color-secondary-alpha-20); color: var(--color-text); text-decoration: none; }
+			.knowledge-sidebar a.active { background: var(--color-primary-light-2); border-color: var(--color-primary-light-1); color: var(--color-primary); font-weight: 700; }
+			.knowledge-sidebar .section-label { padding: 20px 11px 7px; color: var(--color-text-light-2); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
 			.knowledge-view { display: none; }
 			.knowledge-overview { display: block; }
 			.knowledge-page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
-			.knowledge-page-header .ui.header { margin: 0 0 6px; font-size: 26px; letter-spacing: -.03em; }
-			.knowledge-page-header .description { max-width: 680px; color: var(--color-text-light-2); line-height: 1.65; }
-			.knowledge-surface { border: 1px solid var(--color-secondary-alpha-20); border-radius: 12px; background: var(--color-box-body); box-shadow: 0 1px 3px rgba(0, 0, 0, .04); }
-			.knowledge-surface > .content { padding: 20px; }
-			.knowledge-surface-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--color-secondary-alpha-20); font-size: 15px; font-weight: 700; }
+			.knowledge-page-header .ui.header { margin: 0 0 7px; font-size: 27px; font-weight: 650; letter-spacing: -.035em; }
+			.knowledge-page-header .description { max-width: 720px; color: var(--color-text-light-2); font-size: 14px; line-height: 1.65; }
+			.knowledge-surface { border: 1px solid var(--color-secondary-alpha-20); border-radius: 14px; background: var(--color-box-body); box-shadow: 0 8px 24px rgba(16, 24, 40, .035); }
+			.knowledge-surface > .content { padding: 22px; }
+			.knowledge-surface-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 62px; padding: 17px 22px; border-bottom: 1px solid var(--color-secondary-alpha-20); font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
 			.knowledge-surface-title .text { font-size: 12px; font-weight: 400; }
 			.knowledge-anchor { position: absolute; }
 			{{if .KnowledgeSearchResult}}.knowledge-overview { display: none; } .knowledge-search { display: block; }{{end}}
@@ -56,30 +57,64 @@
 			#knowledge-library:target ~ .knowledge-workbench a[data-step="library"],
 			#knowledge-connector:target ~ .knowledge-workbench a[data-step="connector"],
 			#knowledge-apps:target ~ .knowledge-workbench a[data-step="apps"] { background: var(--color-primary-light-2); color: var(--color-primary); font-weight: 700; }
-			.knowledge-main .ui.form .field > label { margin-bottom: 7px; color: var(--color-text); font-size: 13px; font-weight: 600; }
-			.knowledge-main .ui.form input:not([type="checkbox"]), .knowledge-main .ui.form select, .knowledge-main .ui.form textarea { min-height: 42px; border-color: var(--color-secondary-alpha-40); border-radius: 8px; box-shadow: none; font-size: 14px; }
-			.knowledge-main .ui.form input:focus, .knowledge-main .ui.form select:focus, .knowledge-main .ui.form textarea:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light-2); }
-			.knowledge-main .ui.primary.button { min-height: 40px; border-radius: 8px; box-shadow: none; font-weight: 600; }
-			.knowledge-main .help, .knowledge-main .hint { margin-top: 6px; color: var(--color-text-light-2); font-size: 12px; line-height: 1.6; }
-			.knowledge-advanced { margin-top: 14px; border: 1px solid var(--color-secondary-alpha-20); border-radius: 8px; padding: 12px 14px; background: var(--color-box-body); }
+			.knowledge-main .ui.form .field > label { margin-bottom: 8px; color: var(--color-text); font-size: 13px; font-weight: 650; }
+			.knowledge-main .ui.form input:not([type="checkbox"]), .knowledge-main .ui.form textarea { min-height: 44px; border-color: var(--color-secondary-alpha-40); border-radius: 9px; box-shadow: none; font-size: 14px; transition: border-color .15s ease, box-shadow .15s ease; }
+			.knowledge-main .ui.form textarea { min-height: 96px; }
+			.knowledge-main .ui.form input:focus, .knowledge-main .ui.form textarea:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light-2); }
+			.knowledge-main .ui.selection.dropdown.knowledge-select { display: block; min-height: 44px; padding: 13px 42px 12px 13px; border-color: var(--color-secondary-alpha-40); border-radius: 9px; box-shadow: none; color: var(--color-input-text); font-size: 14px; line-height: 18px; transition: border-color .15s ease, box-shadow .15s ease, background .15s ease; }
+			.knowledge-main .ui.selection.dropdown.knowledge-select:hover { background: var(--color-input-background); border-color: var(--color-primary); }
+			.knowledge-main .ui.selection.dropdown.knowledge-select.active, .knowledge-main .ui.selection.dropdown.knowledge-select.visible { border-color: var(--color-primary); border-radius: 9px 9px 0 0; box-shadow: 0 0 0 3px var(--color-primary-light-2); }
+			.knowledge-main .ui.selection.dropdown.knowledge-select > .dropdown.icon { top: 50%; right: 13px; margin: 0; padding: 0; transform: translateY(-50%); color: var(--color-text-light-2); }
+			.knowledge-main .ui.selection.dropdown.knowledge-select .menu { margin-top: 6px; border: 1px solid var(--color-secondary-alpha-40) !important; border-radius: 10px !important; box-shadow: 0 12px 28px rgba(16, 24, 40, .14) !important; }
+			.knowledge-main .ui.selection.dropdown.knowledge-select .menu > .item { min-height: 42px; padding: 11px 13px !important; border: 0; color: var(--color-text-light-1); font-size: 14px; }
+			.knowledge-main .ui.selection.dropdown.knowledge-select .menu > .item:hover, .knowledge-main .ui.selection.dropdown.knowledge-select .menu > .active.item { background: var(--color-primary-light-2); color: var(--color-primary); }
+			.knowledge-main .ui.primary.button { min-height: 42px; padding: 0 16px; border-radius: 9px; box-shadow: none; font-weight: 650; transition: transform .15s ease, box-shadow .15s ease; }
+			.knowledge-main .ui.primary.button:hover { transform: translateY(-1px); box-shadow: 0 5px 12px var(--color-primary-light-1); }
+			.knowledge-main .ui.basic.button { border-radius: 8px; box-shadow: inset 0 0 0 1px var(--color-secondary-alpha-40) !important; }
+			.knowledge-main .ui.label { border-radius: 999px; font-size: 12px; font-weight: 650; }
+			.knowledge-main .help, .knowledge-main .hint { margin-top: 7px; color: var(--color-text-light-2); font-size: 12px; line-height: 1.65; }
+			.knowledge-main .ui.message { border: 1px solid var(--color-secondary-alpha-20); border-radius: 10px; box-shadow: none; }
+			.knowledge-advanced { margin-top: 16px; border: 1px solid var(--color-secondary-alpha-20); border-radius: 10px; padding: 14px 16px; background: var(--color-box-body); }
 			.knowledge-advanced summary { cursor: pointer; font-weight: 600; }
 			.knowledge-advanced .hint { color: var(--color-text-light-2); margin: 8px 0 14px; }
 			.knowledge-next-step { margin-bottom: 16px; }
-			.knowledge-next-step .workflow-card { color: var(--color-text); border: 1px solid var(--color-secondary-alpha-20); border-radius: 12px; box-shadow: none; transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
-			.knowledge-next-step .workflow-card:hover { border-color: var(--color-primary); color: var(--color-text); text-decoration: none; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, .08); }
+			.knowledge-next-step .workflow-card { color: var(--color-text); border: 1px solid var(--color-secondary-alpha-20); border-radius: 14px; box-shadow: 0 2px 6px rgba(16, 24, 40, .02); transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+			.knowledge-next-step .workflow-card:hover { border-color: var(--color-primary); color: var(--color-text); text-decoration: none; transform: translateY(-2px); box-shadow: 0 12px 24px rgba(16, 24, 40, .09); }
 			.knowledge-step-kicker { color: var(--color-primary); font-size: 11px; font-weight: 700; letter-spacing: .06em; margin-bottom: 8px; text-transform: uppercase; }
 			.knowledge-choice { min-height: 138px; }
 			.knowledge-choice .header { font-size: 17px !important; letter-spacing: -.02em; }
 			.knowledge-choice .description { margin-top: 7px; color: var(--color-text-light-2) !important; line-height: 1.65; }
-			.knowledge-flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin: 0 0 22px; padding: 0; overflow: hidden; border: 1px solid var(--color-secondary-alpha-20); border-radius: 10px; background: var(--color-box-body); }
-			.knowledge-flow-step { display: flex; align-items: center; gap: 8px; min-height: 54px; padding: 10px 12px; border-right: 1px solid var(--color-secondary-alpha-20); color: var(--color-text-light-2); font-size: 12px; }
+			.knowledge-flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin: 0 0 22px; padding: 0; overflow: hidden; border: 1px solid var(--color-secondary-alpha-20); border-radius: 12px; background: var(--color-box-body); }
+			.knowledge-flow-step { display: flex; align-items: center; gap: 8px; min-height: 58px; padding: 10px 13px; border-right: 1px solid var(--color-secondary-alpha-20); color: var(--color-text-light-2); font-size: 12px; }
 			.knowledge-flow-step:last-child { border-right: 0; }
 			.knowledge-flow-step strong { display: inline-grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; background: var(--color-primary-light-2); color: var(--color-primary); font-size: 11px; }
-			.knowledge-current-step { margin-bottom: 20px; padding: 14px 16px; border: 1px solid var(--color-primary-light-1); border-radius: 10px; background: var(--color-primary-light-2); color: var(--color-text); }
+			.knowledge-current-step { margin-bottom: 20px; padding: 15px 17px; border: 1px solid var(--color-primary-light-1); border-radius: 12px; background: var(--color-primary-light-2); color: var(--color-text); line-height: 1.65; }
 			.knowledge-current-step strong { color: var(--color-primary); }
-			.knowledge-admin-note { margin-top: 16px; padding: 12px 14px; border-radius: 8px; background: var(--color-hover); color: var(--color-text-light-2); font-size: 13px; line-height: 1.6; }
-			.knowledge-list-card { margin-top: 16px; overflow: hidden; border: 1px solid var(--color-secondary-alpha-20); border-radius: 10px; }
+			.knowledge-admin-note { margin-top: 16px; padding: 13px 15px; border-radius: 10px; background: var(--color-hover); color: var(--color-text-light-2); font-size: 13px; line-height: 1.65; }
+			.knowledge-list-card { margin-top: 18px; overflow: hidden; border: 1px solid var(--color-secondary-alpha-20); border-radius: 12px; background: var(--color-box-body); }
+			.knowledge-main .ui.top.attached.header { margin: 0; min-height: 62px; padding: 18px 22px; border: 1px solid var(--color-secondary-alpha-20); border-bottom: 0; border-radius: 14px 14px 0 0; background: var(--color-box-body); font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+			.knowledge-main .ui.attached.segment { border-color: var(--color-secondary-alpha-20); border-radius: 0 0 14px 14px; box-shadow: 0 8px 24px rgba(16, 24, 40, .035); }
+			.knowledge-main .ui.table { margin: 0; border-collapse: separate; border-spacing: 0; }
+			.knowledge-main .ui.table thead th { padding: 13px 14px; border-bottom: 1px solid var(--color-secondary-alpha-20); background: var(--color-hover); color: var(--color-text-light-2); font-size: 12px; font-weight: 700; }
+			.knowledge-main .ui.table tbody td { padding: 14px; border-top: 1px solid var(--color-secondary-alpha-20); vertical-align: middle; }
+			.knowledge-main .ui.table tbody tr:first-child td { border-top: 0; }
+			.knowledge-main .ui.table code { padding: 2px 6px; border-radius: 5px; background: var(--color-hover); font-size: 12px; }
 			.knowledge-list-card .ui.table { margin: 0; }
+			.knowledge-main .ui.checkbox label { color: var(--color-text-light-1); font-size: 13px; line-height: 1.55; }
+			.knowledge-main .ui.placeholder.segment { min-height: 180px; border: 1px dashed var(--color-secondary-alpha-40); border-radius: 12px; box-shadow: none; }
+			/* A workflow exposes one task at a time: its surface should use the entire main canvas. */
+			.knowledge-content > .ui.two.column.stackable.grid { display: block; margin: 0 !important; }
+			.knowledge-content > .ui.two.column.stackable.grid > .column { width: 100% !important; padding: 0 !important; }
+			.knowledge-entry-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 20px; }
+			.knowledge-entry-form > .field { margin: 0 !important; }
+			.knowledge-entry-form > .field:nth-of-type(3),
+			.knowledge-entry-form > .inline.field,
+			.knowledge-entry-form > .ui.primary.button,
+			.knowledge-entry-form > .help,
+			.knowledge-entry-form > .knowledge-advanced { grid-column: 1 / -1; }
+			.knowledge-entry-form > .inline.field { margin-top: -2px !important; }
+			.knowledge-entry-form > .ui.primary.button { justify-self: start; margin: 0; }
+			@media (max-width: 767px) { .knowledge-entry-form { grid-template-columns: 1fr; } .knowledge-entry-form > * { grid-column: auto !important; } }
 			@media (max-width: 1000px) { .knowledge-flow { grid-template-columns: repeat(3, minmax(0, 1fr)); } .knowledge-flow-step:nth-child(3) { border-right: 0; } }
 			@media (max-width: 767px) { .knowledge-workbench { display: block; } .knowledge-sidebar { position: static; margin-bottom: 16px; } .knowledge-sidebar a { display: inline-block; } }
 			@media (max-width: 767px) { .knowledge-page-header { display: block; } .knowledge-flow { grid-template-columns: 1fr; } .knowledge-flow-step { border-right: 0; border-bottom: 1px solid var(--color-secondary-alpha-20); } .knowledge-flow-step:last-child { border-bottom: 0; } }
@@ -137,7 +172,7 @@
 			<div class="content">
 			<form class="ui form" action="{{AppSubUrl}}/knowledge/search" method="post">
 				<div class="fields">
-					<div class="five wide field"><label>检索范围</label><select name="space_id"><option value="">我有权限的全部知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
+					<div class="five wide field"><label>检索范围</label><select class="ui fluid selection dropdown knowledge-select" name="space_id"><option value="">我有权限的全部知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
 					<div class="nine wide required field"><label>问题</label><input name="query" value="{{.KnowledgeSearchQuery}}" placeholder="例如：客户投诉应在多长时间内响应？" maxlength="2048" required></div>
 					<div class="two wide field"><label>&nbsp;</label><button class="ui primary button">检索知识</button></div>
 				</div>
@@ -216,20 +251,20 @@
 					<div class="knowledge-surface-title">第 3 步：从仓库选择资料 <span class="text light-2">优先使用 FileBay 已脱敏版本</span></div>
 					<div class="content">
 					<div class="knowledge-admin-note"><strong>推荐方式：</strong>先在 FileBay 仓库完成脱敏和版本管理，再在这里选择已脱敏版本。系统会固定本次选择的仓库提交版本。</div>
-					<form class="ui form" action="{{AppSubUrl}}/knowledge/repository-artifacts" method="post">
-						<div class="required field"><label>知识空间</label><select name="space_id" required><option value="">请选择知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
-						<div class="field"><label>修订已有文档（可选）</label><select name="document_id"><option value="">新建逻辑文档</option>{{range .KnowledgeDocuments}}<option value="{{.ID}}">#{{.ID}} {{.Title}}</option>{{end}}</select></div>
+					<form class="ui form knowledge-entry-form" action="{{AppSubUrl}}/knowledge/repository-artifacts" method="post">
+						<div class="required field"><label>知识空间</label><select class="ui fluid selection dropdown knowledge-select" name="space_id" required><option value="">请选择知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
+						<div class="field"><label>修订已有文档（可选）</label><select class="ui fluid selection dropdown knowledge-select" name="document_id"><option value="">新建逻辑文档</option>{{range .KnowledgeDocuments}}<option value="{{.ID}}">#{{.ID}} {{.Title}}</option>{{end}}</select></div>
 						<div class="required field"><label>知识标题</label><input name="title" maxlength="255" placeholder="例如：客户投诉处理规范" required></div>
-						<div class="required field"><label>已启用数据源</label><select name="data_source_id" required><option value="">请先登记并启用数据源</option>{{range .KnowledgeEnabledDataSources}}<option value="{{.ID}}">{{.SourceCode}} · {{.Name}}</option>{{end}}</select></div>
-						<div class="required field"><label>仓库中的已脱敏文件</label><select name="repository_selection" required onchange="const p=this.value.split('|'); this.form.repository_id.value=p[0]||''; this.form.repository_commit.value=p[1]||''; this.form.repository_path.value=p.slice(2).join('|')||'';"><option value="">请选择仓库文件</option>{{range .KnowledgeRepositoryArtifacts}}<option value="{{.RepoID}}|{{.CommitSHA}}|{{.Path}}">{{.RepoName}} · {{.Path}}</option>{{end}}</select><input type="hidden" name="repository_id"><input type="hidden" name="repository_commit"><input type="hidden" name="repository_path"><div class="help">只显示当前账号有读取权限、且符合知识库格式与大小限制的文件。</div></div>
+						<div class="required field"><label>已启用数据源</label><select class="ui fluid selection dropdown knowledge-select" name="data_source_id" required><option value="">请先登记并启用数据源</option>{{range .KnowledgeEnabledDataSources}}<option value="{{.ID}}">{{.SourceCode}} · {{.Name}}</option>{{end}}</select></div>
+						<div class="required field"><label>仓库中的已脱敏文件</label><select class="ui fluid selection dropdown knowledge-select" name="repository_selection" required><option value="">请选择仓库文件</option>{{range .KnowledgeRepositoryArtifacts}}<option value="{{.RepoID}}|{{.CommitSHA}}|{{.Path}}">{{.RepoName}} · {{.Path}}</option>{{end}}</select><input type="hidden" name="repository_id"><input type="hidden" name="repository_commit"><input type="hidden" name="repository_path"><div class="help">只显示当前账号有读取权限、且符合知识库格式与大小限制的文件。</div></div>
 						<div class="inline required field"><div class="ui checkbox"><input name="repository_masked" type="checkbox" value="true" checked required><label>我确认所选仓库版本已完成脱敏</label></div></div>
 						<button class="ui primary button">从仓库提交待审核</button>
 					</form>
 					<details class="knowledge-advanced"><summary>没有放进仓库？使用本地上传（备用）</summary><div class="hint">请先在本地完成脱敏；业务资料建议先提交到 FileBay 仓库，再使用上方方式。</div>
-					<form class="ui form" action="{{AppSubUrl}}/knowledge/revisions" method="post" enctype="multipart/form-data">
+					<form class="ui form knowledge-entry-form" action="{{AppSubUrl}}/knowledge/revisions" method="post" enctype="multipart/form-data">
 						<div class="required field">
 							<label>知识空间</label>
-							<select name="space_id" required>
+							<select class="ui fluid selection dropdown knowledge-select" name="space_id" required>
 								<option value="">请选择知识空间</option>
 								{{range .KnowledgeSpaces}}
 									<option value="{{.ID}}">{{.Name}}</option>
@@ -238,7 +273,7 @@
 						</div>
 						<div class="field">
 							<label>修订已有文档（可选）</label>
-							<select name="document_id"><option value="">新建逻辑文档</option>{{range .KnowledgeDocuments}}<option value="{{.ID}}">#{{.ID}} {{.Title}}</option>{{end}}</select>
+							<select class="ui fluid selection dropdown knowledge-select" name="document_id"><option value="">新建逻辑文档</option>{{range .KnowledgeDocuments}}<option value="{{.ID}}">#{{.ID}} {{.Title}}</option>{{end}}</select>
 							<div class="help">选择后会新增不可变修订版；不选择则创建新文档。</div>
 						</div>
 						<div class="required field">
@@ -247,7 +282,7 @@
 						</div>
 						<div class="required field">
 							<label>已启用数据源</label>
-							<select name="data_source_id" required>
+							<select class="ui fluid selection dropdown knowledge-select" name="data_source_id" required>
 								<option value="">请先登记并启用数据源</option>
 								{{range .KnowledgeEnabledDataSources}}
 									<option value="{{.ID}}">{{.SourceCode}} · {{.Name}}</option>
@@ -269,7 +304,7 @@
 							<div class="hint">文件类型、脱敏策略版本和脱敏清单由系统按文件和已启用数据源自动生成并再次校验。只有需要修订既有内容时，才调整以下两项。</div>
 							<div class="two fields">
 								<div class="field"><label>文档版本</label><input name="version_no" value="V1.0" placeholder="V1.0"></div>
-								<div class="field"><label>与现行版本关系</label><select name="revision_relation"><option value="new">新建主题</option><option value="revision">修订版</option><option value="replacement">替代版</option><option value="supplement">补充版</option></select></div>
+								<div class="field"><label>与现行版本关系</label><select class="ui fluid selection dropdown knowledge-select" name="revision_relation"><option value="new">新建主题</option><option value="revision">修订版</option><option value="replacement">替代版</option><option value="supplement">补充版</option></select></div>
 							</div>
 						</details>
 						<button class="ui primary button">提交待审核</button>
@@ -291,9 +326,9 @@
 			<div class="knowledge-admin-note"><strong>只需填写三项。</strong>登记成功后，管理员审核并启用该来源；启用后即可从仓库选择文件。</div>
 			<form class="ui form" action="{{AppSubUrl}}/knowledge/data-sources" method="post">
 				<div class="three fields">
-					<div class="required field"><label>资料放在哪个知识空间？</label><select name="space_id" required><option value="">请选择知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
+					<div class="required field"><label>资料放在哪个知识空间？</label><select class="ui fluid selection dropdown knowledge-select" name="space_id" required><option value="">请选择知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
 					<div class="required field"><label>这批资料叫什么？</label><input name="name" placeholder="例如：客户投诉处理制度" maxlength="255" required></div>
-					<div class="required field"><label>资料属于哪一类？</label><select name="source_type" required><option value="policy">制度、办法、通知</option><option value="procedure">流程、作业手册</option><option value="product">产品说明、规则</option><option value="training">培训课件、讲义</option><option value="faq">常见问答</option><option value="case">案例与复盘</option><option value="ticket">工单整理资料</option><option value="public_material">外部公开材料</option></select></div>
+					<div class="required field"><label>资料属于哪一类？</label><select class="ui fluid selection dropdown knowledge-select" name="source_type" required><option value="policy">制度、办法、通知</option><option value="procedure">流程、作业手册</option><option value="product">产品说明、规则</option><option value="training">培训课件、讲义</option><option value="faq">常见问答</option><option value="case">案例与复盘</option><option value="ticket">工单整理资料</option><option value="public_material">外部公开材料</option></select></div>
 				</div>
 				<button class="ui primary button">提交来源，等待管理员启用</button>
 			</form>
@@ -326,7 +361,7 @@
 					<form class="ui form" action="{{AppSubUrl}}/knowledge/data-sources" method="post">
 						<input type="hidden" name="source_type" value="database">
 						<input type="hidden" name="connector_type" value="mysql">
-						<div class="two fields"><div class="required field"><label>知识空间</label><select name="space_id" required><option value="">请选择知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div><div class="required field"><label>数据源名称</label><input name="name" placeholder="例如：已脱敏客服问答库" maxlength="255" required></div></div>
+						<div class="two fields"><div class="required field"><label>知识空间</label><select class="ui fluid selection dropdown knowledge-select" name="space_id" required><option value="">请选择知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div><div class="required field"><label>数据源名称</label><input name="name" placeholder="例如：已脱敏客服问答库" maxlength="255" required></div></div>
 						<div class="four fields"><div class="required field"><label>密钥引用</label><input name="secret_ref" placeholder="secret-ref:env/KB_MYSQL_DSN" required></div><div class="required field"><label>已审批的视图</label><input name="read_scope" placeholder='{"view":"v_kb_masked_faq"}' required></div><div class="required field"><label>审批单引用</label><input name="query_template_ref" placeholder="approval-ref:mysql-view-v1" required></div><div class="required field"><label>结构版本</label><input name="schema_version" value="v1" required></div></div>
 						<div class="three fields"><div class="required field"><label>字段映射</label><input name="field_mapping_json" placeholder='{"id":"record_id","title":"question","content":"answer_markdown","cursor":"updated_at"}' required></div><div class="required field"><label>增量游标字段</label><input name="incremental_cursor_field" placeholder="updated_at" required></div><div class="required field"><label>保留规则</label><input name="data_retention_rule" value="仅保留已脱敏视图记录" required></div></div>
 						<button class="ui primary button">提交数据库来源审核</button>
@@ -469,7 +504,7 @@
 		<div class="ui attached segment">
 			{{if .KnowledgeNewDifyToken}}<div class="ui positive message"><div class="header">请立即保存此 Dify 应用密钥</div><p><code>{{.KnowledgeNewDifyToken}}</code></p><p>该密钥只显示这一次，系统仅保存其摘要。Dify 外部知识端点填写：<code>{{AppSubUrl}}/api/knowledge/external/retrieval</code></p></div>{{end}}
 			<div class="ui info message">每个 Dify 应用只能访问一个固定知识空间及指定密级上限，Dify 不会直接取得 RAGFlow 密钥。</div>
-			{{if .IsAdmin}}<form class="ui form" action="{{AppSubUrl}}/knowledge/dify-bindings" method="post"><div class="four fields"><div class="required field"><label>应用名称</label><input name="name" placeholder="客服问答助手" required></div><div class="required field"><label>Dify 知识库标识</label><input name="dify_knowledge_id" placeholder="dify-kb-customer-service" required></div><div class="required field"><label>知识空间</label><select name="space_id" required><option value="">请选择</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div><div class="required field"><label>最高可用密级</label><select name="max_security_level"><option value="internal">二级内部</option><option value="public">一级公开</option><option value="restricted">三级受限</option></select></div></div><button class="ui primary button">创建 Dify 授权</button></form>{{end}}
+			{{if .IsAdmin}}<form class="ui form" action="{{AppSubUrl}}/knowledge/dify-bindings" method="post"><div class="four fields"><div class="required field"><label>应用名称</label><input name="name" placeholder="客服问答助手" required></div><div class="required field"><label>Dify 知识库标识</label><input name="dify_knowledge_id" placeholder="dify-kb-customer-service" required></div><div class="required field"><label>知识空间</label><select class="ui fluid selection dropdown knowledge-select" name="space_id" required><option value="">请选择</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div><div class="required field"><label>最高可用密级</label><select class="ui fluid selection dropdown knowledge-select" name="max_security_level"><option value="internal">二级内部</option><option value="public">一级公开</option><option value="restricted">三级受限</option></select></div></div><button class="ui primary button">创建 Dify 授权</button></form>{{end}}
 			{{if .KnowledgeDifyBindings}}<table class="ui very basic striped table tw-mt-4"><thead><tr><th>应用</th><th>Dify 知识库标识</th><th>空间</th><th>授权上限</th><th>密钥尾号</th><th>状态</th></tr></thead><tbody>{{range .KnowledgeDifyBindings}}<tr><td>{{.Name}}</td><td><code>{{.DifyKnowledgeID}}</code></td><td>#{{.SpaceID}}</td><td>{{.MaxSecurityLevel}}</td><td>******{{.TokenHint}}</td><td>{{if .Enabled}}<span class="ui green label">已启用</span>{{else}}<span class="ui label">已停用</span>{{end}}</td></tr>{{end}}</tbody></table>{{end}}
 		</div>
 
@@ -566,4 +601,20 @@
 		</div>
 	</div>
 </div>
+<script>
+	(() => {
+		const syncRepositorySelection = (element) => {
+			if (element.name !== 'repository_selection') return;
+			const form = element.closest('form');
+			if (!form) return;
+			const parts = element.value.split('|');
+			form.elements.repository_id.value = parts[0] || '';
+			form.elements.repository_commit.value = parts[1] || '';
+			form.elements.repository_path.value = parts.slice(2).join('|') || '';
+		};
+		document.addEventListener('change', (event) => {
+			if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) syncRepositorySelection(event.target);
+		});
+	})();
+</script>
 {{template "base/footer" .}}
