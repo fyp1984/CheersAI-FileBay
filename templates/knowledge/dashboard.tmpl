@@ -3,15 +3,22 @@
 	<div class="ui container">
 		{{template "base/alert" .}}
 		<style>
-			.knowledge-workbench { display: grid; grid-template-columns: 224px minmax(0, 1fr); gap: 24px; align-items: start; }
-			.knowledge-sidebar { position: sticky; top: 16px; border: 1px solid var(--color-secondary); border-radius: 8px; background: var(--color-box-body); padding: 12px; }
-			.knowledge-sidebar .brand { padding: 8px 10px 14px; font-weight: 700; }
-			.knowledge-sidebar a { display: block; padding: 9px 10px; border-radius: 6px; color: var(--color-text); }
-			.knowledge-sidebar a:hover { background: var(--color-hover); text-decoration: none; }
+			.knowledge-workbench { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 32px; align-items: start; max-width: 1180px; margin: 0 auto; }
+			.knowledge-sidebar { position: sticky; top: 20px; border: 1px solid var(--color-secondary-alpha-20); border-radius: 12px; background: var(--color-box-body); padding: 12px; box-shadow: 0 1px 2px rgba(0, 0, 0, .03); }
+			.knowledge-sidebar .brand { display: flex; align-items: center; gap: 8px; padding: 10px 12px 18px; font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+			.knowledge-sidebar a { display: flex; align-items: center; justify-content: space-between; min-height: 38px; margin: 2px 0; padding: 8px 10px; border-radius: 8px; color: var(--color-text-light-1); font-size: 14px; }
+			.knowledge-sidebar a:hover { background: var(--color-hover); color: var(--color-text); text-decoration: none; }
 			.knowledge-sidebar a.active { background: var(--color-primary-light-2); color: var(--color-primary); font-weight: 700; }
-			.knowledge-sidebar .section-label { padding: 14px 10px 5px; color: var(--color-text-light-2); font-size: 12px; font-weight: 600; }
+			.knowledge-sidebar .section-label { padding: 18px 10px 6px; color: var(--color-text-light-2); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 			.knowledge-view { display: none; }
 			.knowledge-overview { display: block; }
+			.knowledge-page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+			.knowledge-page-header .ui.header { margin: 0 0 6px; font-size: 26px; letter-spacing: -.03em; }
+			.knowledge-page-header .description { max-width: 680px; color: var(--color-text-light-2); line-height: 1.65; }
+			.knowledge-surface { border: 1px solid var(--color-secondary-alpha-20); border-radius: 12px; background: var(--color-box-body); box-shadow: 0 1px 3px rgba(0, 0, 0, .04); }
+			.knowledge-surface > .content { padding: 20px; }
+			.knowledge-surface-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--color-secondary-alpha-20); font-size: 15px; font-weight: 700; }
+			.knowledge-surface-title .text { font-size: 12px; font-weight: 400; }
 			.knowledge-anchor { position: absolute; }
 			{{if .KnowledgeSearchResult}}.knowledge-overview { display: none; } .knowledge-search { display: block; }{{end}}
 			#knowledge-search:target ~ .knowledge-workbench .knowledge-view,
@@ -49,44 +56,56 @@
 			#knowledge-library:target ~ .knowledge-workbench a[data-step="library"],
 			#knowledge-connector:target ~ .knowledge-workbench a[data-step="connector"],
 			#knowledge-apps:target ~ .knowledge-workbench a[data-step="apps"] { background: var(--color-primary-light-2); color: var(--color-primary); font-weight: 700; }
-			.knowledge-advanced { margin-top: 14px; border: 1px solid var(--color-secondary); border-radius: 6px; padding: 10px 14px; }
+			.knowledge-main .ui.form .field > label { margin-bottom: 7px; color: var(--color-text); font-size: 13px; font-weight: 600; }
+			.knowledge-main .ui.form input:not([type="checkbox"]), .knowledge-main .ui.form select, .knowledge-main .ui.form textarea { min-height: 42px; border-color: var(--color-secondary-alpha-40); border-radius: 8px; box-shadow: none; font-size: 14px; }
+			.knowledge-main .ui.form input:focus, .knowledge-main .ui.form select:focus, .knowledge-main .ui.form textarea:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light-2); }
+			.knowledge-main .ui.primary.button { min-height: 40px; border-radius: 8px; box-shadow: none; font-weight: 600; }
+			.knowledge-main .help, .knowledge-main .hint { margin-top: 6px; color: var(--color-text-light-2); font-size: 12px; line-height: 1.6; }
+			.knowledge-advanced { margin-top: 14px; border: 1px solid var(--color-secondary-alpha-20); border-radius: 8px; padding: 12px 14px; background: var(--color-box-body); }
 			.knowledge-advanced summary { cursor: pointer; font-weight: 600; }
 			.knowledge-advanced .hint { color: var(--color-text-light-2); margin: 8px 0 14px; }
 			.knowledge-next-step { margin-bottom: 16px; }
-			.knowledge-next-step .workflow-card { color: var(--color-text); border-top: 3px solid var(--color-primary); transition: transform .15s ease, box-shadow .15s ease; }
-			.knowledge-next-step .workflow-card:hover { color: var(--color-text); text-decoration: none; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0, 0, 0, .12); }
-			.knowledge-step-kicker { color: var(--color-primary); font-size: 12px; font-weight: 700; letter-spacing: .04em; margin-bottom: 4px; }
-			.knowledge-choice { min-height: 150px; border-top-width: 4px !important; }
-			.knowledge-choice .description { line-height: 1.6; }
-			.knowledge-flow { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; padding: 12px 14px; background: var(--color-box-body); border: 1px solid var(--color-secondary-alpha-20); border-radius: 6px; }
-			.knowledge-flow-step { display: inline-flex; align-items: center; gap: 6px; color: var(--color-text-light-2); font-size: 13px; }
-			.knowledge-flow-step::after { content: "→"; margin-left: 4px; color: var(--color-text-light-3); }
-			.knowledge-flow-step:last-child::after { display: none; }
-			.knowledge-flow-step strong { color: var(--color-primary); }
+			.knowledge-next-step .workflow-card { color: var(--color-text); border: 1px solid var(--color-secondary-alpha-20); border-radius: 12px; box-shadow: none; transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+			.knowledge-next-step .workflow-card:hover { border-color: var(--color-primary); color: var(--color-text); text-decoration: none; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, .08); }
+			.knowledge-step-kicker { color: var(--color-primary); font-size: 11px; font-weight: 700; letter-spacing: .06em; margin-bottom: 8px; text-transform: uppercase; }
+			.knowledge-choice { min-height: 138px; }
+			.knowledge-choice .header { font-size: 17px !important; letter-spacing: -.02em; }
+			.knowledge-choice .description { margin-top: 7px; color: var(--color-text-light-2) !important; line-height: 1.65; }
+			.knowledge-flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin: 0 0 22px; padding: 0; overflow: hidden; border: 1px solid var(--color-secondary-alpha-20); border-radius: 10px; background: var(--color-box-body); }
+			.knowledge-flow-step { display: flex; align-items: center; gap: 8px; min-height: 54px; padding: 10px 12px; border-right: 1px solid var(--color-secondary-alpha-20); color: var(--color-text-light-2); font-size: 12px; }
+			.knowledge-flow-step:last-child { border-right: 0; }
+			.knowledge-flow-step strong { display: inline-grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; background: var(--color-primary-light-2); color: var(--color-primary); font-size: 11px; }
+			.knowledge-current-step { margin-bottom: 20px; padding: 14px 16px; border: 1px solid var(--color-primary-light-1); border-radius: 10px; background: var(--color-primary-light-2); color: var(--color-text); }
+			.knowledge-current-step strong { color: var(--color-primary); }
+			.knowledge-admin-note { margin-top: 16px; padding: 12px 14px; border-radius: 8px; background: var(--color-hover); color: var(--color-text-light-2); font-size: 13px; line-height: 1.6; }
+			.knowledge-list-card { margin-top: 16px; overflow: hidden; border: 1px solid var(--color-secondary-alpha-20); border-radius: 10px; }
+			.knowledge-list-card .ui.table { margin: 0; }
+			@media (max-width: 1000px) { .knowledge-flow { grid-template-columns: repeat(3, minmax(0, 1fr)); } .knowledge-flow-step:nth-child(3) { border-right: 0; } }
 			@media (max-width: 767px) { .knowledge-workbench { display: block; } .knowledge-sidebar { position: static; margin-bottom: 16px; } .knowledge-sidebar a { display: inline-block; } }
+			@media (max-width: 767px) { .knowledge-page-header { display: block; } .knowledge-flow { grid-template-columns: 1fr; } .knowledge-flow-step { border-right: 0; border-bottom: 1px solid var(--color-secondary-alpha-20); } .knowledge-flow-step:last-child { border-bottom: 0; } }
 		</style>
 		<i id="knowledge-overview" class="knowledge-anchor"></i><i id="knowledge-search" class="knowledge-anchor"></i><i id="knowledge-submit" class="knowledge-anchor"></i><i id="knowledge-tasks" class="knowledge-anchor"></i><i id="knowledge-space" class="knowledge-anchor"></i><i id="knowledge-data" class="knowledge-anchor"></i><i id="knowledge-upload" class="knowledge-anchor"></i><i id="knowledge-review" class="knowledge-anchor"></i><i id="knowledge-publish" class="knowledge-anchor"></i><i id="knowledge-library" class="knowledge-anchor"></i><i id="knowledge-connector" class="knowledge-anchor"></i><i id="knowledge-apps" class="knowledge-anchor"></i>
 		<div class="knowledge-workbench">
 			<aside class="knowledge-sidebar" aria-label="知识库工作台导航">
 				<div class="brand">{{svg "octicon-book" 18}} 知识库工作台</div>
-				<div class="section-label">日常使用</div>
-				<a href="#knowledge-overview">开始使用</a>
-				<a href="#knowledge-search" data-step="search">我要查资料</a>
-				<a href="#knowledge-submit" data-step="submit">我要提交资料</a>
+				<div class="section-label">我的工作</div>
+				<a href="#knowledge-overview">工作台</a>
+				<a href="#knowledge-search" data-step="search">查找资料</a>
+				<a href="#knowledge-submit" data-step="submit">资料入库</a>
 				{{if .IsAdmin}}
-					<div class="section-label">知识管理</div>
-					<a href="#knowledge-tasks" data-step="tasks">待我处理{{if gt .KnowledgeReviewTaskCount 0}} <span class="ui mini red circular label">{{.KnowledgeReviewTaskCount}}</span>{{end}}</a>
-					<a href="#knowledge-library" data-step="library">资料与空间台账</a>
-					<a href="#knowledge-connector" data-step="connector">数据库接入</a>
-					<a href="#knowledge-apps" data-step="apps">Dify 应用授权</a>
+					<div class="section-label">治理中心</div>
+					<a href="#knowledge-tasks" data-step="tasks">待办中心{{if gt .KnowledgeReviewTaskCount 0}} <span class="ui mini red circular label">{{.KnowledgeReviewTaskCount}}</span>{{end}}</a>
+					<a href="#knowledge-library" data-step="library">知识台账</a>
+					<a href="#knowledge-connector" data-step="connector">高级数据接入</a>
+					<a href="#knowledge-apps" data-step="apps">应用授权</a>
 				{{end}}
 			</aside>
 			<div class="knowledge-main">
 			<section class="knowledge-view knowledge-overview">
-		<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
+		<div class="knowledge-page-header">
 			<div>
-				<h1 class="ui header tw-mb-1">{{svg "octicon-book" 28}} 企业知识库</h1>
-				<div class="text light-2">不用理解系统怎么管理知识。请选择你现在想完成的事情。</div>
+				<h1 class="ui header">企业知识库</h1>
+				<div class="description">从已发布的资料中找答案，或按清晰步骤把新的脱敏资料纳入知识库。</div>
 			</div>
 			{{if .IsAdmin}}<div>
 				{{if .KnowledgeConfigError}}
@@ -105,17 +124,17 @@
 		{{end}}
 
 		<div class="ui {{if .IsAdmin}}three{{else}}two{{end}} stackable cards knowledge-next-step">
-			<a href="#knowledge-search" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">日常使用</div><div class="header">我要查资料</div><div class="description">输入问题，查看答案引用来自哪份现行资料。找不到时系统会明确提示。</div></div></a>
-			<a href="#knowledge-submit" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">提交新资料</div><div class="header">我要提交资料</div><div class="description">系统会一步一步引导你完成资料夹、来源登记和脱敏文件提交。</div></div></a>
-			{{if .IsAdmin}}<a href="#knowledge-tasks" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">知识管理</div><div class="header">处理待办</div><div class="description">在这里审核来源、核验内容、处理索引并发布有效版本。</div></div></a>{{end}}
+			<a href="#knowledge-search" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">日常查询</div><div class="header">查找资料</div><div class="description">输入业务问题，查看可引用的现行资料与来源依据。</div></div></a>
+			<a href="#knowledge-submit" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">资料入库</div><div class="header">提交脱敏资料</div><div class="description">从 FileBay 仓库选择文件，按步骤提交；无需填写技术配置。</div></div></a>
+			{{if .IsAdmin}}<a href="#knowledge-tasks" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">治理中心</div><div class="header">处理待办</div><div class="description">处理来源启用、内容审核、索引发布等需要管理员确认的事项。</div></div></a>{{end}}
 		</div>
-		<div class="ui info message"><div class="header">第一次使用怎么做？</div><p>如果你只是找制度或答案，点击“我要查资料”。如果要把资料放进知识库，点击“我要提交资料”，每次只完成当前页面提示的一件事。</p></div>
+		<div class="knowledge-admin-note">首次使用：查资料就点击“查找资料”；需要入库就点击“提交脱敏资料”。系统会在完成当前步骤后带你进入下一步。</div>
 			</section>
 			<section class="knowledge-view knowledge-search">
-		<h2 class="ui header tw-mb-1">查找答案</h2>
-		<div class="text light-2 tw-mb-3">直接输入业务问题；系统只返回你有权限查看、仍然有效的知识，并展示引用依据。</div>
-		<h3 class="ui top attached header">开始检索</h3>
-		<div class="ui attached segment">
+		<div class="knowledge-page-header"><div><h2 class="ui header">查找答案</h2><div class="description">直接输入业务问题。系统只返回你有权限查看、仍然有效的资料，并展示引用依据。</div></div></div>
+		<div class="knowledge-surface">
+			<div class="knowledge-surface-title">开始检索 <span class="text light-2">可按知识空间缩小范围</span></div>
+			<div class="content">
 			<form class="ui form" action="{{AppSubUrl}}/knowledge/search" method="post">
 				<div class="fields">
 					<div class="five wide field"><label>检索范围</label><select name="space_id"><option value="">我有权限的全部知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
@@ -129,24 +148,29 @@
 					<div class="ui relaxed divided list">{{range .KnowledgeSearchResult.Citations}}<div class="item"><div class="content"><div class="header">{{.Title}}</div><div class="description">{{.Content}}</div><div class="text light-2 tw-mt-1">引用：发布 #{{.PublicationID}} · 修订 #{{.RevisionID}} · 相关度 {{printf "%.3f" .Score}}</div></div></div>{{end}}</div>
 				{{else}}<div class="ui info message">未找到当前有权限且有效的知识引用。</div>{{end}}
 			{{end}}
+			</div>
 		</div>
 			</section>
 			<section class="knowledge-view knowledge-submit">
-				<h2 class="ui header tw-mb-1">提交一份资料</h2>
-				<div class="text light-2 tw-mb-3">每次只完成当前一步。提交成功后，系统会自动带你进入下一步，不会回到工作台重新找入口。</div>
+				<div class="knowledge-page-header"><div><h2 class="ui header">资料入库</h2><div class="description">按顺序完成即可。系统会保留你的进度，业务人员只需填写当前步骤需要的信息。</div></div></div>
 				<div class="knowledge-flow" aria-label="资料入库流程">
-					<div class="knowledge-flow-step"><strong>1</strong> 创建资料夹</div>
-					<div class="knowledge-flow-step"><strong>2</strong> 登记并启用来源</div>
-					<div class="knowledge-flow-step"><strong>3</strong> 选择仓库文件</div>
-					<div class="knowledge-flow-step"><strong>4</strong> 六项审核</div>
-					<div class="knowledge-flow-step"><strong>5</strong> 索引并生效</div>
+					<div class="knowledge-flow-step"><strong>1</strong> 知识空间</div>
+					<div class="knowledge-flow-step"><strong>2</strong> 资料来源</div>
+					<div class="knowledge-flow-step"><strong>3</strong> 选择文件</div>
+					<div class="knowledge-flow-step"><strong>4</strong> 管理员审核</div>
+					<div class="knowledge-flow-step"><strong>5</strong> 发布可检索</div>
 				</div>
-				<div class="ui three stackable cards knowledge-next-step">
-					<a href="#knowledge-space" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">第一次使用时先做</div><div class="header">1. 创建资料夹</div><div class="description">给同一类资料准备一个私有空间，例如“客户运营知识库”。只需名称和说明。</div></div></a>
-					<a href="#knowledge-data" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">有资料夹后做</div><div class="header">2. 告诉系统资料来自哪里</div><div class="description">选择资料夹、填写资料名称和类型。系统会记录来源并等待管理员启用。</div></div></a>
-					<a href="#knowledge-upload" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">来源启用后做</div><div class="header">3. 上传脱敏文件</div><div class="description">选择已启用来源，上传本地已脱敏的文件。提交后由审核人处理。</div></div></a>
-				</div>
-				<div class="ui warning message"><div class="header">请不要上传原始敏感文件</div><p>客户信息、个人信息和未经审批的原件必须先在本地脱敏。提交人不需要负责审核和发布。</p></div>
+				{{if not .KnowledgeSpaces}}
+					<div class="knowledge-current-step"><strong>当前要做：第 1 步，创建知识空间。</strong><br>知识空间用于归集同一业务主题的资料，例如“客户运营知识库”。</div>
+					<div class="ui one cards knowledge-next-step"><a href="#knowledge-space" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">第 1 步</div><div class="header">创建知识空间</div><div class="description">只需填写空间名称和用途说明，创建后继续登记资料来源。</div></div></a></div>
+				{{else if not .KnowledgeEnabledDataSources}}
+					<div class="knowledge-current-step"><strong>当前要做：第 2 步，登记资料来源。</strong><br>告诉系统资料来自哪里、属于哪一类；其余治理信息由管理员审核时补充。</div>
+					<div class="ui one cards knowledge-next-step"><a href="#knowledge-data" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">第 2 步</div><div class="header">登记资料来源</div><div class="description">选择知识空间、填写资料名称与类型，然后提交管理员启用。</div></div></a></div>
+				{{else}}
+					<div class="knowledge-current-step"><strong>当前要做：第 3 步，从仓库选择已脱敏文件。</strong><br>系统仅展示当前账号可读取且符合限制的 FileBay 仓库文件。</div>
+					<div class="ui one cards knowledge-next-step"><a href="#knowledge-upload" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">第 3 步</div><div class="header">从仓库提交资料</div><div class="description">选择已启用来源和已脱敏文件，提交后交由管理员完成审核、索引与发布。</div></div></a></div>
+				{{end}}
+				<div class="ui warning message"><div class="header">仅提交已脱敏资料</div><p>客户信息、个人信息和未经审批的原件必须先在本地完成脱敏。提交人无需负责审核与发布。</p></div>
 			</section>
 			<section class="knowledge-view knowledge-tasks">
 				{{if .IsAdmin}}
@@ -169,9 +193,10 @@
 
 		<div class="ui two column stackable grid tw-mb-4">
 			<div class="column knowledge-space-card">
-				<h3 class="ui top attached header">创建资料夹</h3>
-				<div class="ui attached segment">
-					<div class="ui info message">资料夹用于放同一业务主题的资料，例如“客户运营知识库”。创建成功后，系统会自动进入“登记资料来源”。</div>
+				<div class="knowledge-surface">
+					<div class="knowledge-surface-title">第 1 步：创建知识空间 <span class="text light-2">归集同一业务主题的资料</span></div>
+					<div class="content">
+					<div class="knowledge-admin-note">例如“客户运营知识库”。创建后系统将带你进入“登记资料来源”。</div>
 					<form class="ui form" action="{{AppSubUrl}}/knowledge/spaces" method="post">
 						<div class="required field">
 							<label>空间名称</label>
@@ -183,12 +208,14 @@
 						</div>
 						<button class="ui primary button">创建私有知识空间</button>
 					</form>
+					</div>
 				</div>
 			</div>
 			<div class="column knowledge-upload-card">
-				<h3 class="ui top attached header">从 FileBay 仓库选择资料</h3>
-				<div class="ui attached segment">
-					<div class="ui info message"><strong>推荐方式：</strong>先在 FileBay 仓库完成脱敏和版本管理，再在这里选择已脱敏版本。系统会固定本次选择的仓库提交版本。</div>
+				<div class="knowledge-surface">
+					<div class="knowledge-surface-title">第 3 步：从仓库选择资料 <span class="text light-2">优先使用 FileBay 已脱敏版本</span></div>
+					<div class="content">
+					<div class="knowledge-admin-note"><strong>推荐方式：</strong>先在 FileBay 仓库完成脱敏和版本管理，再在这里选择已脱敏版本。系统会固定本次选择的仓库提交版本。</div>
 					<form class="ui form" action="{{AppSubUrl}}/knowledge/repository-artifacts" method="post">
 						<div class="required field"><label>知识空间</label><select name="space_id" required><option value="">请选择知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
 						<div class="field"><label>修订已有文档（可选）</label><select name="document_id"><option value="">新建逻辑文档</option>{{range .KnowledgeDocuments}}<option value="{{.ID}}">#{{.ID}} {{.Title}}</option>{{end}}</select></div>
@@ -249,16 +276,19 @@
 						<div class="help">系统会拒绝本地路径、未脱敏声明、不支持的文件类型和校验不一致的文件；来源授权、适用范围和脱敏策略均由已启用数据源继承。</div>
 					</form>
 					</details>
+					</div>
 				</div>
 			</div>
 		</div>
 			</section>
 			<section class="knowledge-view knowledge-data">
 
-		<h3 class="ui top attached header">第二步：登记并启用资料来源</h3>
-		<div class="ui attached segment">
+		<div class="knowledge-page-header"><div><h2 class="ui header">登记资料来源</h2><div class="description">只需描述这批资料是什么。密级、责任人和适用范围由系统按规则带入，并在管理员审核时确认。</div></div></div>
+		<div class="knowledge-surface">
+			<div class="knowledge-surface-title">第 2 步：资料来源 <span class="text light-2">提交后等待管理员启用</span></div>
+			<div class="content">
 			{{if .IsAdmin}}<form class="tw-mb-3" action="{{AppSubUrl}}/knowledge/data-sources/expire-due" method="post"><button class="ui small basic button">检查并停用已到期数据源</button></form>{{end}}
-			<div class="ui info message"><div class="header">只需填写三项，其他治理信息由系统带入</div><p>登记成功后会保留在本页，方便另一位管理员立即审核启用；启用后系统会自动带你进入“从仓库选择资料”。</p></div>
+			<div class="knowledge-admin-note"><strong>只需填写三项。</strong>登记成功后，管理员审核并启用该来源；启用后即可从仓库选择文件。</div>
 			<form class="ui form" action="{{AppSubUrl}}/knowledge/data-sources" method="post">
 				<div class="three fields">
 					<div class="required field"><label>资料放在哪个知识空间？</label><select name="space_id" required><option value="">请选择知识空间</option>{{range .KnowledgeSpaces}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select></div>
@@ -267,10 +297,12 @@
 				</div>
 				<button class="ui primary button">提交来源，等待管理员启用</button>
 			</form>
+			</div>
 		</div>
 
-		<h3 class="ui top attached header tw-mt-4">已登记数据源</h3>
-		<div class="ui attached segment">
+		<div class="knowledge-list-card">
+			<div class="knowledge-surface-title">已登记资料来源 <span class="text light-2">查看启用状态与管理员处理结果</span></div>
+			<div class="content">
 			{{if .KnowledgeDataSources}}
 				<table class="ui very basic striped table">
 					<thead><tr><th>数据源</th><th>空间</th><th>分类与级别</th><th>责任人</th><th>生效状态</th><th>审核与接入操作</th></tr></thead>
@@ -279,15 +311,18 @@
 					{{end}}</tbody>
 				</table>
 			{{else}}<div class="ui placeholder segment"><div class="ui icon header">{{svg "octicon-database" 32}}尚未登记数据源</div><p>请先创建知识空间，再登记来源、责任人、密级和适用范围。</p></div>{{end}}
+			</div>
 		</div>
 
 		{{if .KnowledgeSyncRuns}}<h3 class="ui top attached header tw-mt-4">数据接入运行记录</h3><div class="ui attached segment"><table class="ui very basic striped table"><thead><tr><th>运行编号</th><th>数据源</th><th>模式</th><th>状态</th><th>读取记录</th><th>待审核文档</th><th>错误代码</th></tr></thead><tbody>{{range .KnowledgeSyncRuns}}<tr><td>#{{.ID}}</td><td>#{{.DataSourceID}}</td><td>{{if eq .Mode "preview"}}预览{{else}}增量同步{{end}}</td><td>{{.Status}}</td><td>{{.RecordsRead}}</td><td>{{.DocumentsQueued}}</td><td>{{.ErrorCode}}</td></tr>{{end}}</tbody></table></div>{{end}}
 			</section>
 			<section class="knowledge-view knowledge-connector">
 				{{if .IsAdmin}}
-				<h3 class="ui top attached header">数据库接入（技术管理员）</h3>
-				<div class="ui attached segment">
-					<div class="ui warning message"><div class="header">仅接入已审批的脱敏只读视图</div><p>此页面由技术管理员与数据所有者共同完成。不得填写密码、完整连接串、原始表名或未脱敏字段。</p></div>
+				<div class="knowledge-page-header"><div><h2 class="ui header">高级数据接入</h2><div class="description">仅供技术管理员接入已审批的脱敏 MySQL 只读视图。业务人员无需填写本页。</div></div></div>
+				<div class="knowledge-surface">
+					<div class="knowledge-surface-title">接入 MySQL 脱敏视图 <span class="text light-2">所有配置将在审核后生效</span></div>
+					<div class="content">
+					<div class="ui warning message"><div class="header">仅接入已审批的脱敏只读视图</div><p>不得填写密码、完整连接串、原始表名或未脱敏字段。请从凭据管理系统取得密钥引用与审批单编号。</p></div>
 					<form class="ui form" action="{{AppSubUrl}}/knowledge/data-sources" method="post">
 						<input type="hidden" name="source_type" value="database">
 						<input type="hidden" name="connector_type" value="mysql">
@@ -296,6 +331,7 @@
 						<div class="three fields"><div class="required field"><label>字段映射</label><input name="field_mapping_json" placeholder='{"id":"record_id","title":"question","content":"answer_markdown","cursor":"updated_at"}' required></div><div class="required field"><label>增量游标字段</label><input name="incremental_cursor_field" placeholder="updated_at" required></div><div class="required field"><label>保留规则</label><input name="data_retention_rule" value="仅保留已脱敏视图记录" required></div></div>
 						<button class="ui primary button">提交数据库来源审核</button>
 					</form>
+					</div>
 				</div>
 				{{else}}<div class="ui warning message">数据库接入仅对技术管理员开放。</div>{{end}}
 			</section>
