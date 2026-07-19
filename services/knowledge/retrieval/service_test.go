@@ -43,3 +43,9 @@ func TestSecurityScopeFailsClosedForProhibitedKnowledge(t *testing.T) {
 	assert.False(t, securityAllowed(knowledge_model.SecurityLevelRestricted, knowledge_model.SecurityLevelInternal))
 	assert.False(t, securityAllowed(knowledge_model.SecurityLevelProhibited, knowledge_model.SecurityLevelRestricted))
 }
+
+func TestRetrievalCandidateLimitLeavesRoomForGovernanceFiltering(t *testing.T) {
+	assert.Equal(t, minRetrievalCandidates, retrievalCandidateLimit(1))
+	assert.Equal(t, 20, retrievalCandidateLimit(5))
+	assert.Equal(t, maxRetrievalCandidates, retrievalCandidateLimit(100))
+}

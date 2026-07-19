@@ -181,7 +181,7 @@
 				<div class="ui divider"></div>
 				{{if .KnowledgeSearchResult.Citations}}
 					<div class="ui relaxed divided list">{{range .KnowledgeSearchResult.Citations}}<div class="item"><div class="content"><div class="header">{{.Title}}</div><div class="description">{{.Content}}</div><div class="text light-2 tw-mt-1">引用：发布 #{{.PublicationID}} · 修订 #{{.RevisionID}} · 相关度 {{printf "%.3f" .Score}}</div></div></div>{{end}}</div>
-				{{else}}<div class="ui info message">未找到当前有权限且有效的知识引用。</div>{{end}}
+				{{else}}<div class="ui info message"><div class="header">未找到可展示的已发布资料</div><p>系统不会展示未生效、已撤销或当前账号无权查看的内容。若你在 RAGFlow 检索测试中有命中，请由管理员在“待办中心”完成“评测通过并生效”，再返回这里检索。</p></div>{{end}}
 			{{end}}
 			</div>
 		</div>

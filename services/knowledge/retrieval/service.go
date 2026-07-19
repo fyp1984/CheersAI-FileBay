@@ -34,6 +34,13 @@ import (
 const (
 	maxPublicationsPerRequest = 40
 	maxCommentBytes           = 1024
+	// RAGFlow cannot reliably filter a retrieval request by FileBay's
+	// publication metadata. Fetch more candidates than the caller needs so
+	// unpublished or revoked index entries cannot crowd out authorised results
+	// before FileBay applies its final governance check.
+	retrievalCandidateMultiplier = 4
+	minRetrievalCandidates       = 20
+	maxRetrievalCandidates       = 50
 )
 
 var allowedFeedbackCategories = map[string]struct{}{
@@ -204,7 +211,7 @@ func retrieveSpace(ctx context.Context, spaceID int64, maxSecurity knowledge_mod
 	result := &SearchResult{}
 	limit := clampTopK(topK)
 	for _, candidate := range publications {
-		chunks, err := client.RetrievePublication(ctx, ragflow.RetrievalRequest{Question: question, PublicationID: candidate.publication.ID, PublicationGeneration: candidate.publication.Generation, TopK: limit})
+		chunks, err := client.RetrievePublication(ctx, ragflow.RetrievalRequest{Question: question, PublicationID: candidate.publication.ID, PublicationGeneration: candidate.publication.Generation, TopK: retrievalCandidateLimit(limit)})
 		if err != nil {
 			log.Warn("Knowledge retrieval failed for publication %d: %v", candidate.publication.ID, err)
 			continue
@@ -333,6 +340,17 @@ func clampTopK(value int) int {
 		return maxTopK
 	}
 	return value
+}
+
+func retrievalCandidateLimit(resultLimit int) int {
+	limit := resultLimit * retrievalCandidateMultiplier
+	if limit < minRetrievalCandidates {
+		return minRetrievalCandidates
+	}
+	if limit > maxRetrievalCandidates {
+		return maxRetrievalCandidates
+	}
+	return limit
 }
 
 func validQuestion(value string) bool {
