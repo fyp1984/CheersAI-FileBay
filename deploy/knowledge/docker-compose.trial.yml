@@ -68,10 +68,23 @@ services:
     networks:
       - knowledge_trial
 
-  # The official RAGFlow service remains the index/retrieval engine. Adding it
-  # here only joins its service to FileBay's private network; no host port is
-  # exposed for FileBay-to-RAGFlow traffic.
+  # RAGFlow remains an independent index/retrieval backend, but its original
+  # web UI and APIs are not a product entry point. FileBay is the only host
+  # UI; this reset removes all RAGFlow host port mappings while preserving the
+  # private Docker-network endpoint http://ragflow-cpu:9380 for FileBay.
   ragflow-cpu:
+    ports: !reset []
+    # The upstream service only declares MySQL as a Compose dependency, while
+    # its configured Elasticsearch and Valkey services are also required before
+    # the API on :9380 can accept FileBay traffic. Keep this wiring in FileBay's
+    # integration layer rather than patching the vendored RAGFlow compose.
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      es01:
+        condition: service_healthy
     networks:
       knowledge_trial:
         aliases: [ragflow]

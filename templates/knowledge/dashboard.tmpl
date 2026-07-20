@@ -32,6 +32,7 @@
 			#knowledge-publish:target ~ .knowledge-workbench .knowledge-view,
 			#knowledge-library:target ~ .knowledge-workbench .knowledge-view,
 			#knowledge-connector:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-engine:target ~ .knowledge-workbench .knowledge-view,
 			#knowledge-apps:target ~ .knowledge-workbench .knowledge-view { display: none; }
 			#knowledge-search:target ~ .knowledge-workbench .knowledge-search,
 			#knowledge-submit:target ~ .knowledge-workbench .knowledge-submit,
@@ -43,6 +44,7 @@
 			#knowledge-publish:target ~ .knowledge-workbench .knowledge-publish,
 			#knowledge-library:target ~ .knowledge-workbench .knowledge-library,
 			#knowledge-connector:target ~ .knowledge-workbench .knowledge-connector,
+			#knowledge-engine:target ~ .knowledge-workbench .knowledge-engine,
 			#knowledge-apps:target ~ .knowledge-workbench .knowledge-apps { display: block; }
 			#knowledge-space:target ~ .knowledge-workbench .knowledge-upload-card,
 			#knowledge-upload:target ~ .knowledge-workbench .knowledge-space-card { display: none; }
@@ -56,6 +58,7 @@
 			#knowledge-publish:target ~ .knowledge-workbench a[data-step="publish"],
 			#knowledge-library:target ~ .knowledge-workbench a[data-step="library"],
 			#knowledge-connector:target ~ .knowledge-workbench a[data-step="connector"],
+			#knowledge-engine:target ~ .knowledge-workbench a[data-step="engine"],
 			#knowledge-apps:target ~ .knowledge-workbench a[data-step="apps"] { background: var(--color-primary-light-2); color: var(--color-primary); font-weight: 700; }
 			.knowledge-main .ui.form .field > label { margin-bottom: 8px; color: var(--color-text); font-size: 13px; font-weight: 650; }
 			.knowledge-main .ui.form input:not([type="checkbox"]), .knowledge-main .ui.form textarea { min-height: 44px; border-color: var(--color-secondary-alpha-40); border-radius: 9px; box-shadow: none; font-size: 14px; transition: border-color .15s ease, box-shadow .15s ease; }
@@ -100,6 +103,12 @@
 			.knowledge-main .ui.table tbody tr:first-child td { border-top: 0; }
 			.knowledge-main .ui.table code { padding: 2px 6px; border-radius: 5px; background: var(--color-hover); font-size: 12px; }
 			.knowledge-list-card .ui.table { margin: 0; }
+			.knowledge-engine-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr); gap: 18px; }
+			.knowledge-engine-card { min-height: 182px; padding: 21px; border: 1px solid var(--color-secondary-alpha-20); border-radius: 12px; background: var(--color-box-body); }
+			.knowledge-engine-card .engine-kicker { margin-bottom: 9px; color: var(--color-primary); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+			.knowledge-engine-card h3 { margin: 0 0 9px; font-size: 17px; letter-spacing: -.02em; }
+			.knowledge-engine-card p, .knowledge-engine-card li { color: var(--color-text-light-2); font-size: 13px; line-height: 1.7; }
+			.knowledge-engine-card ul { margin: 10px 0 0; padding-left: 19px; }
 			.knowledge-main .ui.checkbox label { color: var(--color-text-light-1); font-size: 13px; line-height: 1.55; }
 			.knowledge-main .ui.placeholder.segment { min-height: 180px; border: 1px dashed var(--color-secondary-alpha-40); border-radius: 12px; box-shadow: none; }
 			/* A workflow exposes one task at a time: its surface should use the entire main canvas. */
@@ -114,12 +123,12 @@
 			.knowledge-entry-form > .knowledge-advanced { grid-column: 1 / -1; }
 			.knowledge-entry-form > .inline.field { margin-top: -2px !important; }
 			.knowledge-entry-form > .ui.primary.button { justify-self: start; margin: 0; }
-			@media (max-width: 767px) { .knowledge-entry-form { grid-template-columns: 1fr; } .knowledge-entry-form > * { grid-column: auto !important; } }
+			@media (max-width: 767px) { .knowledge-entry-form, .knowledge-engine-grid { grid-template-columns: 1fr; } .knowledge-entry-form > * { grid-column: auto !important; } }
 			@media (max-width: 1000px) { .knowledge-flow { grid-template-columns: repeat(3, minmax(0, 1fr)); } .knowledge-flow-step:nth-child(3) { border-right: 0; } }
 			@media (max-width: 767px) { .knowledge-workbench { display: block; } .knowledge-sidebar { position: static; margin-bottom: 16px; } .knowledge-sidebar a { display: inline-block; } }
 			@media (max-width: 767px) { .knowledge-page-header { display: block; } .knowledge-flow { grid-template-columns: 1fr; } .knowledge-flow-step { border-right: 0; border-bottom: 1px solid var(--color-secondary-alpha-20); } .knowledge-flow-step:last-child { border-bottom: 0; } }
 		</style>
-		<i id="knowledge-overview" class="knowledge-anchor"></i><i id="knowledge-search" class="knowledge-anchor"></i><i id="knowledge-submit" class="knowledge-anchor"></i><i id="knowledge-tasks" class="knowledge-anchor"></i><i id="knowledge-space" class="knowledge-anchor"></i><i id="knowledge-data" class="knowledge-anchor"></i><i id="knowledge-upload" class="knowledge-anchor"></i><i id="knowledge-review" class="knowledge-anchor"></i><i id="knowledge-publish" class="knowledge-anchor"></i><i id="knowledge-library" class="knowledge-anchor"></i><i id="knowledge-connector" class="knowledge-anchor"></i><i id="knowledge-apps" class="knowledge-anchor"></i>
+		<i id="knowledge-overview" class="knowledge-anchor"></i><i id="knowledge-search" class="knowledge-anchor"></i><i id="knowledge-submit" class="knowledge-anchor"></i><i id="knowledge-tasks" class="knowledge-anchor"></i><i id="knowledge-space" class="knowledge-anchor"></i><i id="knowledge-data" class="knowledge-anchor"></i><i id="knowledge-upload" class="knowledge-anchor"></i><i id="knowledge-review" class="knowledge-anchor"></i><i id="knowledge-publish" class="knowledge-anchor"></i><i id="knowledge-library" class="knowledge-anchor"></i><i id="knowledge-connector" class="knowledge-anchor"></i><i id="knowledge-engine" class="knowledge-anchor"></i><i id="knowledge-apps" class="knowledge-anchor"></i>
 		<div class="knowledge-workbench">
 			<aside class="knowledge-sidebar" aria-label="知识库工作台导航">
 				<div class="brand">{{svg "octicon-book" 18}} 知识库工作台</div>
@@ -132,6 +141,7 @@
 					<a href="#knowledge-tasks" data-step="tasks">待办中心{{if gt .KnowledgeReviewTaskCount 0}} <span class="ui mini red circular label">{{.KnowledgeReviewTaskCount}}</span>{{end}}</a>
 					<a href="#knowledge-library" data-step="library">知识台账</a>
 					<a href="#knowledge-connector" data-step="connector">高级数据接入</a>
+					<a href="#knowledge-engine" data-step="engine">检索引擎</a>
 					<a href="#knowledge-apps" data-step="apps">应用授权</a>
 				{{end}}
 			</aside>
@@ -158,10 +168,11 @@
 			</div>
 		{{end}}
 
-		<div class="ui {{if .IsAdmin}}three{{else}}two{{end}} stackable cards knowledge-next-step">
+		<div class="ui {{if .IsAdmin}}four{{else}}two{{end}} stackable cards knowledge-next-step">
 			<a href="#knowledge-search" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">日常查询</div><div class="header">查找资料</div><div class="description">输入业务问题，查看可引用的现行资料与来源依据。</div></div></a>
 			<a href="#knowledge-submit" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">资料入库</div><div class="header">提交脱敏资料</div><div class="description">从 FileBay 仓库选择文件，按步骤提交；无需填写技术配置。</div></div></a>
 			{{if .IsAdmin}}<a href="#knowledge-tasks" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">治理中心</div><div class="header">处理待办</div><div class="description">处理来源启用、内容审核、索引发布等需要管理员确认的事项。</div></div></a>{{end}}
+			{{if .IsAdmin}}<a href="#knowledge-engine" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">引擎管理</div><div class="header">检索引擎</div><div class="description">查看 FileBay 与检索引擎的受控连接状态，不暴露 RAGFlow 原生后台。</div></div></a>{{end}}
 		</div>
 		<div class="knowledge-admin-note">首次使用：查资料就点击“查找资料”；需要入库就点击“提交脱敏资料”。系统会在完成当前步骤后带你进入下一步。</div>
 			</section>
@@ -369,6 +380,16 @@
 					</div>
 				</div>
 				{{else}}<div class="ui warning message">数据库接入仅对技术管理员开放。</div>{{end}}
+			</section>
+			<section class="knowledge-view knowledge-engine">
+				{{if .IsAdmin}}
+				<div class="knowledge-page-header"><div><h2 class="ui header">检索引擎</h2><div class="description">这是 FileBay 的统一管理入口。RAGFlow 在后台独立完成解析、切分、索引和检索候选，业务用户不需要、也不能直接进入其原生界面。</div></div></div>
+				<div class="knowledge-engine-grid">
+					<div class="knowledge-engine-card"><div class="engine-kicker">当前运行边界</div><h3>FileBay 负责治理，RAGFlow 负责检索</h3><p>文件、权限、审批、版本、发布和审计均由 FileBay 决定。只有已发布的脱敏资料会被交给检索引擎；检索结果返回后仍由 FileBay 二次校验。</p><ul><li>当前引擎配置：<code>{{.KnowledgeSettings.EngineProfileVersion}}</code></li><li>业务查询、资料入库与审核均在本工作台完成</li><li>Dify 也只调用 FileBay 授权检索接口</li></ul></div>
+					<div class="knowledge-engine-card"><div class="engine-kicker">连接状态</div><h3>{{if .KnowledgeConfigError}}需要配置{{else}}已受控连接{{end}}</h3>{{if .KnowledgeConfigError}}<p>FileBay 尚未获取可用的检索引擎绑定。请检查部署主机的本机绑定文件与管理员配置。</p><div class="ui warning message"><p>{{.KnowledgeConfigError}}</p></div>{{else}}<p>FileBay 已持有受限的服务端绑定，并通过私有网络调用检索引擎。API 密钥、数据集标识和原始路径不会出现在浏览器。</p><span class="ui green label">服务端受控</span>{{end}}</div>
+				</div>
+				<div class="knowledge-surface tw-mt-4"><div class="knowledge-surface-title">管理员工作顺序 <span class="text light-2">不再切换到第二套前端</span></div><div class="content"><div class="ui ordered list"><div class="item"><div class="content"><div class="header">在 FileBay 完成来源与内容审核</div><div class="description">只让符合脱敏、密级、责任人和适用范围规则的资料进入发布链路。</div></div></div><div class="item"><div class="content"><div class="header">在“待办中心”处理索引与发布</div><div class="description">FileBay 向后台检索服务提交任务；评测通过后再使知识生效。</div></div></div><div class="item"><div class="content"><div class="header">在“查找资料”验证引用</div><div class="description">检索引擎只提供候选片段，FileBay 负责最终权限、版本与状态校验。</div></div></div></div></div></div>
+				{{else}}<div class="ui warning message">检索引擎管理仅对管理员开放。</div>{{end}}
 			</section>
 			<section class="knowledge-view knowledge-library">
 
