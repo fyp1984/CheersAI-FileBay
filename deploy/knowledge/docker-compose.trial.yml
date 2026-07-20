@@ -30,8 +30,11 @@ services:
       INSTALL_LOCK: "false"
       GITEA__knowledge__ENABLED: "true"
       GITEA__knowledge__RAGFLOW_BASE_URL: "http://ragflow-cpu:9380"
-      GITEA__knowledge__RAGFLOW_API_KEY: "${RAGFLOW_API_KEY:-}"
-      GITEA__knowledge__RAGFLOW_DATASET_ID: "${RAGFLOW_DATASET_ID:-}"
+      # The application reads api-key and dataset-id directly from this
+      # read-only mounted directory. Do not pass either value through an
+      # environment variable: the upstream entrypoint persists such values in
+      # app.ini.
+      GITEA__knowledge__RAGFLOW_BINDING_DIR: "/run/filebay-ragflow"
       GITEA__knowledge__ENGINE_PROFILE_VERSION: "profile-2026-07"
       GITEA__knowledge__ALLOW_INTERNAL_HTTP: "true"
       GITEA__knowledge__INTERNAL_HTTP_HOST: "ragflow-cpu"
@@ -150,6 +153,17 @@ services:
   api:
     networks:
       - knowledge_trial
+
+  # Dify is an optional internal caller of FileBay's external knowledge API.
+  # Its own management UI is not part of the trial browser surface and must
+  # never publish another host port by default.
+  nginx:
+    ports: !reset []
+
+  # The upstream plugin debugger is a development-only endpoint. Keep it on
+  # the private Docker network as well.
+  plugin_daemon:
+    ports: !reset []
 
 networks:
   knowledge_trial:

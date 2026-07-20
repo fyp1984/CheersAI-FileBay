@@ -23,7 +23,7 @@ docker compose --env-file deploy/knowledge/.env -f deploy/knowledge/docker-compo
 首次启动后：
 
 1. 首次安装时，由受控部署流程完成 RAGFlow 的模型、专用数据集与服务端 API 密钥配置；不要把该密钥写入 `.env` 或交给业务用户。
-2. 仅在部署主机创建被 Git 忽略的绑定文件：`runtime/ragflow-binding/api-key`（密钥）与 `runtime/ragflow-binding/dataset-id`（数据集 ID），然后运行同一条 `docker compose ... up -d --force-recreate filebay`。FileBay 启动时读取这两个只读挂载文件；密钥不会进入镜像、仓库或浏览器。
+2. 仅在部署主机创建被 Git 忽略的绑定文件：`runtime/ragflow-binding/api-key`（密钥）与 `runtime/ragflow-binding/dataset-id`（数据集 ID），然后运行同一条 `docker compose ... up -d --force-recreate filebay`。FileBay 进程从这两个只读挂载文件读取绑定；密钥不会进入镜像、仓库、浏览器或持久化 `app.ini`。旧试用环境升级后会在下一次启动时清除 `app.ini` 中遗留的 RAGFlow 密钥项。
 3. 打开 `http://localhost:13080/knowledge`，完成 FileBay 初始化和登录；管理员从“检索引擎”可打开 RAGFlow 配置工作区，业务人员日常只需使用 FileBay。
 4. RAGFlow 配置工作区为同一前端端口下的 `http://localhost:13080/ragflow/`。该页面保留上游的模型供应商、数据集、解析和检索测试功能，顶部导航会在“知识库”前显示“工作台”链接，方便返回 FileBay；FileBay 的“检索引擎”也提供反向入口。首次进入会默认使用简体中文与浅色主题，之后仍可在 RAGFlow 中自行切换语言和主题。
 5. 数据源使用 MySQL、`secret-ref:env/KB_MYSQL_DSN`、视图 `v_kb_masked_faq`，字段映射为 `record_id/question/answer_markdown/updated_at`；先“预览校验”，再“增量同步”。
@@ -35,6 +35,7 @@ docker compose --env-file deploy/knowledge/.env -f deploy/knowledge/docker-compo
 - FileBay 只持久化 `secret-ref:env/...`，不会保存 DSN、密码、原始表名或 SQL。
 - Dify 不能直连 RAGFlow；它只调用 FileBay 的受控检索端点。检索结果会再次验证空间权限、密级、版本、生效状态和撤销状态。
 - 只有统一前端网关映射到宿主机回环地址 `127.0.0.1:13080`；RAGFlow 原始 Web 端口、API、管理 API、MCP 与内部服务端口均不映射到宿主机。FileBay 仍只通过 Docker 私有网络访问 `ragflow-cpu:9380`。
+- Dify 是可选的私网调用方：默认不发布其 nginx、插件调试或管理界面端口到宿主机。未配置 Dify 应用授权时，不会参与 FileBay 的业务检索链路；需要访问 Dify 管理界面时，应在受控运维环境单独增加反向代理和身份验证，不得临时暴露默认端口。
 - RAGFlow 页面通过部署层构建为 `/ragflow/` 路由并注入轻量的 FileBay 品牌与返回导航。该适配位于 `deploy/knowledge/ragflow-ui/` 与 `deploy/knowledge/gateway/`，升级 RAGFlow 时无需修改 `third_party/ragflow/`。
 - 示例中的口令仅可用于本机合成数据；不可迁移到任何业务环境。
 

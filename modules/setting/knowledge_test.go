@@ -4,6 +4,9 @@
 package setting
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -27,12 +30,12 @@ func TestKnowledgeSettingsDefaultOff(t *testing.T) {
 }
 
 func TestKnowledgeSettingsLoadExplicitProductionConfig(t *testing.T) {
+	bindingDir := writeKnowledgeBinding(t, "ragflow-secret", "tenant-dataset")
 	cfg, err := NewConfigProviderFromData(`
 [knowledge]
 ENABLED = true
 RAGFLOW_BASE_URL = https://ragflow.internal.example
-RAGFLOW_API_KEY = ragflow-secret
-RAGFLOW_DATASET_ID = tenant-dataset
+RAGFLOW_BINDING_DIR = ` + bindingDir + `
 ENGINE_PROFILE_VERSION = profile-2026-07
 ALLOW_LOOPBACK_HTTP = false
 ALLOWED_EXTENSIONS = .pdf,.md
@@ -63,15 +66,31 @@ RETRIEVE_QUERY_MAX_BYTES = 1024
 	assert.NoError(t, ValidateKnowledgeSettings())
 }
 
+func TestKnowledgeSettingsIgnoreLegacyInlineCredentials(t *testing.T) {
+	cfg, err := NewConfigProviderFromData(`
+[knowledge]
+ENABLED = true
+RAGFLOW_BASE_URL = https://ragflow.internal.example
+RAGFLOW_API_KEY = legacy-secret
+RAGFLOW_DATASET_ID = legacy-dataset
+ENGINE_PROFILE_VERSION = profile-2026-07
+`)
+	require.NoError(t, err)
+
+	loadKnowledgeFrom(cfg)
+
+	assert.Empty(t, Knowledge.RAGFlowAPIKey)
+	assert.Empty(t, Knowledge.RAGFlowDatasetID)
+	assert.Error(t, ValidateKnowledgeSettings())
+}
+
 func TestEnabledKnowledgeSettingsRequireEveryRAGFlowBinding(t *testing.T) {
 	base := map[string]string{
 		"RAGFLOW_BASE_URL":       "https://ragflow.internal.example",
-		"RAGFLOW_API_KEY":        "ragflow-secret",
-		"RAGFLOW_DATASET_ID":     "tenant-dataset",
 		"ENGINE_PROFILE_VERSION": "profile-2026-07",
 	}
 
-	for _, missing := range []string{"RAGFLOW_BASE_URL", "RAGFLOW_API_KEY", "RAGFLOW_DATASET_ID", "ENGINE_PROFILE_VERSION"} {
+	for _, missing := range []string{"RAGFLOW_BASE_URL", "ENGINE_PROFILE_VERSION"} {
 		t.Run(missing, func(t *testing.T) {
 			values := make(map[string]string, len(base))
 			for key, value := range base {
@@ -83,6 +102,13 @@ func TestEnabledKnowledgeSettingsRequireEveryRAGFlowBinding(t *testing.T) {
 			assert.Error(t, ValidateKnowledgeSettings())
 		})
 	}
+
+	t.Run("api key binding", func(t *testing.T) {
+		bindingDir := t.TempDir()
+		require.NoError(t, os.WriteFile(filepath.Join(bindingDir, knowledgeBindingDatasetIDFile), []byte("tenant-dataset\n"), 0o600))
+		loadKnowledgeTestConfig(t, knowledgeConfig(base, "RAGFLOW_BINDING_DIR = "+bindingDir), true, false)
+		assert.Error(t, ValidateKnowledgeSettings())
+	})
 }
 
 func TestKnowledgeSettingsTransportPolicyDependsOnRuntimeMode(t *testing.T) {
@@ -115,8 +141,6 @@ func TestKnowledgeSettingsTransportPolicyDependsOnRuntimeMode(t *testing.T) {
 			}
 			loadKnowledgeTestConfig(t, knowledgeConfig(map[string]string{
 				"RAGFLOW_BASE_URL":       tt.baseURL,
-				"RAGFLOW_API_KEY":        "ragflow-secret",
-				"RAGFLOW_DATASET_ID":     "tenant-dataset",
 				"ENGINE_PROFILE_VERSION": "profile-2026-07",
 			}, extra), tt.isProd, tt.testing)
 			err := ValidateKnowledgeSettings()
@@ -149,8 +173,6 @@ func TestKnowledgeSettingsRejectUnsafeNumericBoundsWithoutOverflow(t *testing.T)
 		t.Run(tt.name, func(t *testing.T) {
 			loadKnowledgeTestConfig(t, knowledgeConfig(map[string]string{
 				"RAGFLOW_BASE_URL":       "https://ragflow.internal.example",
-				"RAGFLOW_API_KEY":        "ragflow-secret",
-				"RAGFLOW_DATASET_ID":     "tenant-dataset",
 				"ENGINE_PROFILE_VERSION": "profile-2026-07",
 			}, tt.extra), true, false)
 			assert.Error(t, ValidateKnowledgeSettings())
@@ -165,15 +187,26 @@ func loadKnowledgeTestConfig(t *testing.T, data string, isProd, isTesting bool) 
 	t.Cleanup(func() {
 		Knowledge, IsProd, IsInTesting = previousKnowledge, previousProd, previousTesting
 	})
+	if !strings.Contains(data, "RAGFLOW_BINDING_DIR") {
+		data += "RAGFLOW_BINDING_DIR = " + writeKnowledgeBinding(t, "ragflow-secret", "tenant-dataset") + "\n"
+	}
 	cfg, err := NewConfigProviderFromData(data)
 	require.NoError(t, err)
 	IsProd, IsInTesting = isProd, isTesting
 	loadKnowledgeFrom(cfg)
 }
 
+func writeKnowledgeBinding(t *testing.T, apiKey, datasetID string) string {
+	t.Helper()
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, knowledgeBindingAPIKeyFile), []byte(apiKey+"\n"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, knowledgeBindingDatasetIDFile), []byte(datasetID+"\n"), 0o600))
+	return dir
+}
+
 func knowledgeConfig(values map[string]string, extra string) string {
 	data := "[knowledge]\nENABLED = true\n"
-	for _, key := range []string{"RAGFLOW_BASE_URL", "RAGFLOW_API_KEY", "RAGFLOW_DATASET_ID", "ENGINE_PROFILE_VERSION"} {
+	for _, key := range []string{"RAGFLOW_BASE_URL", "ENGINE_PROFILE_VERSION"} {
 		if value, ok := values[key]; ok {
 			data += key + " = " + value + "\n"
 		}

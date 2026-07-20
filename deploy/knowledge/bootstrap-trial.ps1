@@ -83,9 +83,8 @@ Set-EnvValue $ragflowEnv "REDIS_PORT" "16379"
 # Trial machines frequently allocate only 4 GB to Docker Desktop. Limit the
 # Elasticsearch JVM explicitly so it can coexist with FileBay and RAGFlow.
 Set-EnvValue $ragflowEnv "ES_JAVA_OPTS" "-Xms512m -Xmx512m"
-Set-EnvValue $ragflowEnv "SVR_WEB_HTTP_PORT" "19080"
-Set-EnvValue $ragflowEnv "SVR_WEB_HTTPS_PORT" "19443"
-Set-EnvValue $ragflowEnv "SVR_HTTP_PORT" "19380"
+# RAGFlow's upstream port values remain internal to Docker. The trial Compose
+# file clears all RAGFlow host mappings and exposes it only through /ragflow/.
 
 $difyDocker = Join-Path $dify "docker"
 $difyEnv = Join-Path $difyDocker ".env"
@@ -94,12 +93,12 @@ if (-not (Test-Path $difyEnv)) {
     Copy-Item (Join-Path $difyDocker ".env.example") $difyEnv
     $difyEnvCreated = $true
 }
-Set-EnvValue $difyEnv "EXPOSE_NGINX_PORT" "18080"
-Set-EnvValue $difyEnv "EXPOSE_NGINX_SSL_PORT" "18443"
+# Dify is an optional private caller, not an additional browser frontend. The
+# trial Compose file clears its nginx host port mappings.
 Ensure-RandomEnvValue $difyEnv "SECRET_KEY" 32
 Ensure-RandomEnvValue $difyEnv "INIT_PASSWORD" 18
 Ensure-RandomEnvValue $difyEnv "DB_PASSWORD" 24 @("difyai123456")
 Ensure-RandomEnvValue $difyEnv "REDIS_PASSWORD" 24 @("difyai123456")
 
 Write-Host "已准备仓库内的官方 RAGFlow v0.26.4 与 Dify 1.15.0 编排。"
-Write-Host "下一步：复制 deploy/knowledge/.env.example 为 .env，填写 RAGFlow 专用 API 密钥和数据集 ID，然后执行 README 中的 docker compose 命令。"
+Write-Host "下一步：复制 deploy/knowledge/.env.example 为 .env；将 RAGFlow 专用 API 密钥和数据集 ID 分别保存到被忽略的 runtime/ragflow-binding/api-key 与 dataset-id，然后执行 README 中的 docker compose 命令。"
