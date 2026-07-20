@@ -30,6 +30,9 @@
 				<a class="item{{if .PageIsKnowledge}} active{{end}}" href="{{AppSubUrl}}/knowledge">{{ctx.Locale.Tr "knowledge.title"}}</a>
 			{{end}}
 			<a class="item{{if .PageIsExplore}} active{{end}}" href="{{AppSubUrl}}/explore/repos">{{ctx.Locale.Tr "explore_title"}}</a>
+			{{if .EnableKnowledge}}
+				<a class="item" href="{{AppSubUrl}}/ragflow/">RAGFlow 配置</a>
+			{{end}}
 		{{else if .IsLandingPageOrganizations}}
 			<a class="item{{if .PageIsExplore}} active{{end}}" href="{{AppSubUrl}}/explore/organizations">{{ctx.Locale.Tr "explore_title"}}</a>
 		{{else}}
