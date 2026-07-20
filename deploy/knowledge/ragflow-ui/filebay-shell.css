@@ -50,38 +50,3 @@ body,
   background: #f7f8fa !important;
   font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
 }
-
-.filebay-workbench-nav {
-  display: flex;
-}
-
-.filebay-workbench-link {
-  align-items: center;
-  border-radius: 999px;
-  color: #1d2939 !important;
-  display: inline-flex;
-  font-size: 14px;
-  font-weight: 400;
-  height: 40px;
-  justify-content: center;
-  padding: 0 16px;
-  text-decoration: none !important;
-  transition: background .15s ease, color .15s ease;
-}
-
-.filebay-workbench-link:hover,
-.filebay-workbench-link:focus-visible {
-  background: #eff8ff;
-  color: #155eef !important;
-}
-
-@media (min-width: 1280px) {
-  .filebay-workbench-link {
-    font-size: 16px;
-    padding: 0 24px;
-  }
-}
-
-@media (max-width: 680px) {
-  .filebay-workbench-nav { display: none; }
-}

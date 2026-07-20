@@ -30,12 +30,17 @@
     const navList = document.querySelector('header nav > ul');
     if (!navList) return false;
 
+    // Reuse the actual “知识库” link class instead of approximating it in
+    // adapter CSS. This makes “工作台” identical to every RAGFlow top-level
+    // navigation item across desktop breakpoints and future upstream tweaks.
+    const knowledgeLink = navList.children[1]?.querySelector('a');
+    if (!knowledgeLink) return false;
+
     const item = document.createElement('li');
     item.id = 'filebay-workbench-nav';
-    item.className = 'filebay-workbench-nav';
 
     const link = document.createElement('a');
-    link.className = 'filebay-workbench-link';
+    link.className = knowledgeLink.className;
     link.href = fileBayUrl();
     link.textContent = '工作台';
     link.setAttribute('aria-label', '返回 CheersAI FileBay 知识库工作台');
