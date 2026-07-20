@@ -113,6 +113,11 @@ services:
   ragflow-cpu:
     ports: !reset []
     entrypoint: ["/bin/bash", "/ragflow/filebay-entrypoint.sh"]
+    # FileBay owns ingestion and source synchronization. Keep RAGFlow's
+    # independent datasource sync worker disabled in the constrained internal
+    # trial so the API process is not OOM-killed before it can serve FileBay.
+    # One task executor remains available for FileBay-triggered parsing jobs.
+    command: ["--enable-adminserver", "--init-model-provider-tables", "--disable-datasync", "--workers=1"]
     volumes:
       - ragflow-web-dist:/ragflow/web/dist
       - ./ragflow-ui/filebay-entrypoint.sh:/ragflow/filebay-entrypoint.sh:ro

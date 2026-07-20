@@ -269,13 +269,9 @@ func loadRetrievablePublications(ctx context.Context, space *knowledge_model.Spa
 			continue
 		}
 		binding := new(knowledge_model.IndexBinding)
-		// The publication state is authoritative. Earlier trial builds recorded
-		// an evaluated binding before activation but did not mirror the binding
-		// status during activation. Accept that durable predecessor state while
-		// the publication itself is current and searchable.
 		found, err := db.GetEngine(ctx).
 			Where("publication_id = ? AND engine_profile_version = ?", publication.ID, setting.Knowledge.EngineProfileVersion).
-			In("status", knowledge_model.IndexStatusSearchable, knowledge_model.IndexStatusEvaluation).
+			Where("status = ?", knowledge_model.IndexStatusSearchable).
 			Get(binding)
 		if err != nil || !found || binding.DatasetID != setting.Knowledge.RAGFlowDatasetID {
 			continue
