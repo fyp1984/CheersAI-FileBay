@@ -225,20 +225,25 @@
 				{{if .IsAdmin}}
 					<h2 class="ui header tw-mb-1">待我处理</h2>
 					<div class="text light-2 tw-mb-3">这里是知识管理员的工作入口。按待办处理即可，不需要先浏览资料台账或技术配置。</div>
-					<div class="ui four stackable cards knowledge-next-step">
+					<div class="ui five stackable cards knowledge-next-step">
 						<a href="#knowledge-data" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">先处理来源</div><div class="header">审核并启用资料来源</div><div class="description">确认资料归属和责任后启用；启用前不能提交正式知识。</div></div></a>
 						<a href="#knowledge-data" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">定期治理{{if gt .KnowledgeDataSourceTaskCount 0}} · {{.KnowledgeDataSourceTaskCount}} 项提醒{{end}}</div><div class="header">确认来源复审</div><div class="description">对临期或逾期的已启用资料来源完成复审，保留可追溯记录。</div></div></a>
 						<a href="#knowledge-review" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">再核验内容</div><div class="header">完成六项审核</div><div class="description">确认来源、内容、权限、敏感、格式和发布条件；不能审核自己提交的资料。</div></div></a>
 						<a href="#knowledge-publish" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">最后使其生效</div><div class="header">处理索引并发布</div><div class="description">索引成功、抽检通过后再让版本生效；有风险时从这里下架。</div></div></a>
+						<a href="#knowledge-tasks" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">质量运营{{if gt .KnowledgeQualityTaskCount 0}} · {{.KnowledgeQualityTaskCount}} 项待办{{end}}</div><div class="header">处理检索反馈</div><div class="description">跟进无答案检索和低质量反馈，确认处理后留下审计记录。</div></div></a>
 					</div>
 					{{if .KnowledgeDataSourceTasks}}
 						<h3 class="ui top attached header">资料来源复审提醒（{{.KnowledgeDataSourceTaskCount}}）</h3>
 						<div class="ui attached segment"><div class="ui relaxed divided list">{{range .KnowledgeDataSourceTasks}}<div class="item"><div class="right floated content">{{if .CanConfirmReview}}<form action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/confirm-review" method="post"><button class="ui small {{if .IsOverdue}}primary{{else}}basic{{end}} button">确认本次复审</button></form>{{end}}</div><div class="content"><div class="header">{{.Name}}</div><div class="description">复审周期：{{.ReviewFrequency}} · {{.ReviewStatusLabel}}</div></div></div>{{end}}</div></div>
 					{{end}}
+					{{if .KnowledgeQualityTasks}}
+						<h3 class="ui top attached header">质量运营待办（{{.KnowledgeQualityTaskCount}}）</h3>
+						<div class="ui attached segment"><div class="ui relaxed divided list">{{range .KnowledgeQualityTasks}}<div class="item"><div class="right floated content">{{if .CanResolve}}<form action="{{AppSubUrl}}/knowledge/quality-tasks/{{.TaskType}}/{{.ID}}/resolve" method="post"><button class="ui small basic button">标记已处理</button></form>{{end}}</div><div class="content"><div class="header">{{.TaskTypeLabel}} · 知识空间 #{{.SpaceID}}</div><div class="description">{{.Summary}}</div></div></div>{{end}}</div></div>
+					{{end}}
 					{{if gt .KnowledgeReviewTaskCount 0}}
 						<h3 class="ui top attached header">需要你审核的资料（{{.KnowledgeReviewTaskCount}}）</h3>
 						<div class="ui attached segment"><div class="ui relaxed divided list">{{range .KnowledgeApprovals}}{{if .CanReview}}<a class="item" href="#knowledge-review"><div class="content"><div class="header">{{.Title}}</div><div class="description">提交人 #{{.RequestedBy}} · 六项审核待完成。点击进入审核。</div></div></a>{{end}}{{end}}</div></div>
-					{{else if not .KnowledgeDataSourceTasks}}
+					{{else if and (not .KnowledgeDataSourceTasks) (not .KnowledgeQualityTasks)}}
 						<div class="ui positive message">当前没有需要你处理的资料。</div>
 					{{end}}
 				{{else}}<div class="ui warning message">待办处理仅对知识管理员开放。</div>{{end}}

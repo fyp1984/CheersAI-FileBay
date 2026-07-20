@@ -1743,6 +1743,7 @@ func registerWebRoutes(m *web.Router, webAuth *AuthMiddleware) {
 		m.Post("/dify-bindings", knowledge_web.CreateDifyBinding)
 		m.Post("/search", knowledge_web.Search)
 		m.Post("/feedback", knowledge_web.CreateFeedback)
+		m.Post("/quality-tasks/{taskType}/{id}/resolve", knowledge_web.ResolveQualityTask)
 	}, reqSignIn, knowledge_web.Enabled)
 
 	// Dify appends "/retrieval" to its configured External Knowledge endpoint.

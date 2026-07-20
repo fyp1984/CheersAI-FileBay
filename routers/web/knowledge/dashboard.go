@@ -66,6 +66,9 @@ func Dashboard(ctx *context.Context) {
 	dataSourceTasks := loadDataSourceGovernanceTasks(ctx)
 	ctx.Data["KnowledgeDataSourceTasks"] = dataSourceTasks
 	ctx.Data["KnowledgeDataSourceTaskCount"] = len(dataSourceTasks)
+	qualityTasks := loadQualityTasks(ctx)
+	ctx.Data["KnowledgeQualityTasks"] = qualityTasks
+	ctx.Data["KnowledgeQualityTaskCount"] = len(qualityTasks)
 
 	counts, err := loadCounts(ctx)
 	if err != nil {
@@ -89,7 +92,7 @@ func Dashboard(ctx *context.Context) {
 		}
 	}
 	ctx.Data["KnowledgeReviewTaskCount"] = readyForReview
-	ctx.Data["KnowledgeGovernanceTaskCount"] = readyForReview + len(dataSourceTasks)
+	ctx.Data["KnowledgeGovernanceTaskCount"] = readyForReview + len(dataSourceTasks) + len(qualityTasks)
 	publications := loadRecentPublications(ctx)
 	if counts.Publications < int64(len(publications)) {
 		counts.Publications = int64(len(publications))
@@ -281,6 +284,23 @@ func CreateFeedback(ctx *context.Context) {
 		ctx.Flash.Success("感谢反馈，已记录用于知识库改进")
 	}
 	ctx.Redirect(setting.AppSubURL + "/knowledge")
+}
+
+// ResolveQualityTask records that an administrator has handled a no-answer or
+// low-quality feedback signal. The underlying retrieval and feedback records
+// remain immutable evidence.
+func ResolveQualityTask(ctx *context.Context) {
+	entityID, err := strconv.ParseInt(ctx.PathParam("id"), 10, 64)
+	if err != nil {
+		ctx.NotFound(nil)
+		return
+	}
+	if err := retrieval.ResolveQualityTask(ctx, ctx.Doer.ID, ctx.PathParam("taskType"), entityID); err != nil {
+		ctx.Flash.Error("质量待办处理失败：" + err.Error())
+	} else {
+		ctx.Flash.Success("质量待办已标记为处理完成，并已保留审计记录")
+	}
+	ctx.Redirect(setting.AppSubURL + "/knowledge#knowledge-tasks")
 }
 
 // ActivatePublication marks a RAGFlow-evaluated candidate as currently usable.
@@ -691,6 +711,15 @@ type dashboardDataSourceTask struct {
 	CanConfirmReview  bool
 }
 
+type dashboardQualityTask struct {
+	ID            int64
+	TaskType      string
+	TaskTypeLabel string
+	SpaceID       int64
+	Summary       string
+	CanResolve    bool
+}
+
 type dashboardApproval struct {
 	ID           int64
 	RevisionID   int64
@@ -983,6 +1012,63 @@ func loadDataSourceGovernanceTasks(ctx *context.Context) []dashboardDataSourceTa
 		})
 	}
 	return tasks
+}
+
+func loadQualityTasks(ctx *context.Context) []dashboardQualityTask {
+	tasks := make([]dashboardQualityTask, 0, 40)
+	var retrievals []knowledge_model.RetrievalEvent
+	if err := db.GetEngine(ctx).Where("outcome = ?", "empty").Desc("created_unix").Limit(20).Find(&retrievals); err == nil {
+		resolved := loadResolvedQualityTaskIDs(ctx, "retrieval_event", retrievalEventIDs(retrievals))
+		for _, event := range retrievals {
+			if resolved[event.ID] {
+				continue
+			}
+			tasks = append(tasks, dashboardQualityTask{ID: event.ID, TaskType: "no_answer", TaskTypeLabel: "无答案检索", SpaceID: event.SpaceID, Summary: "该次检索未返回当前账号可展示的有效引用。请核查资料覆盖范围、发布状态或权限范围。", CanResolve: ctx.Doer.IsAdmin})
+		}
+	}
+
+	var feedbacks []knowledge_model.Feedback
+	if err := db.GetEngine(ctx).Where("rating <= ?", 2).Desc("created_unix").Limit(20).Find(&feedbacks); err == nil {
+		resolved := loadResolvedQualityTaskIDs(ctx, "feedback", feedbackIDs(feedbacks))
+		for _, feedback := range feedbacks {
+			if resolved[feedback.ID] {
+				continue
+			}
+			tasks = append(tasks, dashboardQualityTask{ID: feedback.ID, TaskType: "low_feedback", TaskTypeLabel: "低质量反馈", SpaceID: feedback.SpaceID, Summary: fmt.Sprintf("用户对“%s”给出 %d 分反馈。请核查引用、资料版本或权限范围。", feedback.Category, feedback.Rating), CanResolve: ctx.Doer.IsAdmin})
+		}
+	}
+	return tasks
+}
+
+func retrievalEventIDs(events []knowledge_model.RetrievalEvent) []int64 {
+	ids := make([]int64, 0, len(events))
+	for _, event := range events {
+		ids = append(ids, event.ID)
+	}
+	return ids
+}
+
+func feedbackIDs(feedbacks []knowledge_model.Feedback) []int64 {
+	ids := make([]int64, 0, len(feedbacks))
+	for _, feedback := range feedbacks {
+		ids = append(ids, feedback.ID)
+	}
+	return ids
+}
+
+func loadResolvedQualityTaskIDs(ctx *context.Context, entityType string, ids []int64) map[int64]bool {
+	if len(ids) == 0 {
+		return nil
+	}
+	var events []knowledge_model.AuditEvent
+	if err := db.GetEngine(ctx).In("entity_id", ids).Where("action = ? AND entity_type = ? AND result = ?", "knowledge.quality_task.resolved", entityType, "succeeded").Find(&events); err != nil {
+		return nil
+	}
+	resolved := make(map[int64]bool, len(events))
+	for _, event := range events {
+		resolved[event.EntityID] = true
+	}
+	return resolved
 }
 
 func loadSyncRuns(ctx *context.Context) []knowledge_model.SyncRun {
