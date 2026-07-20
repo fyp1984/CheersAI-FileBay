@@ -1,4 +1,14 @@
 (() => {
+  // RAGFlow defaults to its dark product theme. The FileBay workspace uses a
+  // light, Dify-inspired management surface, so make the shared entry route
+  // deterministic before React mounts. Users can still switch theme in
+  // RAGFlow; this only defines the first render after entering from FileBay.
+  try {
+    window.localStorage.setItem('vite-ui-theme', 'light');
+  } catch {
+    // Storage may be disabled by a managed browser. The page remains usable.
+  }
+
   const fileBayUrl = () => {
     const configured = document.documentElement.dataset.filebayUrl;
     if (configured) return configured;

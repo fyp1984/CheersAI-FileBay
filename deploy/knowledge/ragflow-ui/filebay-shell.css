@@ -1,18 +1,72 @@
+/*
+ * Deployment-only visual adapter. These tokens intentionally mirror the
+ * neutral canvas, white surfaces and restrained blue action color used by the
+ * FileBay workspace. No RAGFlow source file is modified.
+ */
+:root,
+:root.dark {
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --muted: 220 20% 97%;
+  --muted-foreground: 215 16% 47%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --border: 220 18% 91%;
+  --input: 220 18% 91%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 20% 97%;
+  --secondary-foreground: 222 47% 11%;
+  --accent: 218 100% 97%;
+  --accent-foreground: 221 83% 45%;
+  --ring: 221 83% 53%;
+  --bg-base: #f7f8fa;
+  --bg-title: #f7f8fa;
+  --bg-component: #ffffff;
+  --bg-card: #f4f6f8;
+  --bg-input: #ffffff;
+  --bg-canvas: 247 248 250;
+  --bg-list: 247 248 250;
+  --text-primary: 28 36 50;
+  --text-secondary: 96 108 128;
+  --text-disabled: #a7afbe;
+  --text-input-tip: #98a2b3;
+  --border-default: #e4e7ec;
+  --border-button: #eaecf0;
+  --border-accent: #155eef;
+  --accent-primary: 21 94 239;
+  --background-card: #ffffff;
+  --background-header-bar: #ffffff;
+  --background-highlight: #eff8ff;
+  --background-note: #f2f4f7;
+  --input-border: #d0d5dd;
+}
+
+html,
+body,
+#root {
+  background: #f7f8fa !important;
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+}
+
 #filebay-unified-shell {
   align-items: center;
-  background: linear-gradient(90deg, rgba(37, 99, 235, .12), rgba(14, 165, 233, .07));
-  border: 1px solid rgba(96, 165, 250, .35);
-  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .05);
   display: flex;
   gap: 14px;
-  margin: 0 28px 12px;
-  min-height: 50px;
-  padding: 8px 14px;
+  margin: 0 28px 16px;
+  min-height: 54px;
+  padding: 9px 14px;
 }
 
 .filebay-shell-brand {
   align-items: center;
-  color: inherit;
+  color: #1d2939;
   display: flex;
   font-size: 13px;
   gap: 9px;
@@ -21,11 +75,11 @@
 
 .filebay-shell-brand strong,
 .filebay-shell-brand small { display: block; }
-.filebay-shell-brand small { color: #94a3b8; font-size: 11px; margin-top: 2px; }
+.filebay-shell-brand small { color: #667085; font-size: 11px; margin-top: 2px; }
 
 .filebay-shell-mark {
   align-items: center;
-  background: linear-gradient(145deg, #2563eb, #38bdf8);
+  background: #155eef;
   border-radius: 8px;
   color: white;
   display: inline-flex;
@@ -38,16 +92,16 @@
 
 .filebay-shell-context {
   align-items: center;
-  color: #64748b;
+  color: #667085;
   display: inline-flex;
   font-size: 12px;
   gap: 6px;
 }
 
-.filebay-shell-dot { background: #22c55e; border-radius: 99px; height: 7px; width: 7px; }
+.filebay-shell-dot { background: #12b76a; border-radius: 99px; height: 7px; width: 7px; }
 
 .filebay-shell-link {
-  background: #2563eb;
+  background: #155eef;
   border-radius: 8px;
   color: #fff !important;
   font-size: 12px;
@@ -58,7 +112,15 @@
   transition: background .15s ease, transform .15s ease;
 }
 
-.filebay-shell-link:hover { background: #1d4ed8; transform: translateY(-1px); }
+.filebay-shell-link:hover { background: #004eeb; transform: translateY(-1px); }
+
+/* RAGFlow cards, menus and popovers retain their upstream behaviour but share
+ * FileBay's surface depth and corner rhythm. */
+#root [class*="rounded"] { border-radius: 10px; }
+#root [class*="shadow"] { box-shadow: 0 1px 2px rgba(16, 24, 40, .05); }
+#root input,
+#root textarea,
+#root button[role="combobox"] { border-radius: 8px; }
 
 @media (max-width: 680px) {
   #filebay-unified-shell { align-items: flex-start; flex-wrap: wrap; margin: 0 14px 10px; }
