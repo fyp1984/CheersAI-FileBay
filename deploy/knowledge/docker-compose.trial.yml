@@ -1,10 +1,11 @@
 name: filebay-knowledge-trial
 
-# 官方 RAGFlow 和 Dify 编排由 bootstrap-trial.ps1 下载到 .runtime 后通过
-# include 纳入同一 Compose 项目；不要把它们的运行目录或凭据提交到仓库。
+# RAGFlow 源码由仓库内固定的上游快照提供；Dify 编排由 bootstrap-trial.ps1
+# 下载到 .runtime。两者都作为独立服务启动，但仅通过本 Compose 项目的私有
+# 网络与 FileBay 协作。运行目录、.env 与凭据不得提交到仓库。
 include:
-  - path: .runtime/ragflow/docker/docker-compose.yml
-    env_file: .runtime/ragflow/docker/.env
+  - path: ../../third_party/ragflow/docker/docker-compose.yml
+    env_file: runtime/ragflow/.env
   - path: .runtime/dify/docker/docker-compose.yaml
     env_file: .runtime/dify/docker/.env
 

@@ -23,6 +23,18 @@ them without accessing raw local data.
 
 - A productized fork of Gitea, adapted into CheersAI-FileBay
 - A backend and web UI for private Git hosting and extended APIs for secure file management
+- A single-repository enterprise knowledge-base delivery: FileBay is the
+  governance and business UI, while the pinned RAGFlow source under
+  `third_party/ragflow/` runs as an independent indexing and retrieval service
+
+## Enterprise Knowledge Base Deployment
+
+One checkout contains both FileBay and the pinned RAGFlow source. They remain
+separate services at runtime: FileBay owns desensitized files, permissions,
+versions, approval and audit; RAGFlow only processes published, desensitized
+snapshots for parsing and retrieval. Follow the Chinese deployment guide at
+[deploy/knowledge/README.md](deploy/knowledge/README.md). Local runtime
+configuration and credentials stay outside version control.
 
 ## Build
 

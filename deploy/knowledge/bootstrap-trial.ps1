@@ -59,10 +59,22 @@ function Ensure-RandomEnvValue {
 
 New-Item -ItemType Directory -Force -Path $RuntimeRoot | Out-Null
 
-$ragflow = Get-VerifiedVendor -Name "ragflow" -Repository "https://github.com/infiniflow/ragflow.git" -Tag "v0.26.4" -Commit "cb93883f3f8c975eecb2fed81210effeb3bdb06f"
+# RAGFlow is vendored inside the FileBay repository. Keep its runtime
+# configuration outside the source tree so starting a trial never dirties the
+# version-controlled upstream snapshot or records local credentials.
+$ragflow = (Resolve-Path (Join-Path $PSScriptRoot "..\..\third_party\ragflow")).Path
+if (-not (Test-Path (Join-Path $ragflow "docker/docker-compose.yml"))) {
+    throw "未找到仓库内的 RAGFlow 源码。请使用完整的 FileBay 仓库检出后再执行部署。"
+}
+$ragflowRuntime = Join-Path $PSScriptRoot "runtime/ragflow"
+New-Item -ItemType Directory -Force -Path $ragflowRuntime | Out-Null
+$ragflowEnv = Join-Path $ragflowRuntime ".env"
+if (-not (Test-Path $ragflowEnv)) {
+    Copy-Item (Join-Path $ragflow "docker/.env") $ragflowEnv
+}
+
 $dify = Get-VerifiedVendor -Name "dify" -Repository "https://github.com/langgenius/dify.git" -Tag "1.15.0" -Commit "3aa26fb6374bbd47e5469f7d7cc25f3e0075a60c"
 
-$ragflowEnv = Join-Path $ragflow "docker/.env"
 Set-EnvValue $ragflowEnv "RAGFLOW_IMAGE" "infiniflow/ragflow:v0.26.4"
 # Keep the official container-internal MySQL port unchanged. Only move the
 # optional host exposure away from a developer machine's local MySQL (3306).
@@ -89,5 +101,5 @@ Ensure-RandomEnvValue $difyEnv "INIT_PASSWORD" 18
 Ensure-RandomEnvValue $difyEnv "DB_PASSWORD" 24 @("difyai123456")
 Ensure-RandomEnvValue $difyEnv "REDIS_PASSWORD" 24 @("difyai123456")
 
-Write-Host "已准备官方 RAGFlow v0.26.4 与 Dify 1.15.0 编排。"
+Write-Host "已准备仓库内的官方 RAGFlow v0.26.4 与 Dify 1.15.0 编排。"
 Write-Host "下一步：复制 deploy/knowledge/.env.example 为 .env，填写 RAGFlow 专用 API 密钥和数据集 ID，然后执行 README 中的 docker compose 命令。"
