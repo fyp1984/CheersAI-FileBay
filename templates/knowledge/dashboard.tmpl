@@ -103,7 +103,7 @@
 			.knowledge-main .ui.table tbody tr:first-child td { border-top: 0; }
 			.knowledge-main .ui.table code { padding: 2px 6px; border-radius: 5px; background: var(--color-hover); font-size: 12px; }
 			.knowledge-list-card .ui.table { margin: 0; }
-			.knowledge-engine-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr); gap: 18px; }
+			.knowledge-engine-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
 			.knowledge-engine-card { min-height: 182px; padding: 21px; border: 1px solid var(--color-secondary-alpha-20); border-radius: 12px; background: var(--color-box-body); }
 			.knowledge-engine-card .engine-kicker { margin-bottom: 9px; color: var(--color-primary); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
 			.knowledge-engine-card h3 { margin: 0 0 9px; font-size: 17px; letter-spacing: -.02em; }
@@ -172,7 +172,7 @@
 			<a href="#knowledge-search" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">日常查询</div><div class="header">查找资料</div><div class="description">输入业务问题，查看可引用的现行资料与来源依据。</div></div></a>
 			<a href="#knowledge-submit" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">资料入库</div><div class="header">提交脱敏资料</div><div class="description">从 FileBay 仓库选择文件，按步骤提交；无需填写技术配置。</div></div></a>
 			{{if .IsAdmin}}<a href="#knowledge-tasks" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">治理中心</div><div class="header">处理待办</div><div class="description">处理来源启用、内容审核、索引发布等需要管理员确认的事项。</div></div></a>{{end}}
-			{{if .IsAdmin}}<a href="#knowledge-engine" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">引擎管理</div><div class="header">检索引擎</div><div class="description">查看 FileBay 与检索引擎的受控连接状态，不暴露 RAGFlow 原生后台。</div></div></a>{{end}}
+					{{if .IsAdmin}}<a href="#knowledge-engine" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">引擎管理</div><div class="header">检索引擎</div><div class="description">查看受控连接，并进入 RAGFlow 的模型、数据集与检索配置工作区。</div></div></a>{{end}}
 		</div>
 		<div class="knowledge-admin-note">首次使用：查资料就点击“查找资料”；需要入库就点击“提交脱敏资料”。系统会在完成当前步骤后带你进入下一步。</div>
 			</section>
@@ -383,12 +383,13 @@
 			</section>
 			<section class="knowledge-view knowledge-engine">
 				{{if .IsAdmin}}
-				<div class="knowledge-page-header"><div><h2 class="ui header">检索引擎</h2><div class="description">这是 FileBay 的统一管理入口。RAGFlow 在后台独立完成解析、切分、索引和检索候选，业务用户不需要、也不能直接进入其原生界面。</div></div></div>
+				<div class="knowledge-page-header"><div><h2 class="ui header">检索引擎</h2><div class="description">FileBay 与 RAGFlow 保留各自的管理页面：这里负责知识治理与连接状态；RAGFlow 工作区负责模型、数据集、解析与检索调优。两边可直接互相跳转。</div></div></div>
 				<div class="knowledge-engine-grid">
 					<div class="knowledge-engine-card"><div class="engine-kicker">当前运行边界</div><h3>FileBay 负责治理，RAGFlow 负责检索</h3><p>文件、权限、审批、版本、发布和审计均由 FileBay 决定。只有已发布的脱敏资料会被交给检索引擎；检索结果返回后仍由 FileBay 二次校验。</p><ul><li>当前引擎配置：<code>{{.KnowledgeSettings.EngineProfileVersion}}</code></li><li>业务查询、资料入库与审核均在本工作台完成</li><li>Dify 也只调用 FileBay 授权检索接口</li></ul></div>
+					<div class="knowledge-engine-card"><div class="engine-kicker">RAGFlow 配置工作区</div><h3>模型、数据集与检索调优</h3><p>该入口打开独立运行的 RAGFlow 管理页。你可以配置模型供应商、选择嵌入模型、管理数据集、查看切分结果和进行检索测试。</p><a class="ui primary button" href="#" data-ragflow-config-link>打开检索配置</a><div class="text light-2 tw-mt-3">仅在本机受控地址开放；不向浏览器暴露 FileBay 的服务端密钥。</div></div>
 					<div class="knowledge-engine-card"><div class="engine-kicker">连接状态</div><h3>{{if .KnowledgeConfigError}}需要配置{{else}}已受控连接{{end}}</h3>{{if .KnowledgeConfigError}}<p>FileBay 尚未获取可用的检索引擎绑定。请检查部署主机的本机绑定文件与管理员配置。</p><div class="ui warning message"><p>{{.KnowledgeConfigError}}</p></div>{{else}}<p>FileBay 已持有受限的服务端绑定，并通过私有网络调用检索引擎。API 密钥、数据集标识和原始路径不会出现在浏览器。</p><span class="ui green label">服务端受控</span>{{end}}</div>
 				</div>
-				<div class="knowledge-surface tw-mt-4"><div class="knowledge-surface-title">管理员工作顺序 <span class="text light-2">不再切换到第二套前端</span></div><div class="content"><div class="ui ordered list"><div class="item"><div class="content"><div class="header">在 FileBay 完成来源与内容审核</div><div class="description">只让符合脱敏、密级、责任人和适用范围规则的资料进入发布链路。</div></div></div><div class="item"><div class="content"><div class="header">在“待办中心”处理索引与发布</div><div class="description">FileBay 向后台检索服务提交任务；评测通过后再使知识生效。</div></div></div><div class="item"><div class="content"><div class="header">在“查找资料”验证引用</div><div class="description">检索引擎只提供候选片段，FileBay 负责最终权限、版本与状态校验。</div></div></div></div></div></div>
+				<div class="knowledge-surface tw-mt-4"><div class="knowledge-surface-title">管理员工作顺序 <span class="text light-2">治理与检索配置各自独立、双向跳转</span></div><div class="content"><div class="ui ordered list"><div class="item"><div class="content"><div class="header">在 FileBay 完成来源与内容审核</div><div class="description">只让符合脱敏、密级、责任人和适用范围规则的资料进入发布链路。</div></div></div><div class="item"><div class="content"><div class="header">在 RAGFlow 完成模型、数据集与检索配置</div><div class="description">通过上方“打开检索配置”进入；RAGFlow 顶部导航可以随时返回本工作台。</div></div></div><div class="item"><div class="content"><div class="header">在“查找资料”验证引用</div><div class="description">检索引擎只提供候选片段，FileBay 负责最终权限、版本与状态校验。</div></div></div></div></div></div>
 				{{else}}<div class="ui warning message">检索引擎管理仅对管理员开放。</div>{{end}}
 			</section>
 			<section class="knowledge-view knowledge-library">
@@ -624,6 +625,17 @@
 </div>
 <script>
 	(() => {
+		const ragflowConfigUrl = () => {
+			const url = new URL(window.location.href);
+			url.port = '19080';
+			url.pathname = '/user-setting/model';
+			url.search = '';
+			url.hash = '';
+			return url.toString();
+		};
+		document.querySelectorAll('[data-ragflow-config-link]').forEach((link) => {
+			link.href = ragflowConfigUrl();
+		});
 		const syncRepositorySelection = (element) => {
 			if (element.name !== 'repository_selection') return;
 			const form = element.closest('form');

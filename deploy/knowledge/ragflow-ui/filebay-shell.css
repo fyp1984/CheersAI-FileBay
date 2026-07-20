@@ -1,0 +1,66 @@
+#filebay-unified-shell {
+  align-items: center;
+  background: linear-gradient(90deg, rgba(37, 99, 235, .12), rgba(14, 165, 233, .07));
+  border: 1px solid rgba(96, 165, 250, .35);
+  border-radius: 14px;
+  display: flex;
+  gap: 14px;
+  margin: 0 28px 12px;
+  min-height: 50px;
+  padding: 8px 14px;
+}
+
+.filebay-shell-brand {
+  align-items: center;
+  color: inherit;
+  display: flex;
+  font-size: 13px;
+  gap: 9px;
+  line-height: 1.2;
+}
+
+.filebay-shell-brand strong,
+.filebay-shell-brand small { display: block; }
+.filebay-shell-brand small { color: #94a3b8; font-size: 11px; margin-top: 2px; }
+
+.filebay-shell-mark {
+  align-items: center;
+  background: linear-gradient(145deg, #2563eb, #38bdf8);
+  border-radius: 8px;
+  color: white;
+  display: inline-flex;
+  font-size: 15px;
+  font-weight: 800;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.filebay-shell-context {
+  align-items: center;
+  color: #64748b;
+  display: inline-flex;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.filebay-shell-dot { background: #22c55e; border-radius: 99px; height: 7px; width: 7px; }
+
+.filebay-shell-link {
+  background: #2563eb;
+  border-radius: 8px;
+  color: #fff !important;
+  font-size: 12px;
+  font-weight: 650;
+  margin-left: auto;
+  padding: 8px 11px;
+  text-decoration: none !important;
+  transition: background .15s ease, transform .15s ease;
+}
+
+.filebay-shell-link:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+@media (max-width: 680px) {
+  #filebay-unified-shell { align-items: flex-start; flex-wrap: wrap; margin: 0 14px 10px; }
+  .filebay-shell-link { margin-left: 0; }
+}

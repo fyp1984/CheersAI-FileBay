@@ -1,6 +1,6 @@
 # FileBay 企业知识库内部试用部署
 
-该编排在一台受控主机上运行 FileBay、合成脱敏 MySQL 数据源、官方 RAGFlow 与官方 Dify。对业务用户只暴露 FileBay 这一套前端；RAGFlow 作为后台检索服务只在 Docker 私有网络中运行。
+该编排在一台受控主机上运行 FileBay、合成脱敏 MySQL 数据源、官方 RAGFlow 与官方 Dify。FileBay 与 RAGFlow 是两个独立后端、两条可互相跳转的管理路由：FileBay 负责企业知识治理，RAGFlow 保留模型、数据集和检索配置。RAGFlow 使用 FileBay 品牌外壳，不改动其上游核心代码。
 
 ## 前置条件
 
@@ -24,16 +24,18 @@ docker compose --env-file deploy/knowledge/.env -f deploy/knowledge/docker-compo
 
 1. 首次安装时，由受控部署流程完成 RAGFlow 的模型、专用数据集与服务端 API 密钥配置；不要把该密钥写入 `.env` 或交给业务用户。
 2. 仅在部署主机创建被 Git 忽略的绑定文件：`runtime/ragflow-binding/api-key`（密钥）与 `runtime/ragflow-binding/dataset-id`（数据集 ID），然后运行同一条 `docker compose ... up -d --force-recreate filebay`。FileBay 启动时读取这两个只读挂载文件；密钥不会进入镜像、仓库或浏览器。
-3. 打开 `http://localhost:13080/knowledge`，完成 FileBay 初始化和登录；管理员从“检索引擎”查看受控连接状态，业务人员不需要访问 RAGFlow。
-4. 数据源使用 MySQL、`secret-ref:env/KB_MYSQL_DSN`、视图 `v_kb_masked_faq`，字段映射为 `record_id/question/answer_markdown/updated_at`；先“预览校验”，再“增量同步”。
-5. 在 FileBay 创建 Dify 授权。Dify 的外部知识端点填写 `http://filebay:3000/api/knowledge/external/retrieval`；`knowledge_id` 与 FileBay 中的绑定记录完全一致，授权令牌只显示一次。
+3. 打开 `http://localhost:13080/knowledge`，完成 FileBay 初始化和登录；管理员从“检索引擎”可打开 RAGFlow 配置工作区，业务人员日常只需使用 FileBay。
+4. RAGFlow 配置工作区为 `http://localhost:19080/`。该页面保留上游的模型供应商、数据集、解析和检索测试功能，顶部会显示“返回知识库工作台”，可随时回到 FileBay；FileBay 的“检索引擎”也提供反向入口。
+5. 数据源使用 MySQL、`secret-ref:env/KB_MYSQL_DSN`、视图 `v_kb_masked_faq`，字段映射为 `record_id/question/answer_markdown/updated_at`；先“预览校验”，再“增量同步”。
+6. 在 FileBay 创建 Dify 授权。Dify 的外部知识端点填写 `http://filebay:3000/api/knowledge/external/retrieval`；`knowledge_id` 与 FileBay 中的绑定记录完全一致，授权令牌只显示一次。
 
 ## 安全边界
 
 - MySQL 容器仅含合成脱敏数据；读取账号只拥有目标视图的 `SELECT` 权限。
 - FileBay 只持久化 `secret-ref:env/...`，不会保存 DSN、密码、原始表名或 SQL。
 - Dify 不能直连 RAGFlow；它只调用 FileBay 的受控检索端点。检索结果会再次验证空间权限、密级、版本、生效状态和撤销状态。
-- RAGFlow 原生 Web UI 和 API 不映射到宿主机端口；仅 FileBay 在 Docker 私有网络中访问 `ragflow-cpu:9380`。这避免普通用户绕过治理与权限链路。
+- RAGFlow 的管理 Web UI 仅映射到宿主机回环地址 `127.0.0.1:19080`；RAGFlow 原始 API、管理 API、MCP 与内部服务端口均不映射到宿主机。FileBay 仍只通过 Docker 私有网络访问 `ragflow-cpu:9380`。
+- RAGFlow 页面通过部署层注入一层轻量的 FileBay 品牌与返回导航。该适配位于 `deploy/knowledge/ragflow-ui/`，升级 RAGFlow 时无需修改 `third_party/ragflow/`。
 - 示例中的口令仅可用于本机合成数据；不可迁移到任何业务环境。
 
 ## 单仓库升级 RAGFlow
