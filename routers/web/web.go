@@ -1728,6 +1728,7 @@ func registerWebRoutes(m *web.Router, webAuth *AuthMiddleware) {
 		m.Post("/spaces/{id}/delete-empty", knowledge_web.DeleteEmptySpace)
 		m.Post("/data-sources", knowledge_web.CreateDataSource)
 		m.Post("/data-sources/{id}/enable", knowledge_web.EnableDataSource)
+		m.Post("/data-sources/{id}/confirm-review", knowledge_web.ConfirmDataSourceReview)
 		m.Post("/data-sources/{id}/sync", knowledge_web.SyncMySQL)
 		m.Post("/data-sources/expire-due", knowledge_web.ExpireDueDataSources)
 		m.Post("/revisions", knowledge_web.UploadRevision)

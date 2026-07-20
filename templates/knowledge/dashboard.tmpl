@@ -138,7 +138,7 @@
 				<a href="#knowledge-submit" data-step="submit">资料入库</a>
 				{{if .IsAdmin}}
 					<div class="section-label">治理中心</div>
-					<a href="#knowledge-tasks" data-step="tasks">待办中心{{if gt .KnowledgeReviewTaskCount 0}} <span class="ui mini red circular label">{{.KnowledgeReviewTaskCount}}</span>{{end}}</a>
+					<a href="#knowledge-tasks" data-step="tasks">待办中心{{if gt .KnowledgeGovernanceTaskCount 0}} <span class="ui mini red circular label">{{.KnowledgeGovernanceTaskCount}}</span>{{end}}</a>
 					<a href="#knowledge-library" data-step="library">知识台账</a>
 					<a href="#knowledge-connector" data-step="connector">高级数据接入</a>
 					<a href="#knowledge-engine" data-step="engine">检索引擎</a>
@@ -172,7 +172,7 @@
 		<div class="ui {{if .IsAdmin}}four{{else}}two{{end}} stackable cards knowledge-next-step">
 			<a href="#knowledge-search" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">日常查询</div><div class="header">查找资料</div><div class="description">输入业务问题，查看可引用的现行资料与来源依据。</div></div></a>
 			<a href="#knowledge-submit" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">资料入库</div><div class="header">提交脱敏资料</div><div class="description">从 FileBay 仓库选择文件，按步骤提交；无需填写技术配置。</div></div></a>
-			{{if .IsAdmin}}<a href="#knowledge-tasks" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">治理中心</div><div class="header">处理待办</div><div class="description">处理来源启用、内容审核、索引发布等需要管理员确认的事项。</div></div></a>{{end}}
+			{{if .IsAdmin}}<a href="#knowledge-tasks" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">治理中心{{if gt .KnowledgeGovernanceTaskCount 0}} · {{.KnowledgeGovernanceTaskCount}} 项待办{{end}}</div><div class="header">处理待办</div><div class="description">处理来源启用、定期复审、内容审核、索引发布等需要管理员确认的事项。</div></div></a>{{end}}
 					{{if .IsAdmin}}<a href="#knowledge-engine" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">引擎管理</div><div class="header">检索引擎</div><div class="description">查看受控连接，并进入 RAGFlow 的模型、数据集与检索配置工作区。</div></div></a>{{end}}
 		</div>
 		<div class="knowledge-admin-note">首次使用：查资料就点击“查找资料”；需要入库就点击“提交脱敏资料”。系统会在完成当前步骤后带你进入下一步。</div>
@@ -223,15 +223,20 @@
 				{{if .IsAdmin}}
 					<h2 class="ui header tw-mb-1">待我处理</h2>
 					<div class="text light-2 tw-mb-3">这里是知识管理员的工作入口。按待办处理即可，不需要先浏览资料台账或技术配置。</div>
-					<div class="ui three stackable cards knowledge-next-step">
+					<div class="ui four stackable cards knowledge-next-step">
 						<a href="#knowledge-data" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">先处理来源</div><div class="header">审核并启用资料来源</div><div class="description">确认资料归属和责任后启用；启用前不能提交正式知识。</div></div></a>
+						<a href="#knowledge-data" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">定期治理{{if gt .KnowledgeDataSourceTaskCount 0}} · {{.KnowledgeDataSourceTaskCount}} 项提醒{{end}}</div><div class="header">确认来源复审</div><div class="description">对临期或逾期的已启用资料来源完成复审，保留可追溯记录。</div></div></a>
 						<a href="#knowledge-review" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">再核验内容</div><div class="header">完成六项审核</div><div class="description">确认来源、内容、权限、敏感、格式和发布条件；不能审核自己提交的资料。</div></div></a>
 						<a href="#knowledge-publish" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">最后使其生效</div><div class="header">处理索引并发布</div><div class="description">索引成功、抽检通过后再让版本生效；有风险时从这里下架。</div></div></a>
 					</div>
+					{{if .KnowledgeDataSourceTasks}}
+						<h3 class="ui top attached header">资料来源复审提醒（{{.KnowledgeDataSourceTaskCount}}）</h3>
+						<div class="ui attached segment"><div class="ui relaxed divided list">{{range .KnowledgeDataSourceTasks}}<div class="item"><div class="right floated content">{{if .CanConfirmReview}}<form action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/confirm-review" method="post"><button class="ui small {{if .IsOverdue}}primary{{else}}basic{{end}} button">确认本次复审</button></form>{{end}}</div><div class="content"><div class="header">{{.Name}}</div><div class="description">复审周期：{{.ReviewFrequency}} · {{.ReviewStatusLabel}}</div></div></div>{{end}}</div></div>
+					{{end}}
 					{{if gt .KnowledgeReviewTaskCount 0}}
 						<h3 class="ui top attached header">需要你审核的资料（{{.KnowledgeReviewTaskCount}}）</h3>
 						<div class="ui attached segment"><div class="ui relaxed divided list">{{range .KnowledgeApprovals}}{{if .CanReview}}<a class="item" href="#knowledge-review"><div class="content"><div class="header">{{.Title}}</div><div class="description">提交人 #{{.RequestedBy}} · 六项审核待完成。点击进入审核。</div></div></a>{{end}}{{end}}</div></div>
-					{{else}}
+					{{else if not .KnowledgeDataSourceTasks}}
 						<div class="ui positive message">当前没有需要你处理的资料。</div>
 					{{end}}
 				{{else}}<div class="ui warning message">待办处理仅对知识管理员开放。</div>{{end}}
@@ -354,7 +359,7 @@
 				<table class="ui very basic striped table">
 					<thead><tr><th>数据源</th><th>空间</th><th>分类与级别</th><th>责任人</th><th>生效状态</th><th>审核与接入操作</th></tr></thead>
 					<tbody>{{range .KnowledgeDataSources}}
-						<tr><td><strong>{{.Name}}</strong><div class="text light-2">{{.SourceCode}} · {{.SourceTypeLabel}}</div></td><td>#{{.SpaceID}}</td><td>{{.BusinessDomainCode}} / {{.ContentTypeCode}}<div class="text light-2">{{.SecurityLevelLabel}}</div></td><td>{{.ContentOwnerName}}<div class="text light-2">维护：{{.MaintenanceOwnerName}}</div></td><td><span class="ui label">{{.StatusLabel}}</span><div class="text light-2">{{.SearchabilityLabel}}</div></td><td>{{if .CanApprove}}<form action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/enable" method="post"><button class="ui small primary button">审核并启用</button></form>{{end}}{{if .CanSync}}<form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/sync" method="post"><input type="hidden" name="mode" value="preview"><button class="ui small basic button">预览脱敏视图</button></form><form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/sync" method="post"><input type="hidden" name="mode" value="sync"><button class="ui small primary button">执行增量同步</button></form>{{end}}{{if and (not .CanApprove) (not .CanSync)}}<span class="text light-2">—</span>{{end}}</td></tr>
+						<tr><td><strong>{{.Name}}</strong><div class="text light-2">{{.SourceCode}} · {{.SourceTypeLabel}}</div></td><td>#{{.SpaceID}}</td><td>{{.BusinessDomainCode}} / {{.ContentTypeCode}}<div class="text light-2">{{.SecurityLevelLabel}}</div></td><td>{{.ContentOwnerName}}<div class="text light-2">维护：{{.MaintenanceOwnerName}}</div></td><td><span class="ui label">{{.StatusLabel}}</span><div class="text light-2">{{.SearchabilityLabel}} · {{.ReviewStatusLabel}}</div></td><td>{{if .CanApprove}}<form action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/enable" method="post"><button class="ui small primary button">审核并启用</button></form>{{end}}{{if .CanSync}}<form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/sync" method="post"><input type="hidden" name="mode" value="preview"><button class="ui small basic button">预览脱敏视图</button></form><form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/sync" method="post"><input type="hidden" name="mode" value="sync"><button class="ui small primary button">执行增量同步</button></form>{{end}}{{if and (not .CanApprove) (not .CanSync)}}<span class="text light-2">—</span>{{end}}</td></tr>
 					{{end}}</tbody>
 				</table>
 			{{else}}<div class="ui placeholder segment"><div class="ui icon header">{{svg "octicon-database" 32}}尚未登记数据源</div><p>请先创建知识空间，再登记来源、责任人、密级和适用范围。</p></div>{{end}}

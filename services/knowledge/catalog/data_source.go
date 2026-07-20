@@ -149,6 +149,28 @@ func EnableDataSource(ctx context.Context, sourceID, actorID int64) error {
 	})
 }
 
+// ConfirmDataSourceReview appends a governance confirmation for an enabled
+// source. The dashboard derives the next review deadline from this immutable
+// evidence record, so source freshness is auditable without storing a mutable
+// "last reviewed" field.
+func ConfirmDataSourceReview(ctx context.Context, sourceID, actorID int64) error {
+	actor, err := user_model.GetUserByID(ctx, actorID)
+	if err != nil || !actor.IsAdmin {
+		return errors.New("knowledge data-source review requires an administrator")
+	}
+
+	return db.WithTx(ctx, func(ctx context.Context) error {
+		source, exists, err := db.GetByID[knowledge_model.DataSource](ctx, sourceID)
+		if err != nil {
+			return fmt.Errorf("load knowledge data source for review: %w", err)
+		}
+		if !exists || source.Status != knowledge_model.DataSourceStatusEnabled || !validReviewFrequency(source.ReviewFrequency) {
+			return errors.New("knowledge data source cannot be reviewed")
+		}
+		return insertDataSourceAudit(ctx, source, actor.ID, "data_source_review_confirmed", "succeeded")
+	})
+}
+
 func loadManagedSpace(ctx context.Context, spaceID, actorID int64) (*knowledge_model.Space, *user_model.User, error) {
 	if spaceID <= 0 || actorID <= 0 {
 		return nil, nil, errors.New("invalid knowledge space or actor")

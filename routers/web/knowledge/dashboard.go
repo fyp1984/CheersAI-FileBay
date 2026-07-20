@@ -59,9 +59,13 @@ func Dashboard(ctx *context.Context) {
 		return
 	}
 	ctx.Data["KnowledgeSpaces"] = spaces
-	ctx.Data["KnowledgeDataSources"] = loadRecentDataSources(ctx)
+	dataSources := loadRecentDataSources(ctx)
+	ctx.Data["KnowledgeDataSources"] = dataSources
 	ctx.Data["KnowledgeEnabledDataSources"] = loadEnabledDataSources(ctx)
 	ctx.Data["KnowledgeCanApproveDataSources"] = ctx.Doer.IsAdmin
+	dataSourceTasks := loadDataSourceGovernanceTasks(ctx)
+	ctx.Data["KnowledgeDataSourceTasks"] = dataSourceTasks
+	ctx.Data["KnowledgeDataSourceTaskCount"] = len(dataSourceTasks)
 
 	counts, err := loadCounts(ctx)
 	if err != nil {
@@ -85,6 +89,7 @@ func Dashboard(ctx *context.Context) {
 		}
 	}
 	ctx.Data["KnowledgeReviewTaskCount"] = readyForReview
+	ctx.Data["KnowledgeGovernanceTaskCount"] = readyForReview + len(dataSourceTasks)
 	publications := loadRecentPublications(ctx)
 	if counts.Publications < int64(len(publications)) {
 		counts.Publications = int64(len(publications))
@@ -195,6 +200,22 @@ func ExpireDueDataSources(ctx *context.Context) {
 		ctx.Flash.Success(fmt.Sprintf("到期检查完成：已停用 %d 个数据源", count))
 	}
 	ctx.Redirect(setting.AppSubURL + "/knowledge")
+}
+
+// ConfirmDataSourceReview records the administrator's periodic freshness
+// confirmation and moves the next review deadline forward.
+func ConfirmDataSourceReview(ctx *context.Context) {
+	sourceID, err := strconv.ParseInt(ctx.PathParam("id"), 10, 64)
+	if err != nil {
+		ctx.NotFound(nil)
+		return
+	}
+	if err := catalog.ConfirmDataSourceReview(ctx, sourceID, ctx.Doer.ID); err != nil {
+		ctx.Flash.Error("复审确认失败：" + err.Error())
+	} else {
+		ctx.Flash.Success("已记录本次复审，系统会按该来源的复审周期再次提醒")
+	}
+	ctx.Redirect(setting.AppSubURL + "/knowledge#knowledge-tasks")
 }
 
 // CompleteReview completes one mandatory checklist item before final approval.
@@ -656,6 +677,18 @@ type dashboardDataSource struct {
 	CanApprove           bool
 	ConnectorType        string
 	CanSync              bool
+	ReviewStatusLabel    string
+	ReviewDueUnix        timeutil.TimeStamp
+}
+
+type dashboardDataSourceTask struct {
+	ID                int64
+	Name              string
+	ReviewFrequency   string
+	ReviewDueUnix     timeutil.TimeStamp
+	ReviewStatusLabel string
+	IsOverdue         bool
+	CanConfirmReview  bool
 }
 
 type dashboardApproval struct {
@@ -803,6 +836,8 @@ func loadRecentDataSources(ctx *context.Context) []dashboardDataSource {
 	if err := db.GetEngine(ctx).Desc("updated_unix").Limit(20).Find(&sources); err != nil {
 		return nil
 	}
+	latestReviews := loadLatestDataSourceReviewEvents(ctx, sources)
+	now := timeutil.TimeStampNow()
 	rows := make([]dashboardDataSource, 0, len(sources))
 	for _, source := range sources {
 		contentOwnerName := fmt.Sprintf("#%d", source.ContentOwnerID)
@@ -813,6 +848,7 @@ func loadRecentDataSources(ctx *context.Context) []dashboardDataSource {
 		if owner, err := user_model.GetUserByID(ctx, source.MaintenanceOwnerID); err == nil && owner != nil {
 			maintenanceOwnerName = owner.Name
 		}
+		freshness := evaluateDataSourceFreshness(source, latestReviews[source.ID], now)
 		rows = append(rows, dashboardDataSource{
 			ID:                   source.ID,
 			SpaceID:              source.SpaceID,
@@ -835,9 +871,118 @@ func loadRecentDataSources(ctx *context.Context) []dashboardDataSource {
 			CanApprove:           ctx.Doer.IsAdmin && source.Status == knowledge_model.DataSourceStatusPendingReview && source.CreatedBy != ctx.Doer.ID,
 			ConnectorType:        source.ConnectorType,
 			CanSync:              ctx.Doer.IsAdmin && source.Status == knowledge_model.DataSourceStatusEnabled && source.SourceType == knowledge_model.DataSourceTypeDatabase && source.ConnectorType == "mysql",
+			ReviewStatusLabel:    freshness.Label,
+			ReviewDueUnix:        freshness.DueUnix,
 		})
 	}
 	return rows
+}
+
+type dataSourceFreshness struct {
+	DueUnix   timeutil.TimeStamp
+	Label     string
+	IsTask    bool
+	IsOverdue bool
+}
+
+const dataSourceReviewReminderWindow = 7 * 24 * time.Hour
+
+func evaluateDataSourceFreshness(source knowledge_model.DataSource, lastConfirmed, now timeutil.TimeStamp) dataSourceFreshness {
+	if source.Status != knowledge_model.DataSourceStatusEnabled {
+		return dataSourceFreshness{Label: "启用后开始复审"}
+	}
+	if source.ReviewFrequency == knowledge_model.ReviewFrequencyEventTriggered {
+		return dataSourceFreshness{Label: "事件触发时复审"}
+	}
+
+	base := source.EffectiveUnix
+	if source.UpdatedUnix > base {
+		base = source.UpdatedUnix
+	}
+	if lastConfirmed > base {
+		base = lastConfirmed
+	}
+	if base <= 0 {
+		return dataSourceFreshness{Label: "缺少复审基准"}
+	}
+
+	due := nextReviewDue(base, source.ReviewFrequency)
+	if due <= 0 {
+		return dataSourceFreshness{Label: "复审周期未配置"}
+	}
+	if due <= now {
+		days := int((int64(now) - int64(due)) / int64(24*time.Hour/time.Second))
+		if days == 0 {
+			return dataSourceFreshness{DueUnix: due, Label: "今天需要复审", IsTask: true, IsOverdue: true}
+		}
+		return dataSourceFreshness{DueUnix: due, Label: fmt.Sprintf("已逾期 %d 天", days), IsTask: true, IsOverdue: true}
+	}
+	if time.Duration(int64(due-now))*time.Second <= dataSourceReviewReminderWindow {
+		days := int((int64(due) - int64(now) + int64(24*time.Hour/time.Second) - 1) / int64(24*time.Hour/time.Second))
+		return dataSourceFreshness{DueUnix: due, Label: fmt.Sprintf("%d 天后需要复审", days), IsTask: true}
+	}
+	return dataSourceFreshness{DueUnix: due, Label: "复审正常"}
+}
+
+func nextReviewDue(base timeutil.TimeStamp, frequency knowledge_model.ReviewFrequency) timeutil.TimeStamp {
+	baseTime := time.Unix(int64(base), 0)
+	switch frequency {
+	case knowledge_model.ReviewFrequencyWeekly:
+		return timeutil.TimeStamp(baseTime.AddDate(0, 0, 7).Unix())
+	case knowledge_model.ReviewFrequencyMonthly:
+		return timeutil.TimeStamp(baseTime.AddDate(0, 1, 0).Unix())
+	case knowledge_model.ReviewFrequencyQuarterly:
+		return timeutil.TimeStamp(baseTime.AddDate(0, 3, 0).Unix())
+	default:
+		return 0
+	}
+}
+
+func loadLatestDataSourceReviewEvents(ctx *context.Context, sources []knowledge_model.DataSource) map[int64]timeutil.TimeStamp {
+	ids := make([]int64, 0, len(sources))
+	for _, source := range sources {
+		ids = append(ids, source.ID)
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	var events []knowledge_model.AuditEvent
+	if err := db.GetEngine(ctx).In("entity_id", ids).Where("entity_type = ? AND action = ?", "data_source", "data_source_review_confirmed").Desc("created_unix").Find(&events); err != nil {
+		return nil
+	}
+	latest := make(map[int64]timeutil.TimeStamp, len(events))
+	for _, event := range events {
+		if _, exists := latest[event.EntityID]; !exists {
+			latest[event.EntityID] = event.CreatedUnix
+		}
+	}
+	return latest
+}
+
+func loadDataSourceGovernanceTasks(ctx *context.Context) []dashboardDataSourceTask {
+	var sources []knowledge_model.DataSource
+	if err := db.GetEngine(ctx).Where("status = ?", knowledge_model.DataSourceStatusEnabled).Asc("expires_unix").Find(&sources); err != nil {
+		return nil
+	}
+	latestReviews := loadLatestDataSourceReviewEvents(ctx, sources)
+	now := timeutil.TimeStampNow()
+	tasks := make([]dashboardDataSourceTask, 0, len(sources))
+	for _, source := range sources {
+		freshness := evaluateDataSourceFreshness(source, latestReviews[source.ID], now)
+		if !freshness.IsTask {
+			continue
+		}
+		tasks = append(tasks, dashboardDataSourceTask{
+			ID:                source.ID,
+			Name:              source.Name,
+			ReviewFrequency:   reviewFrequencyLabel(source.ReviewFrequency),
+			ReviewDueUnix:     freshness.DueUnix,
+			ReviewStatusLabel: freshness.Label,
+			IsOverdue:         freshness.IsOverdue,
+			CanConfirmReview:  ctx.Doer.IsAdmin,
+		})
+	}
+	return tasks
 }
 
 func loadSyncRuns(ctx *context.Context) []knowledge_model.SyncRun {
@@ -886,6 +1031,15 @@ func dataSourceStatusLabel(value knowledge_model.DataSourceStatus) string {
 		knowledge_model.DataSourceStatusArchived:      "已归档",
 	}
 	return labels[value]
+}
+
+func reviewFrequencyLabel(value knowledge_model.ReviewFrequency) string {
+	return map[knowledge_model.ReviewFrequency]string{
+		knowledge_model.ReviewFrequencyWeekly:         "每周",
+		knowledge_model.ReviewFrequencyMonthly:        "每月",
+		knowledge_model.ReviewFrequencyQuarterly:      "每季度",
+		knowledge_model.ReviewFrequencyEventTriggered: "事件触发",
+	}[value]
 }
 
 func searchabilityStatusLabel(value knowledge_model.SearchabilityStatus) string {
