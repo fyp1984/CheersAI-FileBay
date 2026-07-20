@@ -153,7 +153,9 @@
 				<div class="description">从已发布的资料中找答案，或按清晰步骤把新的脱敏资料纳入知识库。</div>
 			</div>
 			{{if .IsAdmin}}<div class="tw-flex tw-items-center tw-gap-2">
-				<a class="ui primary button" href="#" data-ragflow-config-link>打开 RAGFlow 配置</a>
+				{{/* RAGFlow configuration lives in FileBay's native top navigation.
+				     Keep this header to a status-only summary so the same action is
+				     not duplicated in two different navigation patterns. */}}
 				{{if .KnowledgeConfigError}}
 					<span class="ui red label">配置未就绪</span>
 				{{else}}
