@@ -1,0 +1,51 @@
+name: filebay-knowledge-dify
+
+# Optional Dify integration. This file is intentionally separate from the
+# primary FileBay/RAGFlow trial stack: upstream Dify and RAGFlow both define
+# infrastructure service names such as redis, but must not share a Compose
+# project. Dify receives a second private network only for calling FileBay's
+# external knowledge endpoint; FileBay never calls Dify.
+include:
+  - path: .runtime/dify/docker/docker-compose.yaml
+    env_file: .runtime/dify/docker/.env
+
+services:
+  api:
+    networks:
+      - default
+      - knowledge_trial
+
+  # Dify management and diagnostics stay private. Clear all upstream host
+  # mappings, including optional vector-database profiles, so enabling a
+  # profile cannot accidentally open an additional browser or debug port.
+  plugin_daemon:
+    ports: !reset []
+  nginx:
+    ports: !reset []
+  oceanbase:
+    ports: !reset []
+  seekdb:
+    ports: !reset []
+  vastbase:
+    ports: !reset []
+  iris:
+    ports: !reset []
+  milvus-standalone:
+    ports: !reset []
+  opengauss:
+    ports: !reset []
+  myscale:
+    ports: !reset []
+  matrixone:
+    ports: !reset []
+  elasticsearch:
+    ports: !reset []
+  kibana:
+    ports: !reset []
+
+networks:
+  # Created by docker-compose.trial.yml. Dify api attaches here solely to
+  # resolve the FileBay service at http://filebay:3000.
+  knowledge_trial:
+    name: filebay_knowledge_trial
+    external: true
