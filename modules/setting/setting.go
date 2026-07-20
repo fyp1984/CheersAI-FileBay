@@ -121,6 +121,7 @@ func loadCommonSettingsFrom(cfg ConfigProvider) error {
 
 	loadOAuth2From(cfg)
 	loadSecurityFrom(cfg)
+	loadKnowledgeFrom(cfg)
 	if err := loadAttachmentFrom(cfg); err != nil {
 		return err
 	}

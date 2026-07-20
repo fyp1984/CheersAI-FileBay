@@ -1,0 +1,85 @@
+name: filebay-knowledge-trial
+
+# 官方 RAGFlow 和 Dify 编排由 bootstrap-trial.ps1 下载到 .runtime 后通过
+# include 纳入同一 Compose 项目；不要把它们的运行目录或凭据提交到仓库。
+include:
+  - path: .runtime/ragflow/docker/docker-compose.yml
+    env_file: .runtime/ragflow/docker/.env
+  - path: .runtime/dify/docker/docker-compose.yaml
+    env_file: .runtime/dify/docker/.env
+
+services:
+  filebay:
+    build:
+      context: ../..
+      dockerfile: Dockerfile.rootless
+    image: cheersai-filebay:knowledge-trial
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/usr/local/bin/filebay-knowledge-entrypoint"]
+    ports:
+      - "127.0.0.1:${FILEBAY_HTTP_PORT:-13080}:3000"
+    environment:
+      APP_NAME: "CheersAI FileBay 企业知识库（内部试用）"
+      RUN_MODE: prod
+      SSH_DOMAIN: localhost
+      HTTP_PORT: "3000"
+      ROOT_URL: "http://localhost:${FILEBAY_HTTP_PORT:-13080}/"
+      DB_TYPE: sqlite3
+      DB_NAME: filebay
+      DISABLE_REGISTRATION: "false"
+      REQUIRE_SIGNIN_VIEW: "true"
+      INSTALL_LOCK: "false"
+      GITEA__knowledge__ENABLED: "true"
+      GITEA__knowledge__RAGFLOW_BASE_URL: "http://ragflow-cpu:9380"
+      GITEA__knowledge__RAGFLOW_API_KEY: "${RAGFLOW_API_KEY:-}"
+      GITEA__knowledge__RAGFLOW_DATASET_ID: "${RAGFLOW_DATASET_ID:-}"
+      GITEA__knowledge__ENGINE_PROFILE_VERSION: "profile-2026-07"
+      GITEA__knowledge__ALLOW_INTERNAL_HTTP: "true"
+      GITEA__knowledge__INTERNAL_HTTP_HOST: "ragflow-cpu"
+      GITEA__knowledge__RETRIEVE_MAX_TOP_K: "10"
+      GITEA__knowledge__RETRIEVE_QUERY_MAX_BYTES: "2048"
+      KB_MYSQL_DSN: "${KB_MYSQL_DSN}"
+    volumes:
+      - ./runtime/filebay:/var/lib/gitea
+      - ./runtime/filebay-config:/etc/gitea
+      - ./filebay-knowledge-entrypoint.sh:/usr/local/bin/filebay-knowledge-entrypoint:ro
+      - ./runtime/ragflow-binding:/run/filebay-ragflow:ro
+    depends_on:
+      mysql-source:
+        condition: service_healthy
+    networks:
+      - knowledge_trial
+
+  mysql-source:
+    image: mysql:8.4.7
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_SOURCE_ROOT_PASSWORD}"
+      MYSQL_DATABASE: knowledge_source
+    volumes:
+      - ./runtime/mysql-source-trial:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      - knowledge_trial
+
+  # The official RAGFlow service remains the index/retrieval engine. Adding it
+  # here only joins its service to FileBay's private network; no host port is
+  # exposed for FileBay-to-RAGFlow traffic.
+  ragflow-cpu:
+    networks:
+      knowledge_trial:
+        aliases: [ragflow]
+
+  # Dify calls FileBay's external knowledge endpoint. FileBay never calls Dify.
+  api:
+    networks:
+      - knowledge_trial
+
+networks:
+  knowledge_trial:
+    name: filebay_knowledge_trial

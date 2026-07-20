@@ -35,6 +35,12 @@ func toJSON(v any) string {
 	return string(b)
 }
 
+func jsonPath(value string) string {
+	// The expected writer dumps are JSON literals. Windows separators must be
+	// escaped before replacing the placeholder inside those literals.
+	return strings.ReplaceAll(value, `\`, `\\`)
+}
+
 func TestLogConfigDefault(t *testing.T) {
 	manager, managerClose := initLoggersByConfig(t, ``)
 	defer managerClose()
@@ -210,13 +216,13 @@ ACCESS = file
 }
 `
 	dump := manager.GetLogger(log.DEFAULT).DumpWriters()
-	require.JSONEq(t, strings.ReplaceAll(writerDump, "$FILENAME", tempPath("gitea.log")), toJSON(dump))
+	require.JSONEq(t, strings.ReplaceAll(writerDump, "$FILENAME", jsonPath(tempPath("gitea.log"))), toJSON(dump))
 
 	dump = manager.GetLogger("access").DumpWriters()
-	require.JSONEq(t, strings.ReplaceAll(writerDumpAccess, "$FILENAME", tempPath("access.log")), toJSON(dump))
+	require.JSONEq(t, strings.ReplaceAll(writerDumpAccess, "$FILENAME", jsonPath(tempPath("access.log"))), toJSON(dump))
 
 	dump = manager.GetLogger("router").DumpWriters()
-	require.JSONEq(t, strings.ReplaceAll(writerDump, "$FILENAME", tempPath("gitea.log")), toJSON(dump))
+	require.JSONEq(t, strings.ReplaceAll(writerDump, "$FILENAME", jsonPath(tempPath("gitea.log"))), toJSON(dump))
 }
 
 func TestLogConfigLegacyModeDisable(t *testing.T) {
@@ -381,7 +387,7 @@ COMPRESSION_LEVEL = 4
 
 	dump := manager.GetLogger(log.DEFAULT).DumpWriters()
 	expected := writerDump
-	expected = strings.ReplaceAll(expected, "$FILENAME-0", tempPath("gitea.log"))
-	expected = strings.ReplaceAll(expected, "$FILENAME-1", tempPath("file-xxx.log"))
+	expected = strings.ReplaceAll(expected, "$FILENAME-0", jsonPath(tempPath("gitea.log")))
+	expected = strings.ReplaceAll(expected, "$FILENAME-1", jsonPath(tempPath("file-xxx.log")))
 	require.JSONEq(t, expected, toJSON(dump))
 }
