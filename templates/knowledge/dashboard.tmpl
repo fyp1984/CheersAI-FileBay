@@ -10,6 +10,9 @@
 			.knowledge-sidebar a { display: flex; align-items: center; justify-content: space-between; min-height: 40px; margin: 2px 0; padding: 9px 11px; border: 1px solid transparent; border-radius: 9px; color: var(--color-text-light-1); font-size: 14px; font-weight: 500; transition: background .15s ease, border-color .15s ease, color .15s ease; }
 			.knowledge-sidebar a:hover { background: var(--color-hover); border-color: var(--color-secondary-alpha-20); color: var(--color-text); text-decoration: none; }
 			.knowledge-sidebar a.active { background: var(--color-primary-light-2); border-color: var(--color-primary-light-1); color: var(--color-primary); font-weight: 700; }
+			.knowledge-sidebar .knowledge-ragflow-entry { margin-top: 8px; border-color: var(--color-primary-light-1); background: var(--color-primary-light-2); color: var(--color-primary); font-weight: 700; }
+			.knowledge-sidebar .knowledge-ragflow-entry:hover { border-color: var(--color-primary); background: var(--color-primary-light-2); color: var(--color-primary); }
+			.knowledge-ragflow-entry .entry-mark { font-size: 16px; line-height: 1; }
 			.knowledge-sidebar .section-label { padding: 20px 11px 7px; color: var(--color-text-light-2); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
 			.knowledge-view { display: none; }
 			.knowledge-overview { display: block; }
@@ -142,6 +145,7 @@
 					<a href="#knowledge-library" data-step="library">知识台账</a>
 					<a href="#knowledge-connector" data-step="connector">高级数据接入</a>
 					<a href="#knowledge-engine" data-step="engine">检索引擎</a>
+					<a class="knowledge-ragflow-entry" href="#" data-ragflow-config-link><span>打开 RAGFlow 配置</span><span class="entry-mark" aria-hidden="true">↗</span></a>
 					<a href="#knowledge-apps" data-step="apps">应用授权</a>
 				{{end}}
 			</aside>
@@ -152,7 +156,8 @@
 				<h1 class="ui header">企业知识库</h1>
 				<div class="description">从已发布的资料中找答案，或按清晰步骤把新的脱敏资料纳入知识库。</div>
 			</div>
-			{{if .IsAdmin}}<div>
+			{{if .IsAdmin}}<div class="tw-flex tw-items-center tw-gap-2">
+				<a class="ui primary button" href="#" data-ragflow-config-link>打开 RAGFlow 配置</a>
 				{{if .KnowledgeConfigError}}
 					<span class="ui red label">配置未就绪</span>
 				{{else}}
