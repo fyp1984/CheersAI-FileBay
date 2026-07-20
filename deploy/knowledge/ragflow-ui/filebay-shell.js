@@ -22,19 +22,32 @@
     return `${window.location.origin}/knowledge#knowledge-engine`;
   };
 
+  const findKnowledgeLink = () => {
+    // Match RAGFlow's real dataset route rather than relying on the position
+    // of a list item. React can re-order items or mount a compact header on
+    // different pages, while this route stays part of the upstream contract.
+    return Array.from(document.querySelectorAll('header nav > ul a')).find((link) => {
+      try {
+        return new URL(link.href, window.location.origin).pathname.endsWith('/datasets');
+      } catch {
+        return false;
+      }
+    });
+  };
+
   const renderWorkbenchNav = () => {
-    if (document.getElementById('filebay-workbench-nav')) return true;
+    const existing = document.getElementById('filebay-workbench-nav');
+    if (existing?.isConnected) return true;
 
     // Target only RAGFlow's global top navigation. Settings pages also contain
     // a sidebar, so querying a generic <header> would alter that layout.
-    const navList = document.querySelector('header nav > ul');
+    const knowledgeLink = findKnowledgeLink();
+    const navList = knowledgeLink?.closest('ul');
     if (!navList) return false;
 
     // Reuse the actual “知识库” link class instead of approximating it in
     // adapter CSS. This makes “工作台” identical to every RAGFlow top-level
     // navigation item across desktop breakpoints and future upstream tweaks.
-    const knowledgeLink = navList.children[1]?.querySelector('a');
-    if (!knowledgeLink) return false;
 
     const item = document.createElement('li');
     item.id = 'filebay-workbench-nav';
@@ -46,20 +59,35 @@
     link.setAttribute('aria-label', '返回 CheersAI FileBay 知识库工作台');
     item.append(link);
 
-    // The first item is RAGFlow's home icon; the second is “知识库”.
-    navList.insertBefore(item, navList.children[1] || null);
+    // Place the FileBay destination directly before RAGFlow's “知识库”, so the
+    // two adjacent entries clearly distinguish governance from retrieval.
+    navList.insertBefore(item, knowledgeLink.closest('li'));
     return true;
   };
 
-  let attempts = 0;
-  const waitForWorkbenchNav = () => {
-    if (renderWorkbenchNav() || attempts++ >= 30) return;
-    window.setTimeout(waitForWorkbenchNav, 250);
+  let renderScheduled = false;
+  const scheduleWorkbenchNav = () => {
+    if (renderScheduled) return;
+    renderScheduled = true;
+    window.queueMicrotask(() => {
+      renderScheduled = false;
+      renderWorkbenchNav();
+    });
+  };
+
+  const keepWorkbenchNavMounted = () => {
+    scheduleWorkbenchNav();
+
+    // RAGFlow owns this header with React and rebuilds it after route and
+    // session changes. Keep the deployment-only link in sync instead of
+    // letting a one-time DOM insert disappear after navigation.
+    const observer = new MutationObserver(scheduleWorkbenchNav);
+    observer.observe(document.documentElement, { childList: true, subtree: true });
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', waitForWorkbenchNav, { once: true });
+    document.addEventListener('DOMContentLoaded', keepWorkbenchNavMounted, { once: true });
   } else {
-    waitForWorkbenchNav();
+    keepWorkbenchNavMounted();
   }
 })();
