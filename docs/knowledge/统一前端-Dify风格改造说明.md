@@ -9,7 +9,7 @@
 1. 浏览器唯一入口是 `http://127.0.0.1:13080`：FileBay 位于业务路由，RAGFlow 位于 `/ragflow/`。
 2. FileBay 使用全局设计令牌覆盖导航、页面画布、卡片、表格、输入框、下拉框和主按钮；不改变仓库、团队、权限和审批功能。
 3. RAGFlow 使用部署适配层覆盖色彩令牌，并在首次进入时使用简体中文和浅色主题；适配文件位于 `deploy/knowledge/ragflow-ui/`，不修改 `third_party/ragflow/`。适配器不会插入 RAGFlow 的组件树，避免影响其设置页与工作区的原有布局。
-4. 两侧均使用中文业务入口：FileBay 提供“打开 RAGFlow 配置”，RAGFlow 提供“返回知识库工作台”。
+4. 两侧均使用中文业务入口：FileBay 提供“打开 RAGFlow 配置”，RAGFlow 在顶部导航的“知识库”前提供“工作台”链接。
 
 ## Dify 风格取舍
 

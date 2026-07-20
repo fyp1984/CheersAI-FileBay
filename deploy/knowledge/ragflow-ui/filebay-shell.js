@@ -22,25 +22,39 @@
     return `${window.location.origin}/knowledge#knowledge-engine`;
   };
 
-  const renderReturnLink = () => {
-    if (document.getElementById('filebay-return-link')) return;
+  const renderWorkbenchNav = () => {
+    if (document.getElementById('filebay-workbench-nav')) return true;
 
-    // Do not insert into RAGFlow's component tree. Its settings pages use a
-    // sidebar <header>, while the main workspace uses a global <header>.
-    // Injecting into either one changes the flex/grid layout and caused the
-    // blank left column shown in the previous build.
+    // Target only RAGFlow's global top navigation. Settings pages also contain
+    // a sidebar, so querying a generic <header> would alter that layout.
+    const navList = document.querySelector('header nav > ul');
+    if (!navList) return false;
+
+    const item = document.createElement('li');
+    item.id = 'filebay-workbench-nav';
+    item.className = 'filebay-workbench-nav';
+
     const link = document.createElement('a');
-    link.id = 'filebay-return-link';
-    link.className = 'filebay-return-link';
+    link.className = 'filebay-workbench-link';
     link.href = fileBayUrl();
-    link.textContent = '返回知识库工作台';
+    link.textContent = '工作台';
     link.setAttribute('aria-label', '返回 CheersAI FileBay 知识库工作台');
-    document.body.append(link);
+    item.append(link);
+
+    // The first item is RAGFlow's home icon; the second is “知识库”.
+    navList.insertBefore(item, navList.children[1] || null);
+    return true;
+  };
+
+  let attempts = 0;
+  const waitForWorkbenchNav = () => {
+    if (renderWorkbenchNav() || attempts++ >= 30) return;
+    window.setTimeout(waitForWorkbenchNav, 250);
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderReturnLink, { once: true });
+    document.addEventListener('DOMContentLoaded', waitForWorkbenchNav, { once: true });
   } else {
-    renderReturnLink();
+    waitForWorkbenchNav();
   }
 })();

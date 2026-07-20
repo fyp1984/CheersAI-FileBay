@@ -51,26 +51,30 @@ body,
   font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
 }
 
-.filebay-return-link {
-  background: #155eef;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, .12);
-  color: #fff !important;
+.filebay-workbench-nav {
+  display: flex;
+}
+
+.filebay-workbench-link {
+  align-items: center;
+  border-radius: 999px;
+  color: #475467 !important;
   display: inline-flex;
   font-size: 12px;
   font-weight: 650;
-  line-height: 1.25;
-  padding: 8px 11px;
-  position: fixed;
-  right: 20px;
+  height: 40px;
+  justify-content: center;
+  padding: 0 16px;
   text-decoration: none !important;
-  top: 18px;
-  transition: background .15s ease, transform .15s ease;
-  z-index: 60;
+  transition: background .15s ease, color .15s ease;
 }
 
-.filebay-return-link:hover { background: #004eeb; transform: translateY(-1px); }
+.filebay-workbench-link:hover,
+.filebay-workbench-link:focus-visible {
+  background: #eff8ff;
+  color: #155eef !important;
+}
 
 @media (max-width: 680px) {
-  .filebay-return-link { right: 12px; top: 12px; }
+  .filebay-workbench-nav { display: none; }
 }

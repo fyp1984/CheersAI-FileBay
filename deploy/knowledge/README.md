@@ -25,7 +25,7 @@ docker compose --env-file deploy/knowledge/.env -f deploy/knowledge/docker-compo
 1. 首次安装时，由受控部署流程完成 RAGFlow 的模型、专用数据集与服务端 API 密钥配置；不要把该密钥写入 `.env` 或交给业务用户。
 2. 仅在部署主机创建被 Git 忽略的绑定文件：`runtime/ragflow-binding/api-key`（密钥）与 `runtime/ragflow-binding/dataset-id`（数据集 ID），然后运行同一条 `docker compose ... up -d --force-recreate filebay`。FileBay 启动时读取这两个只读挂载文件；密钥不会进入镜像、仓库或浏览器。
 3. 打开 `http://localhost:13080/knowledge`，完成 FileBay 初始化和登录；管理员从“检索引擎”可打开 RAGFlow 配置工作区，业务人员日常只需使用 FileBay。
-4. RAGFlow 配置工作区为同一前端端口下的 `http://localhost:13080/ragflow/`。该页面保留上游的模型供应商、数据集、解析和检索测试功能，并显示一个不影响原布局的“返回知识库工作台”入口；FileBay 的“检索引擎”也提供反向入口。首次进入会默认使用简体中文与浅色主题，之后仍可在 RAGFlow 中自行切换语言和主题。
+4. RAGFlow 配置工作区为同一前端端口下的 `http://localhost:13080/ragflow/`。该页面保留上游的模型供应商、数据集、解析和检索测试功能，顶部导航会在“知识库”前显示“工作台”链接，方便返回 FileBay；FileBay 的“检索引擎”也提供反向入口。首次进入会默认使用简体中文与浅色主题，之后仍可在 RAGFlow 中自行切换语言和主题。
 5. 数据源使用 MySQL、`secret-ref:env/KB_MYSQL_DSN`、视图 `v_kb_masked_faq`，字段映射为 `record_id/question/answer_markdown/updated_at`；先“预览校验”，再“增量同步”。
 6. 在 FileBay 创建 Dify 授权。Dify 的外部知识端点填写 `http://filebay:3000/api/knowledge/external/retrieval`；`knowledge_id` 与 FileBay 中的绑定记录完全一致，授权令牌只显示一次。
 
