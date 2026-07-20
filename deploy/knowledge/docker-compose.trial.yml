@@ -68,19 +68,12 @@ services:
     networks:
       - knowledge_trial
 
-  # RAGFlow remains an independent index/retrieval backend. Keep its upstream
-  # UI reachable on a loopback-only port while the unified FileBay workbench is
-  # being adopted; FileBay talks to its API through the private Docker network.
-  # No RAGFlow port is exposed to the LAN.
+  # RAGFlow remains an independent index/retrieval backend. FileBay is the
+  # only product UI; reset the upstream port mappings so RAGFlow is reachable
+  # exclusively through the private Docker-network endpoint
+  # http://ragflow-cpu:9380.
   ragflow-cpu:
-    ports: !override
-      - "127.0.0.1:19080:80"
-      - "127.0.0.1:19443:443"
-      - "127.0.0.1:19380:9380"
-      - "127.0.0.1:19381:9381"
-      - "127.0.0.1:19382:9382"
-      - "127.0.0.1:19383:9383"
-      - "127.0.0.1:19384:9384"
+    ports: !reset []
     # The upstream service only declares MySQL as a Compose dependency, while
     # its configured Elasticsearch and Valkey services are also required before
     # the API on :9380 can accept FileBay traffic. Keep this wiring in FileBay's
