@@ -51,78 +51,26 @@ body,
   font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
 }
 
-#filebay-unified-shell {
-  align-items: center;
-  background: #ffffff;
-  border: 1px solid #eaecf0;
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, .05);
-  display: flex;
-  gap: 14px;
-  margin: 0 28px 16px;
-  min-height: 54px;
-  padding: 9px 14px;
-}
-
-.filebay-shell-brand {
-  align-items: center;
-  color: #1d2939;
-  display: flex;
-  font-size: 13px;
-  gap: 9px;
-  line-height: 1.2;
-}
-
-.filebay-shell-brand strong,
-.filebay-shell-brand small { display: block; }
-.filebay-shell-brand small { color: #667085; font-size: 11px; margin-top: 2px; }
-
-.filebay-shell-mark {
-  align-items: center;
+.filebay-return-link {
   background: #155eef;
   border-radius: 8px;
-  color: white;
-  display: inline-flex;
-  font-size: 15px;
-  font-weight: 800;
-  height: 28px;
-  justify-content: center;
-  width: 28px;
-}
-
-.filebay-shell-context {
-  align-items: center;
-  color: #667085;
-  display: inline-flex;
-  font-size: 12px;
-  gap: 6px;
-}
-
-.filebay-shell-dot { background: #12b76a; border-radius: 99px; height: 7px; width: 7px; }
-
-.filebay-shell-link {
-  background: #155eef;
-  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .12);
   color: #fff !important;
+  display: inline-flex;
   font-size: 12px;
   font-weight: 650;
-  margin-left: auto;
+  line-height: 1.25;
   padding: 8px 11px;
+  position: fixed;
+  right: 20px;
   text-decoration: none !important;
+  top: 18px;
   transition: background .15s ease, transform .15s ease;
+  z-index: 60;
 }
 
-.filebay-shell-link:hover { background: #004eeb; transform: translateY(-1px); }
-
-/* RAGFlow cards, menus and popovers retain their upstream behaviour but share
- * FileBay's surface depth and corner rhythm. */
-#root [class*="rounded"] { border-radius: 10px; }
-#root [class*="shadow"] { box-shadow: 0 1px 2px rgba(16, 24, 40, .05); }
-#root input,
-#root textarea,
-#root button[role="combobox"] { border-radius: 8px; }
+.filebay-return-link:hover { background: #004eeb; transform: translateY(-1px); }
 
 @media (max-width: 680px) {
-  #filebay-unified-shell { align-items: flex-start; flex-wrap: wrap; margin: 0 14px 10px; }
-  .filebay-shell-link { margin-left: 0; }
+  .filebay-return-link { right: 12px; top: 12px; }
 }

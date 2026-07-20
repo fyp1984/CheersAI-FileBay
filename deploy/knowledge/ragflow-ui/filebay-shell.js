@@ -1,10 +1,17 @@
 (() => {
-  // RAGFlow defaults to its dark product theme. The FileBay workspace uses a
-  // light, Dify-inspired management surface, so make the shared entry route
-  // deterministic before React mounts. Users can still switch theme in
-  // RAGFlow; this only defines the first render after entering from FileBay.
+  // RAGFlow defaults to dark mode and English. FileBay's internal trial is a
+  // Chinese, light workspace. Do this before React mounts so its first render
+  // does not flicker to a different language or colour scheme.
   try {
-    window.localStorage.setItem('vite-ui-theme', 'light');
+    window.localStorage.setItem('ragflow-ui-theme', 'light');
+
+    // Migrate an existing trial browser once. Afterwards, a user's explicit
+    // language choice in RAGFlow remains intact.
+    const languageMigration = 'filebay-ragflow-default-language';
+    if (window.localStorage.getItem(languageMigration) !== 'zh-Hans') {
+      window.localStorage.setItem('lng', 'zh-Hans');
+      window.localStorage.setItem(languageMigration, 'zh-Hans');
+    }
   } catch {
     // Storage may be disabled by a managed browser. The page remains usable.
   }
@@ -15,36 +22,25 @@
     return `${window.location.origin}/knowledge#knowledge-engine`;
   };
 
-  const renderShell = () => {
-    if (document.getElementById('filebay-unified-shell')) return true;
-    const header = document.querySelector('header');
-    if (!header || !header.parentElement) return false;
+  const renderReturnLink = () => {
+    if (document.getElementById('filebay-return-link')) return;
 
-    const shell = document.createElement('section');
-    shell.id = 'filebay-unified-shell';
-    shell.setAttribute('aria-label', 'CheersAI FileBay 与 RAGFlow 导航');
-    shell.innerHTML = `
-      <div class="filebay-shell-brand">
-        <span class="filebay-shell-mark">C</span>
-        <span><strong>CheersAI FileBay</strong><small>企业知识库</small></span>
-      </div>
-      <div class="filebay-shell-context"><span class="filebay-shell-dot"></span>RAGFlow 检索配置</div>
-      <a class="filebay-shell-link" href="${fileBayUrl()}">返回知识库工作台 <span aria-hidden="true">↗</span></a>
-    `;
-    header.insertAdjacentElement('afterend', shell);
-    document.title = '检索配置 · CheersAI FileBay';
-    return true;
-  };
-
-  let attempts = 0;
-  const waitForHeader = () => {
-    if (renderShell() || attempts++ >= 30) return;
-    window.setTimeout(waitForHeader, 250);
+    // Do not insert into RAGFlow's component tree. Its settings pages use a
+    // sidebar <header>, while the main workspace uses a global <header>.
+    // Injecting into either one changes the flex/grid layout and caused the
+    // blank left column shown in the previous build.
+    const link = document.createElement('a');
+    link.id = 'filebay-return-link';
+    link.className = 'filebay-return-link';
+    link.href = fileBayUrl();
+    link.textContent = '返回知识库工作台';
+    link.setAttribute('aria-label', '返回 CheersAI FileBay 知识库工作台');
+    document.body.append(link);
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', waitForHeader, { once: true });
+    document.addEventListener('DOMContentLoaded', renderReturnLink, { once: true });
   } else {
-    waitForHeader();
+    renderReturnLink();
   }
 })();
