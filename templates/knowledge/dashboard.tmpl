@@ -627,8 +627,7 @@
 	(() => {
 		const ragflowConfigUrl = () => {
 			const url = new URL(window.location.href);
-			url.port = '19080';
-			url.pathname = '/user-setting/model';
+			url.pathname = '/ragflow/user-setting/model';
 			url.search = '';
 			url.hash = '';
 			return url.toString();

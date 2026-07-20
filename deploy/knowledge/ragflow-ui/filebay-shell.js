@@ -2,7 +2,7 @@
   const fileBayUrl = () => {
     const configured = document.documentElement.dataset.filebayUrl;
     if (configured) return configured;
-    return `${window.location.protocol}//${window.location.hostname}:13080/knowledge#knowledge-engine`;
+    return `${window.location.origin}/knowledge#knowledge-engine`;
   };
 
   const renderShell = () => {

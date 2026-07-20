@@ -17,8 +17,6 @@ services:
     image: cheersai-filebay:knowledge-trial
     restart: unless-stopped
     entrypoint: ["/bin/sh", "/usr/local/bin/filebay-knowledge-entrypoint"]
-    ports:
-      - "127.0.0.1:${FILEBAY_HTTP_PORT:-13080}:3000"
     environment:
       APP_NAME: "CheersAI FileBay 企业知识库（内部试用）"
       RUN_MODE: prod
@@ -51,6 +49,23 @@ services:
     networks:
       - knowledge_trial
 
+  # The only browser-facing service. It gives FileBay and RAGFlow one origin
+  # and one port while the applications continue to run as separate backends.
+  frontend:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FILEBAY_HTTP_PORT:-13080}:80"
+    volumes:
+      - ./gateway/filebay.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      filebay:
+        condition: service_started
+      ragflow-cpu:
+        condition: service_started
+    networks:
+      - knowledge_trial
+
   mysql-source:
     image: mysql:8.4.7
     restart: unless-stopped
@@ -69,14 +84,14 @@ services:
       - knowledge_trial
 
   # RAGFlow remains an independent index/retrieval backend. Its management
-  # workspace stays available on a loopback-only route so administrators can
-  # configure models, datasets and retrieval without exposing raw API ports.
-  # FileBay still reaches the API privately at http://ragflow-cpu:9380.
+  # workspace is served by the single FileBay frontend at /ragflow/; its raw
+  # service ports are never published to the host. FileBay calls its API at
+  # http://ragflow-cpu:9380 on the Docker private network.
   ragflow-cpu:
-    ports: !override
-      - "127.0.0.1:${RAGFLOW_WEB_PORT:-19080}:80"
+    ports: !reset []
     entrypoint: ["/bin/bash", "/ragflow/filebay-entrypoint.sh"]
     volumes:
+      - ragflow-web-dist:/ragflow/web/dist
       - ./ragflow-ui/filebay-entrypoint.sh:/ragflow/filebay-entrypoint.sh:ro
       - ./ragflow-ui/filebay-shell.css:/ragflow/web/dist/filebay-shell.css:ro
       - ./ragflow-ui/filebay-shell.js:/ragflow/web/dist/filebay-shell.js:ro
@@ -85,6 +100,8 @@ services:
     # the API on :9380 can accept FileBay traffic. Keep this wiring in FileBay's
     # integration layer rather than patching the vendored RAGFlow compose.
     depends_on:
+      ragflow-ui-builder:
+        condition: service_completed_successfully
       mysql:
         condition: service_healthy
       redis:
@@ -95,6 +112,40 @@ services:
       knowledge_trial:
         aliases: [ragflow]
 
+  # Upstream RAGFlow development mappings are not part of the trial's public
+  # surface. The unified frontend is the sole host-facing port.
+  redis:
+    ports: !reset []
+    networks:
+      - knowledge_trial
+
+  es01:
+    ports: !reset []
+    networks:
+      - knowledge_trial
+
+  mysql:
+    ports: !reset []
+    networks:
+      - knowledge_trial
+
+  # This is a build-time adapter, not a RAGFlow code fork. It compiles the
+  # pinned upstream web source with /ragflow/ as its public base path and
+  # writes only generated assets into a local Docker volume.
+  ragflow-ui-builder:
+    build:
+      context: ./ragflow-ui
+      dockerfile: Dockerfile
+      additional_contexts:
+        ragflow-web: ../../third_party/ragflow/web
+    image: cheersai-ragflow-ui:knowledge-trial
+    restart: "no"
+    command: ["/bin/sh", "-c", "cp -a /workspace/dist/. /out/"]
+    volumes:
+      - ragflow-web-dist:/out
+    networks:
+      - knowledge_trial
+
   # Dify calls FileBay's external knowledge endpoint. FileBay never calls Dify.
   api:
     networks:
@@ -103,3 +154,6 @@ services:
 networks:
   knowledge_trial:
     name: filebay_knowledge_trial
+
+volumes:
+  ragflow-web-dist:
