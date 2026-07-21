@@ -57,6 +57,13 @@ func TestRetrievalCandidateLimitLeavesRoomForGovernanceFiltering(t *testing.T) {
 	assert.Equal(t, maxRetrievalCandidates, retrievalCandidateLimit(100))
 }
 
+func TestAllRetrievalAttemptsFailed(t *testing.T) {
+	assert.False(t, allRetrievalAttemptsFailed(0, 0))
+	assert.False(t, allRetrievalAttemptsFailed(2, 1))
+	assert.True(t, allRetrievalAttemptsFailed(1, 1))
+	assert.True(t, allRetrievalAttemptsFailed(3, 3))
+}
+
 func TestLoadRetrievablePublicationsFailsClosedAfterWithdrawalOrExpiry(t *testing.T) {
 	require.NoError(t, unittest.PrepareTestDatabase())
 

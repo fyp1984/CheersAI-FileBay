@@ -264,6 +264,12 @@ func Search(ctx *context.Context) {
 	spaceID, _ := strconv.ParseInt(ctx.FormString("space_id"), 10, 64)
 	result, err := retrieval.RetrieveForUser(ctx, ctx.Doer, spaceID, ctx.FormString("query"), 5)
 	if err != nil {
+		if errors.Is(err, retrieval.ErrRetrievalModelUnavailable) {
+			ctx.Data["KnowledgeSearchQuery"] = ctx.FormString("query")
+			ctx.Data["KnowledgeSearchModelUnavailable"] = true
+			Dashboard(ctx)
+			return
+		}
 		ctx.Flash.Error("知识检索失败：" + err.Error())
 		ctx.Redirect(setting.AppSubURL + "/knowledge")
 		return

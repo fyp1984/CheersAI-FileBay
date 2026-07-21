@@ -21,7 +21,7 @@
 			.knowledge-surface-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 62px; padding: 17px 22px; border-bottom: 1px solid var(--color-secondary-alpha-20); font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
 			.knowledge-surface-title .text { font-size: 12px; font-weight: 400; }
 			.knowledge-anchor { position: absolute; }
-			{{if .KnowledgeSearchResult}}.knowledge-overview { display: none; } .knowledge-search { display: block; }{{end}}
+			{{if or .KnowledgeSearchResult .KnowledgeSearchModelUnavailable}}.knowledge-overview { display: none; } .knowledge-search { display: block; }{{end}}
 			#knowledge-search:target ~ .knowledge-workbench .knowledge-view,
 			#knowledge-submit:target ~ .knowledge-workbench .knowledge-view,
 			#knowledge-tasks:target ~ .knowledge-workbench .knowledge-view,
@@ -191,7 +191,9 @@
 					<div class="two wide field"><label>&nbsp;</label><button class="ui primary button">检索知识</button></div>
 				</div>
 			</form>
-			{{if .KnowledgeSearchResult}}
+			{{if .KnowledgeSearchModelUnavailable}}
+				<div class="ui warning message"><div class="header">检索模型未就绪</div><p>当前知识空间的嵌入模型不可用，因此系统不会把引擎故障显示为“没有资料”。请管理员进入“检索引擎”，在 RAGFlow 的“模型供应商”中配置并启用嵌入模型；模型变更后请对该数据集重新解析并确认可检索。</p></div>
+			{{else if .KnowledgeSearchResult}}
 				<div class="ui divider"></div>
 				{{if .KnowledgeSearchResult.Citations}}
 					<div class="ui relaxed divided list">{{range .KnowledgeSearchResult.Citations}}<div class="item"><div class="content"><div class="header">{{.Title}}</div><div class="description">{{.Content}}</div><div class="text light-2 tw-mt-1">引用：发布 #{{.PublicationID}} · 修订 #{{.RevisionID}} · 相关度 {{printf "%.3f" .Score}}</div></div></div>{{end}}</div>

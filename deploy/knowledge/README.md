@@ -29,6 +29,14 @@ docker compose --env-file deploy/knowledge/.env -f deploy/knowledge/docker-compo
 5. 数据源使用 MySQL、`secret-ref:env/KB_MYSQL_DSN`、视图 `v_kb_masked_faq`，字段映射为 `record_id/question/answer_markdown/updated_at`；先“预览校验”，再“增量同步”。
 6. 在 FileBay 创建 Dify 授权。Dify 的外部知识端点填写 `http://filebay:3000/api/knowledge/external/retrieval`；`knowledge_id` 与 FileBay 中的绑定记录完全一致，授权令牌只显示一次。
 
+### RAGFlow 嵌入模型就绪检查
+
+上传、解析完成不等于检索模型已经可用。RAGFlow 数据集必须绑定一个已启用的 **Embedding（嵌入）** 模型；仅配置聊天（LLM/Chat）模型不能完成向量检索。管理员可从 FileBay 顶部“检索引擎”进入 RAGFlow，在“模型供应商”中确认该供应商存在可用的 Embedding 模型，再在数据集配置中选择它。
+
+官方 Builtin/TEI 嵌入模型是可选部署组件，只有在启动 `tei-cpu` 或 `tei-gpu` profile，并且 `TEI_MODEL` 与数据集的嵌入模型名称一致时才可用。它会额外占用约 1.2 GiB 以上内存，本试用编排默认不强制启动，避免低内存 Docker Desktop 反复 OOM。资源不足时，应使用已获批准的 OpenAI-compatible Embedding 服务，或先增加 Docker 内存后再启用 TEI。
+
+已产生切片的数据集切换 Embedding 模型后必须按 RAGFlow 的数据集流程重新解析/重建索引，不能只修改 FileBay 的绑定。若模型不可用，FileBay 会显示“检索模型未就绪”，而不会误报为“没有资料”。
+
 ### 可选：启动私网 Dify
 
 主试用命令不会启动 Dify，避免其占用额外内存并与 RAGFlow 上游依赖发生服务名冲突。确实需要验证 Dify 外部知识库时，先确认主试用栈处于运行状态，再单独执行：
