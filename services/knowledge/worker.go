@@ -47,6 +47,11 @@ func runIndexWorker(ctx context.Context) {
 }
 
 func processIndexJobs(ctx context.Context) {
+	if reconciled, err := catalog.ReconcileSearchableBindingsSystem(ctx); err != nil {
+		log.Warn("knowledge index worker: reconcile legacy index bindings: %v", err)
+	} else if reconciled > 0 {
+		log.Info("knowledge index worker: reconciled %d legacy index binding(s)", reconciled)
+	}
 	var jobs []knowledge_model.IndexJob
 	err := db.GetEngine(ctx).
 		Where("status IN (?, ?)", knowledge_model.IndexJobStatusQueued, knowledge_model.IndexJobStatusRetry).

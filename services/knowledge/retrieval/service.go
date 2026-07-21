@@ -47,6 +47,11 @@ var allowedFeedbackCategories = map[string]struct{}{
 	"知识正确性": {}, "检索相关性": {}, "权限问题": {}, "使用体验": {},
 }
 
+// ErrRetrievalModelUnavailable is returned when every RAGFlow request for an
+// otherwise eligible space fails. It deliberately does not expose RAGFlow's
+// provider, model, endpoint, or credential details to FileBay callers.
+var ErrRetrievalModelUnavailable = errors.New("knowledge retrieval model unavailable")
+
 // Citation is the safe, FileBay-authorized projection of one RAGFlow chunk.
 type Citation struct {
 	PublicationID int64
@@ -159,6 +164,7 @@ func RetrieveForUser(ctx context.Context, user *user_model.User, spaceID int64, 
 		return nil, fmt.Errorf("list knowledge spaces: %w", err)
 	}
 	combined := &SearchResult{}
+	modelUnavailable := false
 	for _, space := range spaces {
 		allowed, err := canReadSpace(ctx, user, space.ID)
 		if err != nil || !allowed {
@@ -166,12 +172,18 @@ func RetrieveForUser(ctx context.Context, user *user_model.User, spaceID int64, 
 		}
 		partial, err := retrieveSpace(ctx, space.ID, knowledge_model.SecurityLevelRestricted, question, topK, user.ID, 0)
 		if err != nil {
+			if errors.Is(err, ErrRetrievalModelUnavailable) {
+				modelUnavailable = true
+			}
 			continue
 		}
 		combined.Citations = append(combined.Citations, partial.Citations...)
 	}
 	if len(combined.Citations) > clampTopK(topK) {
 		combined.Citations = combined.Citations[:clampTopK(topK)]
+	}
+	if len(combined.Citations) == 0 && modelUnavailable {
+		return combined, ErrRetrievalModelUnavailable
 	}
 	return combined, nil
 }
@@ -210,9 +222,13 @@ func retrieveSpace(ctx context.Context, spaceID int64, maxSecurity knowledge_mod
 	log.Info("Knowledge retrieval candidates for space %d: %d", spaceID, len(publications))
 	result := &SearchResult{}
 	limit := clampTopK(topK)
+	retrievalAttempts := 0
+	retrievalFailures := 0
 	for _, candidate := range publications {
+		retrievalAttempts++
 		chunks, err := client.RetrievePublication(ctx, ragflow.RetrievalRequest{Question: question, PublicationID: candidate.publication.ID, PublicationGeneration: candidate.publication.Generation, TopK: retrievalCandidateLimit(limit)})
 		if err != nil {
+			retrievalFailures++
 			log.Warn("Knowledge retrieval failed for publication %d: %v", candidate.publication.ID, err)
 			continue
 		}
@@ -234,8 +250,17 @@ func retrieveSpace(ctx context.Context, spaceID int64, maxSecurity knowledge_mod
 	if len(result.Citations) == 0 {
 		outcome, reason = "empty", "no_authorized_citation"
 	}
+	if allRetrievalAttemptsFailed(retrievalAttempts, retrievalFailures) {
+		outcome, reason = "failed", "model_unavailable"
+		_ = recordRetrieval(ctx, actorID, bindingID, spaceID, question, 0, outcome, reason)
+		return result, ErrRetrievalModelUnavailable
+	}
 	_ = recordRetrieval(ctx, actorID, bindingID, spaceID, question, len(result.Citations), outcome, reason)
 	return result, nil
+}
+
+func allRetrievalAttemptsFailed(attempts, failures int) bool {
+	return attempts > 0 && attempts == failures
 }
 
 type retrievablePublication struct {
@@ -269,13 +294,9 @@ func loadRetrievablePublications(ctx context.Context, space *knowledge_model.Spa
 			continue
 		}
 		binding := new(knowledge_model.IndexBinding)
-		// The publication state is authoritative. Earlier trial builds recorded
-		// an evaluated binding before activation but did not mirror the binding
-		// status during activation. Accept that durable predecessor state while
-		// the publication itself is current and searchable.
 		found, err := db.GetEngine(ctx).
 			Where("publication_id = ? AND engine_profile_version = ?", publication.ID, setting.Knowledge.EngineProfileVersion).
-			In("status", knowledge_model.IndexStatusSearchable, knowledge_model.IndexStatusEvaluation).
+			Where("status = ?", knowledge_model.IndexStatusSearchable).
 			Get(binding)
 		if err != nil || !found || binding.DatasetID != setting.Knowledge.RAGFlowDatasetID {
 			continue

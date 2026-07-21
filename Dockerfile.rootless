@@ -6,7 +6,10 @@ WORKDIR /src
 COPY package.json pnpm-lock.yaml .npmrc ./
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 COPY --exclude=.git/ . .
-RUN make frontend
+# Source archives can preserve timestamps from a previously generated
+# public/assets tree. Remove only the two derived entry files so a CSS/JS
+# change is always rebuilt into the deployment image.
+RUN rm -f public/assets/js/index.js public/assets/css/index.css && make frontend
 
 # Build backend for each target platform
 FROM docker.io/library/golang:1.26-alpine3.23 AS build-env

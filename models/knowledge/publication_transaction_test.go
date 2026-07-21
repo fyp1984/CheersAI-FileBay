@@ -42,6 +42,60 @@ func TestActivatePublicationAtomicallySwitchesCurrentPointer(t *testing.T) {
 	assert.False(t, loadedOld.IsPublished(loadedCandidate.EffectiveUnix, loadedDocument.CurrentPublicationID, space.RevocationGeneration))
 }
 
+func TestActivatePublicationAtomicallyPromotesIndexBinding(t *testing.T) {
+	require.NoError(t, unittest.PrepareTestDatabase())
+	space, document, oldCurrent, candidate := insertActivationFixture(t)
+	binding := &knowledge_model.IndexBinding{
+		SpaceID:              space.ID,
+		DocumentID:           document.ID,
+		RevisionID:           candidate.RevisionID,
+		PublicationID:        candidate.ID,
+		Engine:               "ragflow",
+		EngineProfileVersion: "ragflow-test-profile",
+		DatasetID:            "dataset-test",
+		EngineDocumentID:     "document-test",
+		ContentSHA256:        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		Status:               knowledge_model.IndexStatusEvaluation,
+	}
+	require.NoError(t, db.Insert(t.Context(), binding))
+
+	err := knowledge_model.ActivatePublication(t.Context(), knowledge_model.ActivatePublicationOptions{
+		PublicationID:                 candidate.ID,
+		ActorID:                       1,
+		ExpectedPublicationGeneration: candidate.Generation,
+		ExpectedRevocationGeneration:  space.RevocationGeneration,
+		EngineProfileVersion:          binding.EngineProfileVersion,
+		TraceID:                       "trace-activate-binding-001",
+	})
+	require.NoError(t, err)
+
+	loadedBinding := &knowledge_model.IndexBinding{ID: binding.ID}
+	has, err := db.GetEngine(t.Context()).Get(loadedBinding)
+	require.NoError(t, err)
+	require.True(t, has)
+	assert.Equal(t, knowledge_model.IndexStatusSearchable, loadedBinding.Status)
+	assert.True(t, loadPublication(t, candidate.ID).IsCurrent)
+	assert.False(t, loadPublication(t, oldCurrent.ID).IsCurrent)
+}
+
+func TestActivatePublicationRollsBackWhenConfiguredBindingIsMissing(t *testing.T) {
+	require.NoError(t, unittest.PrepareTestDatabase())
+	space, document, oldCurrent, candidate := insertActivationFixture(t)
+
+	err := knowledge_model.ActivatePublication(t.Context(), knowledge_model.ActivatePublicationOptions{
+		PublicationID:                 candidate.ID,
+		ActorID:                       1,
+		ExpectedPublicationGeneration: candidate.Generation,
+		ExpectedRevocationGeneration:  space.RevocationGeneration,
+		EngineProfileVersion:          "ragflow-missing-binding",
+		TraceID:                       "trace-activate-binding-missing",
+	})
+	require.ErrorIs(t, err, knowledge_model.ErrPublicationConflict)
+	assert.Equal(t, oldCurrent.ID, loadDocument(t, document.ID).CurrentPublicationID)
+	assert.True(t, loadPublication(t, oldCurrent.ID).IsCurrent)
+	assert.False(t, loadPublication(t, candidate.ID).IsCurrent)
+}
+
 func TestActivatePublicationRejectsStaleGenerationWithoutPartialWrites(t *testing.T) {
 	for _, tc := range []struct {
 		name                       string

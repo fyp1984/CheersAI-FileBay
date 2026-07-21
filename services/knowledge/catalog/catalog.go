@@ -49,6 +49,8 @@ var slugInvalid = regexp.MustCompile(`[^a-z0-9._-]+`)
 // register instead of exposing the internal repository name.
 var ErrSpaceAlreadyExists = errors.New("knowledge space already exists")
 
+const bindingReconciliationBatchSize = 20
+
 // CreateSpaceOptions defines one governed knowledge space request.
 type CreateSpaceOptions struct {
 	OwnerID     int64
@@ -618,14 +620,112 @@ func ActivatePublication(ctx context.Context, publicationID, actorID int64) erro
 	if err != nil || !exists || source.Status != knowledge_model.DataSourceStatusEnabled || source.SecurityLevel == knowledge_model.SecurityLevelProhibited || (source.ExpiresUnix > 0 && timeutil.TimeStampNow() >= source.ExpiresUnix) {
 		return errors.New("knowledge data source is not eligible for publication")
 	}
-	if err := knowledge_model.ActivatePublication(ctx, knowledge_model.ActivatePublicationOptions{PublicationID: publication.ID, ActorID: actorID, ExpectedPublicationGeneration: publication.Generation, ExpectedRevocationGeneration: publication.RevocationGeneration, TraceID: fmt.Sprintf("web-activate-%d-%d", publication.ID, time.Now().UnixNano())}); err != nil {
+	if err := knowledge_model.ActivatePublication(ctx, knowledge_model.ActivatePublicationOptions{PublicationID: publication.ID, ActorID: actorID, ExpectedPublicationGeneration: publication.Generation, ExpectedRevocationGeneration: publication.RevocationGeneration, EngineProfileVersion: setting.Knowledge.EngineProfileVersion, TraceID: fmt.Sprintf("web-activate-%d-%d", publication.ID, time.Now().UnixNano())}); err != nil {
 		return err
 	}
-	_, err = db.GetEngine(ctx).
-		Where("publication_id = ? AND engine_profile_version = ?", publication.ID, setting.Knowledge.EngineProfileVersion).
-		Cols("status", "last_success_unix").
-		Update(&knowledge_model.IndexBinding{Status: knowledge_model.IndexStatusSearchable, LastSuccessUnix: timeutil.TimeStampNow()})
-	return err
+	return nil
+}
+
+// ReconcileSearchableBindingsSystem repairs a legacy activation drift where an
+// already-current FileBay publication was made searchable but its exact
+// RAGFlow binding stayed at evaluation. It never promotes a non-current,
+// revoked, expired, prohibited, or profile/dataset-mismatched record.
+//
+// New activations cannot create this condition because ActivatePublication now
+// moves both records in one transaction. This bounded reconciliation exists
+// only to safely recover trial data written by the earlier split operation.
+func ReconcileSearchableBindingsSystem(ctx context.Context) (int, error) {
+	if err := setting.ValidateKnowledgeSettings(); err != nil {
+		return 0, err
+	}
+	var publications []knowledge_model.Publication
+	if err := db.GetEngine(ctx).
+		Where("is_current = ? AND validity_status = ? AND index_status = ?", true, knowledge_model.ValidityStatusCurrent, knowledge_model.IndexStatusSearchable).
+		Asc("id").
+		Limit(bindingReconciliationBatchSize).
+		Find(&publications); err != nil {
+		return 0, fmt.Errorf("list searchable knowledge publications for binding reconciliation: %w", err)
+	}
+
+	reconciled := 0
+	for _, publication := range publications {
+		if ctx.Err() != nil {
+			return reconciled, ctx.Err()
+		}
+		updated, err := reconcileSearchableBinding(ctx, publication.ID)
+		if err != nil {
+			return reconciled, err
+		}
+		if updated {
+			reconciled++
+		}
+	}
+	return reconciled, nil
+}
+
+func reconcileSearchableBinding(ctx context.Context, publicationID int64) (bool, error) {
+	updated := false
+	err := db.WithTx(ctx, func(txCtx context.Context) error {
+		publication, exists, err := db.GetByID[knowledge_model.Publication](txCtx, publicationID)
+		if err != nil {
+			return fmt.Errorf("load knowledge publication for binding reconciliation: %w", err)
+		}
+		if !exists {
+			return nil
+		}
+		document, exists, err := db.GetByID[knowledge_model.Document](txCtx, publication.DocumentID)
+		if err != nil || !exists {
+			return err
+		}
+		space, exists, err := db.GetByID[knowledge_model.Space](txCtx, publication.SpaceID)
+		if err != nil || !exists {
+			return err
+		}
+		source, exists, err := db.GetByID[knowledge_model.DataSource](txCtx, document.DataSourceID)
+		if err != nil || !exists {
+			return err
+		}
+		now := timeutil.TimeStampNow()
+		if !publication.IsPublished(now, document.CurrentPublicationID, space.RevocationGeneration) ||
+			source.Status != knowledge_model.DataSourceStatusEnabled ||
+			source.SecurityLevel == knowledge_model.SecurityLevelProhibited ||
+			(source.ExpiresUnix > 0 && now >= source.ExpiresUnix) {
+			return nil
+		}
+		binding := new(knowledge_model.IndexBinding)
+		found, err := db.GetEngine(txCtx).
+			Where("publication_id = ? AND engine_profile_version = ? AND status = ?", publication.ID, setting.Knowledge.EngineProfileVersion, knowledge_model.IndexStatusEvaluation).
+			Get(binding)
+		if err != nil {
+			return fmt.Errorf("load legacy knowledge index binding: %w", err)
+		}
+		if !found || binding.DatasetID != setting.Knowledge.RAGFlowDatasetID || strings.TrimSpace(binding.EngineDocumentID) == "" {
+			return nil
+		}
+		count, err := db.GetEngine(txCtx).
+			Where("id = ? AND status = ?", binding.ID, knowledge_model.IndexStatusEvaluation).
+			Cols("status", "last_success_unix").
+			Update(&knowledge_model.IndexBinding{Status: knowledge_model.IndexStatusSearchable, LastSuccessUnix: now})
+		if err != nil {
+			return fmt.Errorf("reconcile legacy knowledge index binding: %w", err)
+		}
+		if count != 1 {
+			return nil
+		}
+		updated = true
+		return db.Insert(txCtx, &knowledge_model.AuditEvent{
+			ActorID:      0,
+			Action:       "knowledge.index_binding.reconciled",
+			EntityType:   "knowledge_publication",
+			EntityID:     publication.ID,
+			SpaceID:      publication.SpaceID,
+			Result:       "succeeded",
+			ReasonCode:   "legacy_activation_drift",
+			TraceID:      fmt.Sprintf("system-binding-reconcile-%d-%d", publication.ID, time.Now().UnixNano()),
+			MetadataJSON: "{}",
+		})
+	})
+	return updated, err
 }
 
 // UnpublishPublication synchronously revokes FileBay retrieval before an

@@ -28,7 +28,13 @@ type ActivatePublicationOptions struct {
 	ActorID                       int64
 	ExpectedPublicationGeneration int64
 	ExpectedRevocationGeneration  int64
-	TraceID                       string
+	// EngineProfileVersion binds the activation to the exact derived index
+	// profile. Production callers must supply it so the authoritative
+	// publication and its RAGFlow binding become searchable atomically.
+	// It remains optional for model-only lifecycle callers that do not own an
+	// external index binding.
+	EngineProfileVersion string
+	TraceID              string
 }
 
 // ActivatePublication atomically makes an evaluated candidate current. Stale
@@ -99,6 +105,29 @@ func ActivatePublication(ctx context.Context, opts ActivatePublicationOptions) e
 		}
 		if updated != 1 {
 			return ErrPublicationConflict
+		}
+
+		if opts.EngineProfileVersion != "" {
+			binding := new(IndexBinding)
+			found, err := db.GetEngine(txCtx).
+				Where("publication_id = ? AND engine_profile_version = ?", candidate.ID, opts.EngineProfileVersion).
+				Get(binding)
+			if err != nil {
+				return fmt.Errorf("load knowledge index binding: %w", err)
+			}
+			if !found || binding.Status != IndexStatusEvaluation || strings.TrimSpace(binding.EngineDocumentID) == "" {
+				return ErrPublicationConflict
+			}
+			updated, err = db.GetEngine(txCtx).
+				Where("id = ? AND status = ?", binding.ID, IndexStatusEvaluation).
+				Cols("status", "last_success_unix").
+				Update(&IndexBinding{Status: IndexStatusSearchable, LastSuccessUnix: now})
+			if err != nil {
+				return fmt.Errorf("activate knowledge index binding: %w", err)
+			}
+			if updated != 1 {
+				return ErrPublicationConflict
+			}
 		}
 
 		document.CurrentRevisionID = candidate.RevisionID

@@ -8,12 +8,20 @@ import (
 	"math"
 	"net"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 )
 
 const defaultKnowledgeAllowedExtensions = ".pdf,.docx,.pptx,.xlsx,.md,.txt"
+
+const (
+	knowledgeBindingAPIKeyFile    = "api-key"
+	knowledgeBindingDatasetIDFile = "dataset-id"
+	knowledgeBindingMaxBytes      = 4096
+)
 
 // KnowledgeSetting controls the production knowledge-governance integration.
 // It is disabled by default so existing FileBay behavior is unchanged.
@@ -61,8 +69,7 @@ func loadKnowledgeFrom(rootCfg ConfigProvider) {
 
 	Knowledge.Enabled = sec.Key("ENABLED").MustBool(Knowledge.Enabled)
 	Knowledge.RAGFlowBaseURL = sec.Key("RAGFLOW_BASE_URL").String()
-	Knowledge.RAGFlowAPIKey = sec.Key("RAGFLOW_API_KEY").String()
-	Knowledge.RAGFlowDatasetID = sec.Key("RAGFLOW_DATASET_ID").String()
+	loadKnowledgeBinding(sec.Key("RAGFLOW_BINDING_DIR").String())
 	Knowledge.engineProfileConfigured = sec.HasKey("ENGINE_PROFILE_VERSION") && strings.TrimSpace(sec.Key("ENGINE_PROFILE_VERSION").String()) != ""
 	Knowledge.EngineProfileVersion = sec.Key("ENGINE_PROFILE_VERSION").MustString(Knowledge.EngineProfileVersion)
 	Knowledge.AllowLoopbackHTTP = sec.Key("ALLOW_LOOPBACK_HTTP").MustBool(false)
@@ -107,6 +114,46 @@ func loadKnowledgeFrom(rootCfg ConfigProvider) {
 	if sec.HasKey("RETRIEVE_QUERY_MAX_BYTES") {
 		Knowledge.RetrieveQueryMaxByte = sec.Key("RETRIEVE_QUERY_MAX_BYTES").MustInt(Knowledge.RetrieveQueryMaxByte)
 	}
+}
+
+// loadKnowledgeBinding reads the RAGFlow credentials from a deployment-only
+// mounted directory. Keeping the secret out of app.ini prevents the standard
+// container environment-to-ini bridge from persisting it with application
+// configuration.
+func loadKnowledgeBinding(bindingDir string) {
+	bindingDir = strings.TrimSpace(bindingDir)
+	if bindingDir == "" {
+		return
+	}
+
+	apiKey, apiKeyErr := readKnowledgeBindingFile(bindingDir, knowledgeBindingAPIKeyFile)
+	datasetID, datasetIDErr := readKnowledgeBindingFile(bindingDir, knowledgeBindingDatasetIDFile)
+	if apiKeyErr != nil || datasetIDErr != nil {
+		Knowledge.invalidConfiguration = true
+		return
+	}
+	Knowledge.RAGFlowAPIKey = apiKey
+	Knowledge.RAGFlowDatasetID = datasetID
+}
+
+func readKnowledgeBindingFile(bindingDir, fileName string) (string, error) {
+	path := filepath.Join(bindingDir, fileName)
+	info, err := os.Stat(path)
+	if err != nil {
+		return "", err
+	}
+	if !info.Mode().IsRegular() || info.Size() <= 0 || info.Size() > knowledgeBindingMaxBytes {
+		return "", errors.New("invalid knowledge binding file")
+	}
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	value := strings.TrimSpace(string(content))
+	if value == "" {
+		return "", errors.New("empty knowledge binding file")
+	}
+	return value, nil
 }
 
 // ValidateKnowledgeSettings validates the enabled integration without ever

@@ -1,0 +1,52 @@
+/*
+ * Deployment-only visual adapter. These tokens intentionally mirror the
+ * neutral canvas, white surfaces and restrained blue action color used by the
+ * FileBay workspace. No RAGFlow source file is modified.
+ */
+:root,
+:root.dark {
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --muted: 220 20% 97%;
+  --muted-foreground: 215 16% 47%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --border: 220 18% 91%;
+  --input: 220 18% 91%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 20% 97%;
+  --secondary-foreground: 222 47% 11%;
+  --accent: 218 100% 97%;
+  --accent-foreground: 221 83% 45%;
+  --ring: 221 83% 53%;
+  --bg-base: #f7f8fa;
+  --bg-title: #f7f8fa;
+  --bg-component: #ffffff;
+  --bg-card: #f4f6f8;
+  --bg-input: #ffffff;
+  --bg-canvas: 247 248 250;
+  --bg-list: 247 248 250;
+  --text-primary: 28 36 50;
+  --text-secondary: 96 108 128;
+  --text-disabled: #a7afbe;
+  --text-input-tip: #98a2b3;
+  --border-default: #e4e7ec;
+  --border-button: #eaecf0;
+  --border-accent: #155eef;
+  --accent-primary: 21 94 239;
+  --background-card: #ffffff;
+  --background-header-bar: #ffffff;
+  --background-highlight: #eff8ff;
+  --background-note: #f2f4f7;
+  --input-border: #d0d5dd;
+}
+
+html,
+body,
+#root {
+  background: #f7f8fa !important;
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+}

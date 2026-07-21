@@ -21,7 +21,7 @@
 			.knowledge-surface-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 62px; padding: 17px 22px; border-bottom: 1px solid var(--color-secondary-alpha-20); font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
 			.knowledge-surface-title .text { font-size: 12px; font-weight: 400; }
 			.knowledge-anchor { position: absolute; }
-			{{if .KnowledgeSearchResult}}.knowledge-overview { display: none; } .knowledge-search { display: block; }{{end}}
+			{{if or .KnowledgeSearchResult .KnowledgeSearchModelUnavailable}}.knowledge-overview { display: none; } .knowledge-search { display: block; }{{end}}
 			#knowledge-search:target ~ .knowledge-workbench .knowledge-view,
 			#knowledge-submit:target ~ .knowledge-workbench .knowledge-view,
 			#knowledge-tasks:target ~ .knowledge-workbench .knowledge-view,
@@ -32,6 +32,7 @@
 			#knowledge-publish:target ~ .knowledge-workbench .knowledge-view,
 			#knowledge-library:target ~ .knowledge-workbench .knowledge-view,
 			#knowledge-connector:target ~ .knowledge-workbench .knowledge-view,
+			#knowledge-engine:target ~ .knowledge-workbench .knowledge-view,
 			#knowledge-apps:target ~ .knowledge-workbench .knowledge-view { display: none; }
 			#knowledge-search:target ~ .knowledge-workbench .knowledge-search,
 			#knowledge-submit:target ~ .knowledge-workbench .knowledge-submit,
@@ -43,6 +44,7 @@
 			#knowledge-publish:target ~ .knowledge-workbench .knowledge-publish,
 			#knowledge-library:target ~ .knowledge-workbench .knowledge-library,
 			#knowledge-connector:target ~ .knowledge-workbench .knowledge-connector,
+			#knowledge-engine:target ~ .knowledge-workbench .knowledge-engine,
 			#knowledge-apps:target ~ .knowledge-workbench .knowledge-apps { display: block; }
 			#knowledge-space:target ~ .knowledge-workbench .knowledge-upload-card,
 			#knowledge-upload:target ~ .knowledge-workbench .knowledge-space-card { display: none; }
@@ -56,6 +58,7 @@
 			#knowledge-publish:target ~ .knowledge-workbench a[data-step="publish"],
 			#knowledge-library:target ~ .knowledge-workbench a[data-step="library"],
 			#knowledge-connector:target ~ .knowledge-workbench a[data-step="connector"],
+			#knowledge-engine:target ~ .knowledge-workbench a[data-step="engine"],
 			#knowledge-apps:target ~ .knowledge-workbench a[data-step="apps"] { background: var(--color-primary-light-2); color: var(--color-primary); font-weight: 700; }
 			.knowledge-main .ui.form .field > label { margin-bottom: 8px; color: var(--color-text); font-size: 13px; font-weight: 650; }
 			.knowledge-main .ui.form input:not([type="checkbox"]), .knowledge-main .ui.form textarea { min-height: 44px; border-color: var(--color-secondary-alpha-40); border-radius: 9px; box-shadow: none; font-size: 14px; transition: border-color .15s ease, box-shadow .15s ease; }
@@ -100,6 +103,12 @@
 			.knowledge-main .ui.table tbody tr:first-child td { border-top: 0; }
 			.knowledge-main .ui.table code { padding: 2px 6px; border-radius: 5px; background: var(--color-hover); font-size: 12px; }
 			.knowledge-list-card .ui.table { margin: 0; }
+			.knowledge-engine-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+			.knowledge-engine-card { min-height: 182px; padding: 21px; border: 1px solid var(--color-secondary-alpha-20); border-radius: 12px; background: var(--color-box-body); }
+			.knowledge-engine-card .engine-kicker { margin-bottom: 9px; color: var(--color-primary); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+			.knowledge-engine-card h3 { margin: 0 0 9px; font-size: 17px; letter-spacing: -.02em; }
+			.knowledge-engine-card p, .knowledge-engine-card li { color: var(--color-text-light-2); font-size: 13px; line-height: 1.7; }
+			.knowledge-engine-card ul { margin: 10px 0 0; padding-left: 19px; }
 			.knowledge-main .ui.checkbox label { color: var(--color-text-light-1); font-size: 13px; line-height: 1.55; }
 			.knowledge-main .ui.placeholder.segment { min-height: 180px; border: 1px dashed var(--color-secondary-alpha-40); border-radius: 12px; box-shadow: none; }
 			/* A workflow exposes one task at a time: its surface should use the entire main canvas. */
@@ -114,12 +123,12 @@
 			.knowledge-entry-form > .knowledge-advanced { grid-column: 1 / -1; }
 			.knowledge-entry-form > .inline.field { margin-top: -2px !important; }
 			.knowledge-entry-form > .ui.primary.button { justify-self: start; margin: 0; }
-			@media (max-width: 767px) { .knowledge-entry-form { grid-template-columns: 1fr; } .knowledge-entry-form > * { grid-column: auto !important; } }
+			@media (max-width: 767px) { .knowledge-entry-form, .knowledge-engine-grid { grid-template-columns: 1fr; } .knowledge-entry-form > * { grid-column: auto !important; } }
 			@media (max-width: 1000px) { .knowledge-flow { grid-template-columns: repeat(3, minmax(0, 1fr)); } .knowledge-flow-step:nth-child(3) { border-right: 0; } }
 			@media (max-width: 767px) { .knowledge-workbench { display: block; } .knowledge-sidebar { position: static; margin-bottom: 16px; } .knowledge-sidebar a { display: inline-block; } }
 			@media (max-width: 767px) { .knowledge-page-header { display: block; } .knowledge-flow { grid-template-columns: 1fr; } .knowledge-flow-step { border-right: 0; border-bottom: 1px solid var(--color-secondary-alpha-20); } .knowledge-flow-step:last-child { border-bottom: 0; } }
 		</style>
-		<i id="knowledge-overview" class="knowledge-anchor"></i><i id="knowledge-search" class="knowledge-anchor"></i><i id="knowledge-submit" class="knowledge-anchor"></i><i id="knowledge-tasks" class="knowledge-anchor"></i><i id="knowledge-space" class="knowledge-anchor"></i><i id="knowledge-data" class="knowledge-anchor"></i><i id="knowledge-upload" class="knowledge-anchor"></i><i id="knowledge-review" class="knowledge-anchor"></i><i id="knowledge-publish" class="knowledge-anchor"></i><i id="knowledge-library" class="knowledge-anchor"></i><i id="knowledge-connector" class="knowledge-anchor"></i><i id="knowledge-apps" class="knowledge-anchor"></i>
+		<i id="knowledge-overview" class="knowledge-anchor"></i><i id="knowledge-search" class="knowledge-anchor"></i><i id="knowledge-submit" class="knowledge-anchor"></i><i id="knowledge-tasks" class="knowledge-anchor"></i><i id="knowledge-space" class="knowledge-anchor"></i><i id="knowledge-data" class="knowledge-anchor"></i><i id="knowledge-upload" class="knowledge-anchor"></i><i id="knowledge-review" class="knowledge-anchor"></i><i id="knowledge-publish" class="knowledge-anchor"></i><i id="knowledge-library" class="knowledge-anchor"></i><i id="knowledge-connector" class="knowledge-anchor"></i><i id="knowledge-engine" class="knowledge-anchor"></i><i id="knowledge-apps" class="knowledge-anchor"></i>
 		<div class="knowledge-workbench">
 			<aside class="knowledge-sidebar" aria-label="知识库工作台导航">
 				<div class="brand">{{svg "octicon-book" 18}} 知识库工作台</div>
@@ -129,9 +138,10 @@
 				<a href="#knowledge-submit" data-step="submit">资料入库</a>
 				{{if .IsAdmin}}
 					<div class="section-label">治理中心</div>
-					<a href="#knowledge-tasks" data-step="tasks">待办中心{{if gt .KnowledgeReviewTaskCount 0}} <span class="ui mini red circular label">{{.KnowledgeReviewTaskCount}}</span>{{end}}</a>
+					<a href="#knowledge-tasks" data-step="tasks">待办中心{{if gt .KnowledgeGovernanceTaskCount 0}} <span class="ui mini red circular label">{{.KnowledgeGovernanceTaskCount}}</span>{{end}}</a>
 					<a href="#knowledge-library" data-step="library">知识台账</a>
 					<a href="#knowledge-connector" data-step="connector">高级数据接入</a>
+					<a href="#knowledge-engine" data-step="engine">检索引擎</a>
 					<a href="#knowledge-apps" data-step="apps">应用授权</a>
 				{{end}}
 			</aside>
@@ -142,7 +152,10 @@
 				<h1 class="ui header">企业知识库</h1>
 				<div class="description">从已发布的资料中找答案，或按清晰步骤把新的脱敏资料纳入知识库。</div>
 			</div>
-			{{if .IsAdmin}}<div>
+			{{if .IsAdmin}}<div class="tw-flex tw-items-center tw-gap-2">
+				{{/* RAGFlow configuration lives in FileBay's native top navigation.
+				     Keep this header to a status-only summary so the same action is
+				     not duplicated in two different navigation patterns. */}}
 				{{if .KnowledgeConfigError}}
 					<span class="ui red label">配置未就绪</span>
 				{{else}}
@@ -158,10 +171,11 @@
 			</div>
 		{{end}}
 
-		<div class="ui {{if .IsAdmin}}three{{else}}two{{end}} stackable cards knowledge-next-step">
+		<div class="ui {{if .IsAdmin}}four{{else}}two{{end}} stackable cards knowledge-next-step">
 			<a href="#knowledge-search" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">日常查询</div><div class="header">查找资料</div><div class="description">输入业务问题，查看可引用的现行资料与来源依据。</div></div></a>
 			<a href="#knowledge-submit" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">资料入库</div><div class="header">提交脱敏资料</div><div class="description">从 FileBay 仓库选择文件，按步骤提交；无需填写技术配置。</div></div></a>
-			{{if .IsAdmin}}<a href="#knowledge-tasks" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">治理中心</div><div class="header">处理待办</div><div class="description">处理来源启用、内容审核、索引发布等需要管理员确认的事项。</div></div></a>{{end}}
+			{{if .IsAdmin}}<a href="#knowledge-tasks" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">治理中心{{if gt .KnowledgeGovernanceTaskCount 0}} · {{.KnowledgeGovernanceTaskCount}} 项待办{{end}}</div><div class="header">处理待办</div><div class="description">处理来源启用、定期复审、内容审核、索引发布等需要管理员确认的事项。</div></div></a>{{end}}
+					{{if .IsAdmin}}<a href="#knowledge-engine" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">引擎管理</div><div class="header">检索引擎</div><div class="description">查看受控连接，并进入 RAGFlow 的模型、数据集与检索配置工作区。</div></div></a>{{end}}
 		</div>
 		<div class="knowledge-admin-note">首次使用：查资料就点击“查找资料”；需要入库就点击“提交脱敏资料”。系统会在完成当前步骤后带你进入下一步。</div>
 			</section>
@@ -177,7 +191,9 @@
 					<div class="two wide field"><label>&nbsp;</label><button class="ui primary button">检索知识</button></div>
 				</div>
 			</form>
-			{{if .KnowledgeSearchResult}}
+			{{if .KnowledgeSearchModelUnavailable}}
+				<div class="ui warning message"><div class="header">检索模型未就绪</div><p>当前知识空间的嵌入模型不可用，因此系统不会把引擎故障显示为“没有资料”。请管理员进入“检索引擎”，在 RAGFlow 的“模型供应商”中配置并启用嵌入模型；模型变更后请对该数据集重新解析并确认可检索。</p></div>
+			{{else if .KnowledgeSearchResult}}
 				<div class="ui divider"></div>
 				{{if .KnowledgeSearchResult.Citations}}
 					<div class="ui relaxed divided list">{{range .KnowledgeSearchResult.Citations}}<div class="item"><div class="content"><div class="header">{{.Title}}</div><div class="description">{{.Content}}</div><div class="text light-2 tw-mt-1">引用：发布 #{{.PublicationID}} · 修订 #{{.RevisionID}} · 相关度 {{printf "%.3f" .Score}}</div></div></div>{{end}}</div>
@@ -211,15 +227,25 @@
 				{{if .IsAdmin}}
 					<h2 class="ui header tw-mb-1">待我处理</h2>
 					<div class="text light-2 tw-mb-3">这里是知识管理员的工作入口。按待办处理即可，不需要先浏览资料台账或技术配置。</div>
-					<div class="ui three stackable cards knowledge-next-step">
+					<div class="ui five stackable cards knowledge-next-step">
 						<a href="#knowledge-data" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">先处理来源</div><div class="header">审核并启用资料来源</div><div class="description">确认资料归属和责任后启用；启用前不能提交正式知识。</div></div></a>
+						<a href="#knowledge-data" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">定期治理{{if gt .KnowledgeDataSourceTaskCount 0}} · {{.KnowledgeDataSourceTaskCount}} 项提醒{{end}}</div><div class="header">确认来源复审</div><div class="description">对临期或逾期的已启用资料来源完成复审，保留可追溯记录。</div></div></a>
 						<a href="#knowledge-review" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">再核验内容</div><div class="header">完成六项审核</div><div class="description">确认来源、内容、权限、敏感、格式和发布条件；不能审核自己提交的资料。</div></div></a>
 						<a href="#knowledge-publish" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">最后使其生效</div><div class="header">处理索引并发布</div><div class="description">索引成功、抽检通过后再让版本生效；有风险时从这里下架。</div></div></a>
+						<a href="#knowledge-tasks" class="ui card workflow-card knowledge-choice"><div class="content"><div class="knowledge-step-kicker">质量运营{{if gt .KnowledgeQualityTaskCount 0}} · {{.KnowledgeQualityTaskCount}} 项待办{{end}}</div><div class="header">处理检索反馈</div><div class="description">跟进无答案检索和低质量反馈，确认处理后留下审计记录。</div></div></a>
 					</div>
+					{{if .KnowledgeDataSourceTasks}}
+						<h3 class="ui top attached header">资料来源复审提醒（{{.KnowledgeDataSourceTaskCount}}）</h3>
+						<div class="ui attached segment"><div class="ui relaxed divided list">{{range .KnowledgeDataSourceTasks}}<div class="item"><div class="right floated content">{{if .CanConfirmReview}}<form action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/confirm-review" method="post"><button class="ui small {{if .IsOverdue}}primary{{else}}basic{{end}} button">确认本次复审</button></form>{{end}}</div><div class="content"><div class="header">{{.Name}}</div><div class="description">复审周期：{{.ReviewFrequency}} · {{.ReviewStatusLabel}}</div></div></div>{{end}}</div></div>
+					{{end}}
+					{{if .KnowledgeQualityTasks}}
+						<h3 class="ui top attached header">质量运营待办（{{.KnowledgeQualityTaskCount}}）</h3>
+						<div class="ui attached segment"><div class="ui relaxed divided list">{{range .KnowledgeQualityTasks}}<div class="item"><div class="right floated content">{{if .CanResolve}}<form action="{{AppSubUrl}}/knowledge/quality-tasks/{{.TaskType}}/{{.ID}}/resolve" method="post"><button class="ui small basic button">标记已处理</button></form>{{end}}</div><div class="content"><div class="header">{{.TaskTypeLabel}} · 知识空间 #{{.SpaceID}}</div><div class="description">{{.Summary}}</div></div></div>{{end}}</div></div>
+					{{end}}
 					{{if gt .KnowledgeReviewTaskCount 0}}
 						<h3 class="ui top attached header">需要你审核的资料（{{.KnowledgeReviewTaskCount}}）</h3>
 						<div class="ui attached segment"><div class="ui relaxed divided list">{{range .KnowledgeApprovals}}{{if .CanReview}}<a class="item" href="#knowledge-review"><div class="content"><div class="header">{{.Title}}</div><div class="description">提交人 #{{.RequestedBy}} · 六项审核待完成。点击进入审核。</div></div></a>{{end}}{{end}}</div></div>
-					{{else}}
+					{{else if and (not .KnowledgeDataSourceTasks) (not .KnowledgeQualityTasks)}}
 						<div class="ui positive message">当前没有需要你处理的资料。</div>
 					{{end}}
 				{{else}}<div class="ui warning message">待办处理仅对知识管理员开放。</div>{{end}}
@@ -342,7 +368,7 @@
 				<table class="ui very basic striped table">
 					<thead><tr><th>数据源</th><th>空间</th><th>分类与级别</th><th>责任人</th><th>生效状态</th><th>审核与接入操作</th></tr></thead>
 					<tbody>{{range .KnowledgeDataSources}}
-						<tr><td><strong>{{.Name}}</strong><div class="text light-2">{{.SourceCode}} · {{.SourceTypeLabel}}</div></td><td>#{{.SpaceID}}</td><td>{{.BusinessDomainCode}} / {{.ContentTypeCode}}<div class="text light-2">{{.SecurityLevelLabel}}</div></td><td>{{.ContentOwnerName}}<div class="text light-2">维护：{{.MaintenanceOwnerName}}</div></td><td><span class="ui label">{{.StatusLabel}}</span><div class="text light-2">{{.SearchabilityLabel}}</div></td><td>{{if .CanApprove}}<form action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/enable" method="post"><button class="ui small primary button">审核并启用</button></form>{{end}}{{if .CanSync}}<form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/sync" method="post"><input type="hidden" name="mode" value="preview"><button class="ui small basic button">预览脱敏视图</button></form><form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/sync" method="post"><input type="hidden" name="mode" value="sync"><button class="ui small primary button">执行增量同步</button></form>{{end}}{{if and (not .CanApprove) (not .CanSync)}}<span class="text light-2">—</span>{{end}}</td></tr>
+						<tr><td><strong>{{.Name}}</strong><div class="text light-2">{{.SourceCode}} · {{.SourceTypeLabel}}</div></td><td>#{{.SpaceID}}</td><td>{{.BusinessDomainCode}} / {{.ContentTypeCode}}<div class="text light-2">{{.SecurityLevelLabel}}</div></td><td>{{.ContentOwnerName}}<div class="text light-2">维护：{{.MaintenanceOwnerName}}</div></td><td><span class="ui label">{{.StatusLabel}}</span><div class="text light-2">{{.SearchabilityLabel}} · {{.ReviewStatusLabel}}</div></td><td>{{if .CanApprove}}<form action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/enable" method="post"><button class="ui small primary button">审核并启用</button></form>{{end}}{{if .CanSync}}<form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/sync" method="post"><input type="hidden" name="mode" value="preview"><button class="ui small basic button">预览脱敏视图</button></form><form class="tw-mt-2" action="{{AppSubUrl}}/knowledge/data-sources/{{.ID}}/sync" method="post"><input type="hidden" name="mode" value="sync"><button class="ui small primary button">执行增量同步</button></form>{{end}}{{if and (not .CanApprove) (not .CanSync)}}<span class="text light-2">—</span>{{end}}</td></tr>
 					{{end}}</tbody>
 				</table>
 			{{else}}<div class="ui placeholder segment"><div class="ui icon header">{{svg "octicon-database" 32}}尚未登记数据源</div><p>请先创建知识空间，再登记来源、责任人、密级和适用范围。</p></div>{{end}}
@@ -369,6 +395,17 @@
 					</div>
 				</div>
 				{{else}}<div class="ui warning message">数据库接入仅对技术管理员开放。</div>{{end}}
+			</section>
+			<section class="knowledge-view knowledge-engine">
+				{{if .IsAdmin}}
+				<div class="knowledge-page-header"><div><h2 class="ui header">检索引擎</h2><div class="description">FileBay 与 RAGFlow 保留各自的管理页面：这里负责知识治理与连接状态；RAGFlow 工作区负责模型、数据集、解析与检索调优。两边可直接互相跳转。</div></div></div>
+				<div class="knowledge-engine-grid">
+					<div class="knowledge-engine-card"><div class="engine-kicker">当前运行边界</div><h3>FileBay 负责治理，RAGFlow 负责检索</h3><p>文件、权限、审批、版本、发布和审计均由 FileBay 决定。只有已发布的脱敏资料会被交给检索引擎；检索结果返回后仍由 FileBay 二次校验。</p><ul><li>当前引擎配置：<code>{{.KnowledgeSettings.EngineProfileVersion}}</code></li><li>业务查询、资料入库与审核均在本工作台完成</li><li>Dify 也只调用 FileBay 授权检索接口</li></ul></div>
+					<div class="knowledge-engine-card"><div class="engine-kicker">RAGFlow 配置工作区</div><h3>模型、数据集与检索调优</h3><p>该入口打开独立运行的 RAGFlow 管理页。你可以配置模型供应商、选择嵌入模型、管理数据集、查看切分结果和进行检索测试。</p><a class="ui primary button" href="#" data-ragflow-config-link>打开检索配置</a><div class="text light-2 tw-mt-3">仅在本机受控地址开放；不向浏览器暴露 FileBay 的服务端密钥。</div></div>
+					<div class="knowledge-engine-card"><div class="engine-kicker">连接状态</div><h3>{{if .KnowledgeConfigError}}需要配置{{else}}已受控连接{{end}}</h3>{{if .KnowledgeConfigError}}<p>FileBay 尚未获取可用的检索引擎绑定。请检查部署主机的本机绑定文件与管理员配置。</p><div class="ui warning message"><p>{{.KnowledgeConfigError}}</p></div>{{else}}<p>FileBay 已持有受限的服务端绑定，并通过私有网络调用检索引擎。API 密钥、数据集标识和原始路径不会出现在浏览器。</p><span class="ui green label">服务端受控</span>{{end}}</div>
+				</div>
+				<div class="knowledge-surface tw-mt-4"><div class="knowledge-surface-title">管理员工作顺序 <span class="text light-2">治理与检索配置各自独立、双向跳转</span></div><div class="content"><div class="ui ordered list"><div class="item"><div class="content"><div class="header">在 FileBay 完成来源与内容审核</div><div class="description">只让符合脱敏、密级、责任人和适用范围规则的资料进入发布链路。</div></div></div><div class="item"><div class="content"><div class="header">在 RAGFlow 完成模型、数据集与检索配置</div><div class="description">通过上方“打开检索配置”进入；RAGFlow 顶部导航可以随时返回本工作台。</div></div></div><div class="item"><div class="content"><div class="header">在“查找资料”验证引用</div><div class="description">检索引擎只提供候选片段，FileBay 负责最终权限、版本与状态校验。</div></div></div></div></div></div>
+				{{else}}<div class="ui warning message">检索引擎管理仅对管理员开放。</div>{{end}}
 			</section>
 			<section class="knowledge-view knowledge-library">
 
@@ -603,6 +640,16 @@
 </div>
 <script>
 	(() => {
+		const ragflowConfigUrl = () => {
+			const url = new URL(window.location.href);
+			url.pathname = '/ragflow/user-setting/model';
+			url.search = '';
+			url.hash = '';
+			return url.toString();
+		};
+		document.querySelectorAll('[data-ragflow-config-link]').forEach((link) => {
+			link.href = ragflowConfigUrl();
+		});
 		const syncRepositorySelection = (element) => {
 			if (element.name !== 'repository_selection') return;
 			const form = element.closest('form');

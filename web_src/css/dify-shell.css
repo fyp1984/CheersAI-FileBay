@@ -1,0 +1,111 @@
+/*
+ * A restrained Dify-inspired system shell for FileBay. It standardizes the
+ * product canvas, navigation, surfaces and form controls without changing
+ * repository, issue or access-control behaviour.
+ */
+:root {
+  --dify-canvas: #f7f8fa;
+  --dify-surface: #ffffff;
+  --dify-border: #eaecf0;
+  --dify-muted: #667085;
+  --dify-primary: #155eef;
+  --dify-primary-hover: #004eeb;
+  --border-radius: 10px;
+  --border-radius-medium: 10px;
+  --color-body: var(--dify-canvas);
+  --color-box-body: var(--dify-surface);
+  --color-nav-bg: rgba(255, 255, 255, .96);
+  --color-secondary-nav-bg: var(--dify-surface);
+  --color-secondary: var(--dify-border);
+  --color-hover: #f2f4f7;
+  --color-hover-opaque: #f2f4f7;
+  --color-active: #eff8ff;
+  --color-primary: var(--dify-primary);
+  --color-primary-hover: var(--dify-primary-hover);
+  --color-primary-active: #00359e;
+  --color-primary-light-1: #84adff;
+  --color-primary-light-2: #b2ddff;
+  --color-primary-light-3: #d1e9ff;
+  --color-primary-light-4: #e6f4ff;
+  --color-primary-light-5: #eff8ff;
+}
+
+body {
+  background: var(--dify-canvas);
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", var(--fonts-proportional);
+}
+
+#navbar {
+  min-height: 64px;
+  padding: 0 24px;
+  background: rgba(255, 255, 255, .96);
+  border-bottom-color: var(--dify-border);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .03);
+}
+
+#navbar .navbar-left,
+#navbar .navbar-right { min-height: 63px; }
+
+#navbar .item {
+  border-radius: 8px;
+  color: #475467;
+  font-weight: var(--font-weight-medium);
+}
+
+#navbar .item.active {
+  background: #eff8ff;
+  color: var(--dify-primary);
+}
+
+#navbar a.item:hover,
+#navbar button.item:hover { background: #f2f4f7; }
+
+.page-content { background: var(--dify-canvas); }
+
+.ui.segment,
+.ui.attached.segment,
+.ui.card,
+.ui.cards > .card,
+.ui.menu,
+.ui.table { border-color: var(--dify-border); }
+
+.ui.segment,
+.ui.card,
+.ui.cards > .card {
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+}
+
+.ui.form input:not([type="checkbox"]):not([type="radio"]),
+.ui.form textarea,
+.native-select > select,
+.ui.selection.dropdown {
+  border-color: #d0d5dd;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.ui.form input:not([type="checkbox"]):not([type="radio"]):focus,
+.ui.form textarea:focus,
+.ui.selection.dropdown.active,
+.ui.selection.dropdown.visible {
+  border-color: var(--dify-primary);
+  box-shadow: 0 0 0 3px #d1e9ff;
+}
+
+.ui.primary.button {
+  border-radius: 8px;
+  background: var(--dify-primary);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .08);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ui.primary.button:hover { background: var(--dify-primary-hover); }
+
+.ui.table thead th { background: #f9fafb; color: #475467; }
+
+@media (max-width: 767px) {
+  #navbar { min-height: 56px; padding: 0 12px; }
+  #navbar .navbar-left,
+  #navbar .navbar-right { min-height: 55px; }
+}
