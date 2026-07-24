@@ -101,4 +101,4 @@ Ensure-RandomEnvValue $difyEnv "DB_PASSWORD" 24 @("difyai123456")
 Ensure-RandomEnvValue $difyEnv "REDIS_PASSWORD" 24 @("difyai123456")
 
 Write-Host "已准备仓库内的官方 RAGFlow v0.26.4 与 Dify 1.15.0 编排。"
-Write-Host "下一步：复制 deploy/knowledge/.env.example 为 .env；将 RAGFlow 专用 API 密钥和数据集 ID 分别保存到被忽略的 runtime/ragflow-binding/api-key 与 dataset-id，然后执行 README 中的 docker compose 命令。"
+Write-Host "请使用 deploy/knowledge/initialize-trial.ps1 完成统一启动与本机 RAGFlow 绑定；不要手工把密钥写入 .env。"

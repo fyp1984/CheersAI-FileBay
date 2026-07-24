@@ -13,17 +13,34 @@
 在仓库根目录执行：
 
 ```powershell
-Copy-Item deploy/knowledge/.env.example deploy/knowledge/.env
-powershell -ExecutionPolicy Bypass -File deploy/knowledge/bootstrap-trial.ps1
-docker compose --env-file deploy/knowledge/.env -f deploy/knowledge/docker-compose.trial.yml --profile cpu --profile elasticsearch up -d --build
+# 只准备可复现的本机运行环境与服务
+powershell -ExecutionPolicy Bypass -File deploy/knowledge/initialize-trial.ps1 -StartServices
 ```
+
+上述命令会复制本机 `.env`、准备 RAGFlow/Dify 运行配置、构建统一前端并启动试用服务。它不会写入或提交真实密钥、原始文件或业务数据。
+
+### 建立可检索绑定
+
+RAGFlow 的 API 密钥和模型供应商凭据属于部署机机密，不能、也不会放进 Git。管理员在 RAGFlow 中配置好可用的 Embedding 模型并创建专用 API 密钥后，使用下列二选一的方式建立 FileBay 绑定：
+
+```powershell
+# 使用已经存在的数据集 ID；脚本会通过安全输入读取密钥，密钥不会显示在终端或写入 .env。
+powershell -ExecutionPolicy Bypass -File deploy/knowledge/initialize-trial.ps1 -RagflowDatasetId "<RAGFlow 数据集 ID>"
+```
+
+```powershell
+# 由脚本经本机统一前端创建数据集，同时写入本机绑定。
+powershell -ExecutionPolicy Bypass -File deploy/knowledge/initialize-trial.ps1 -StartServices -CreateDataset -EmbeddingModel "<已配置的 Embedding 模型名>"
+```
+
+绑定文件只保存在 Git 忽略的 `deploy/knowledge/runtime/ragflow-binding/`。第二种方式会调用本机 `127.0.0.1` 的 RAGFlow API；没有可用 Embedding 模型时会明确失败，不会产生“看似成功但无法检索”的数据集。
 
 `third_party/ragflow/` 固定包含官方 RAGFlow `v0.26.4`（提交 `cb93883f3f8c975eecb2fed81210effeb3bdb06f`）源码；`bootstrap-trial.ps1` 只在 Git 忽略的 `runtime/ragflow/.env` 写入本机资源限制，并下载 Dify `1.15.0`（提交 `3aa26fb6374bbd47e5469f7d7cc25f3e0075a60c`）的官方编排。FileBay 不修改 RAGFlow 核心代码、不直连其内部数据库或存储；所有企业扩展都位于 FileBay 的版本化适配器和治理服务层。`.runtime/`、`runtime/` 和 `.env` 都是本机运行状态，禁止提交。
 
 首次启动后：
 
-1. 首次安装时，由受控部署流程完成 RAGFlow 的模型、专用数据集与服务端 API 密钥配置；不要把该密钥写入 `.env` 或交给业务用户。
-2. 仅在部署主机创建被 Git 忽略的绑定文件：`runtime/ragflow-binding/api-key`（密钥）与 `runtime/ragflow-binding/dataset-id`（数据集 ID），然后运行同一条 `docker compose ... up -d --force-recreate filebay`。FileBay 进程从这两个只读挂载文件读取绑定；密钥不会进入镜像、仓库、浏览器或持久化 `app.ini`。旧试用环境升级后会在下一次启动时清除 `app.ini` 中遗留的 RAGFlow 密钥项。
+1. 首次安装时，由受控部署流程完成 RAGFlow 的模型、专用数据集与服务端 API 密钥配置；不要把该密钥写入 `.env` 或交给业务用户。建议使用上面的 `initialize-trial.ps1` 建立绑定，而不是手工创建文件。
+2. FileBay 进程从 Git 忽略且只读挂载的 `runtime/ragflow-binding/api-key` 与 `dataset-id` 读取绑定；密钥不会进入镜像、仓库、浏览器或持久化 `app.ini`。旧试用环境升级后会在下一次启动时清除 `app.ini` 中遗留的 RAGFlow 密钥项。
 3. 打开 `http://localhost:13080/knowledge`，完成 FileBay 初始化和登录；管理员从“检索引擎”可打开 RAGFlow 配置工作区，业务人员日常只需使用 FileBay。
 4. RAGFlow 配置工作区为同一前端端口下的 `http://localhost:13080/ragflow/`。该页面保留上游的模型供应商、数据集、解析和检索测试功能，顶部导航会在“知识库”前显示“工作台”链接，方便返回 FileBay；FileBay 的“检索引擎”也提供反向入口。首次进入会默认使用简体中文与浅色主题，之后仍可在 RAGFlow 中自行切换语言和主题。
 5. 数据源使用 MySQL、`secret-ref:env/KB_MYSQL_DSN`、视图 `v_kb_masked_faq`，字段映射为 `record_id/question/answer_markdown/updated_at`；先“预览校验”，再“增量同步”。
