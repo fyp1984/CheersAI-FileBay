@@ -1,0 +1,46 @@
+APP_NAME = CheersAI FileBay 企业知识库
+RUN_USER = filebay
+RUN_MODE = prod
+WORK_PATH = /var/lib/cheersai-filebay
+
+[server]
+APP_DATA_PATH = /var/lib/cheersai-filebay/data
+DOMAIN = 127.0.0.1
+ROOT_URL = http://127.0.0.1:13080/
+HTTP_ADDR = 127.0.0.1
+HTTP_PORT = 3000
+DISABLE_SSH = false
+SSH_PORT = 22
+LFS_START_SERVER = true
+OFFLINE_MODE = true
+
+[database]
+DB_TYPE = sqlite3
+PATH = /var/lib/cheersai-filebay/data/filebay.db
+LOG_SQL = false
+
+[repository]
+ROOT = /var/lib/cheersai-filebay/git/repositories
+
+[log]
+MODE = console,file
+LEVEL = Info
+ROOT_PATH = /var/log/cheersai-filebay
+
+[security]
+INSTALL_LOCK = false
+SECRET_KEY = __FILEBAY_SECRET_KEY__
+
+[service]
+DISABLE_REGISTRATION = false
+REQUIRE_SIGNIN_VIEW = true
+
+[knowledge]
+ENABLED = true
+RAGFLOW_BASE_URL = http://127.0.0.1:9380
+RAGFLOW_BINDING_DIR = /etc/cheersai-ragflow/binding
+ENGINE_PROFILE_VERSION = profile-2026-07
+ALLOW_INTERNAL_HTTP = true
+INTERNAL_HTTP_HOST = 127.0.0.1
+RETRIEVE_MAX_TOP_K = 10
+RETRIEVE_QUERY_MAX_BYTES = 2048

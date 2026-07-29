@@ -1,0 +1,7 @@
+/.gitattributes text eol=lf
+deploy/native/**/*.sh text eol=lf
+deploy/native/**/*.conf text eol=lf
+deploy/native/**/*.service text eol=lf
+deploy/native/**/*.template text eol=lf
+deploy/native/**/*.md text eol=lf
+deploy/native/**/*.ps1 text eol=lf
