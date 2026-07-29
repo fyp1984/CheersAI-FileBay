@@ -1,0 +1,20 @@
+[Unit]
+Description=CheersAI RAGFlow API
+After=network.target mysql.service redis.service elasticsearch.service minio.service
+
+[Service]
+Type=simple
+User=ragflow
+Group=ragflow
+WorkingDirectory=/var/lib/cheersai-ragflow/app
+EnvironmentFile=/etc/cheersai-ragflow/ragflow.env
+Environment=PYTHONPATH=/var/lib/cheersai-ragflow/app
+ExecStart=/usr/local/bin/ragflow-native-run api
+Restart=always
+RestartSec=8
+NoNewPrivileges=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/cheersai-ragflow /var/log/cheersai-ragflow
+
+[Install]
+WantedBy=multi-user.target

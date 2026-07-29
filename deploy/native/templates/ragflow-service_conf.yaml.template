@@ -1,0 +1,46 @@
+ragflow:
+  host: 127.0.0.1
+  http_port: 9380
+admin:
+  host: 127.0.0.1
+  http_port: 9381
+mysql:
+  name: 'rag_flow'
+  user: 'ragflow'
+  password: '${RAGFLOW_MYSQL_PASSWORD}'
+  host: '127.0.0.1'
+  port: 3306
+  max_connections: 200
+  stale_timeout: 300
+  max_allowed_packet: 1073741824
+minio:
+  user: 'rag_flow'
+  password: '${RAGFLOW_MINIO_PASSWORD}'
+  host: '127.0.0.1:9000'
+  bucket: 'ragflow'
+  prefix_path: ''
+es:
+  hosts: 'http://127.0.0.1:9200'
+  username: 'elastic'
+  password: '${RAGFLOW_ELASTIC_PASSWORD}'
+redis:
+  db: 1
+  username: ''
+  password: '${RAGFLOW_REDIS_PASSWORD}'
+  host: '127.0.0.1:6379'
+nats:
+  host: 127.0.0.1
+  port: 4222
+task_executor:
+  message_queue_type: 'redis'
+file_syncer:
+  max_concurrent_syncs: 4
+  sync_interval: 3
+log:
+  level: info
+  format: text
+  path: /var/log/cheersai-ragflow/server_main.log
+  max_size: 100
+  max_backups: 10
+  max_age: 30
+  compress: true

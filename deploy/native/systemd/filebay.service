@@ -1,0 +1,22 @@
+[Unit]
+Description=CheersAI FileBay
+After=network.target
+
+[Service]
+Type=simple
+User=filebay
+Group=filebay
+WorkingDirectory=/var/lib/cheersai-filebay
+Environment=GITEA_WORK_DIR=/var/lib/cheersai-filebay
+Environment=GITEA_CUSTOM=/var/lib/cheersai-filebay/custom
+Environment=GITEA_APP_INI=/etc/cheersai-filebay/app.ini
+Environment=TMPDIR=/var/lib/cheersai-filebay/tmp
+ExecStart=/opt/cheersai-filebay/current/bin/filebay web --config /etc/cheersai-filebay/app.ini
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/cheersai-filebay /var/log/cheersai-filebay
+
+[Install]
+WantedBy=multi-user.target
